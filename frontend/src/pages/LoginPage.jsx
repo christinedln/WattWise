@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Header from "../components/Header";
 import Layout from "../components/layout";
+import { auth } from "../firebase"; 
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 // Feature data
 const features = [
@@ -15,10 +20,34 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate(); 
 
-  const handleSubmit = (e) => {
+  // Email/password login
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Sign in:", { email, password });
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log("Login successful:", user.email);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Login error:", error.message);
+      alert(error.message);
+    }
+  };
+
+  // Google login
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      console.log("Google login successful:", user.email);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Google login error:", error.message);
+      alert(error.message);
+    }
   };
 
   return (
@@ -75,49 +104,43 @@ export default function LoginPage() {
                 />
               </div>
 
-             <div>
-  <div className="flex justify-between items-center mb-1">
-    <label
-      htmlFor="password"
-      className="block text-sm font-medium text-foreground"
-    >
-      Password
-    </label>
-    <a
-      href="#"
-      className="text-sm !text-green-700 hover:!text-green-800"
-    >
-      Forgot password?
-    </a>
-  </div>
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-foreground">
+                    Password
+                  </label>
+                  <a href="#" className="text-sm !text-green-700 hover:!text-green-800">
+                    Forgot password?
+                  </a>
+                </div>
 
-  <div className="relative">
-    <input
-      id="password"
-      type={showPassword ? "text" : "password"}
-      placeholder="Enter your password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      className="w-full px-3 py-2 md:px-4 md:py-2.5 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-    />
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 md:px-4 md:py-2.5 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
 
-    {/* Show/Hide password icon button in gray without focus outline */}
-   <button
-  type="button"
-  onClick={() => setShowPassword(!showPassword)}
-  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0"
-  style={{
-    background: "none",
-    border: "none",
-    outline: "none",
-    boxShadow: "none",
-    appearance: "none",
-  }}
->
-  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-</button>
-  </div>
-</div>
+                  {/* Show/Hide password icon */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0"
+                    style={{
+                      background: "none",
+                      border: "none",
+                      outline: "none",
+                      boxShadow: "none",
+                      appearance: "none",
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+              </div>
 
               <button
                 type="submit"
@@ -135,15 +158,27 @@ export default function LoginPage() {
             </div>
 
             {/* Google Button */}
-            <button className="w-full border border-border py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-muted transition-colors">
-              <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" className="w-5 h-5"/>
+            <button
+              onClick={handleGoogleLogin}
+              className="w-full border border-border py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-muted transition-colors"
+            >
+              <img
+                src="https://www.svgrepo.com/show/355037/google.svg"
+                alt="Google"
+                className="w-5 h-5"
+              />
               <span className="text-foreground font-medium">Google</span>
             </button>
 
             {/* Sign Up Link */}
             <p className="mt-4 text-center text-sm text-muted-foreground">
               Don’t have an account?{" "}
-              <a href="#" className="mt-4 text-center text-sm font-medium !text-green-700 hover:!text-green-800 no-underline">Sign Up</a>
+              <Link
+                to="/signup"
+                className="mt-4 text-center text-sm font-medium !text-green-700 hover:!text-green-800 no-underline"
+              >
+                Sign Up
+              </Link>
             </p>
           </div>
         </div>
