@@ -16,9 +16,8 @@ export default function Sidebar() {
   const location = useLocation();
 
   const menuItems = [
-    { name: "Dashboard", to: "/", icon: <Home size={20} /> },
+    { name: "Dashboard", to: "/dashboard", icon: <Home size={20} /> },
     { name: "Real-Time Monitor", to: "/realtime", icon: <Zap size={20} /> },
-    { name: "Security", to: "/security", icon: <Lock size={20} /> },
     { name: "Predictions", to: "/predictions", icon: <TrendingUp size={20} /> },
     { name: "Devices", to: "/devices", icon: <Smartphone size={20} /> },
     { name: "Alerts", to: "/alerts", icon: <Bell size={20} /> },

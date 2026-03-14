@@ -5,6 +5,7 @@ import LiveReadings from "../components/LiveReadings";
 import DeviceConsumption from "../components/DeviceConsumption";
 import CostPredictions from "../components/CostPredictions";
 import Layout from "../components/layout";
+import { Outlet } from "react-router-dom";
 
 export default function DashboardPage() {
   return (
