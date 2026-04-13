@@ -23,7 +23,7 @@ export default function DeviceConsumption({ devices = [], totalEnergyKwh = 0 }) 
             {devices.map((device) => (
               <tr key={device.device_id} className="border-b border-gray-200 hover:bg-gray-50">
                 <td className="py-4 px-4 flex items-center gap-2">
-                  <span className="text-lg">📟</span>
+                  <span className="text-lg"></span>
                   <span className="font-medium text-gray-900">{device.name}</span>
                 </td>
                 <td className="py-4 px-4 text-gray-900">{device.kwh}</td>

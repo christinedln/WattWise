@@ -13,7 +13,7 @@ export default function LiveReadings({ readings = [] }) {
 
           {/* Device name label - new but minimal */}
           <p className="text-sm font-semibold text-gray-700 mb-2">
-            📟 {device.name}
+            🤖 {device.name}
             <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium
               ${device.status === "ON"
                 ? "bg-green-100 text-green-700"
