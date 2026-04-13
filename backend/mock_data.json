@@ -1,0 +1,56 @@
+{
+  "devices": [
+    {
+      "device_id": "8C4F00AB61C4",
+      "name": "Computer",
+      "last_reading": {
+        "voltage": 225,
+        "current": 0.03,
+        "power": 5.6,
+        "status": "ON",
+        "runtime": 566
+      }
+    },
+    {
+      "device_id": "8C4F00AB61C5",
+      "name": "Refrigerator",
+      "last_reading": {
+        "voltage": 223,
+        "current": 0.05,
+        "power": 11.2,
+        "status": "ON",
+        "runtime": 320
+      }
+    },
+    {
+      "device_id": "8C4F00AB61C6",
+      "name": "Lamp",
+      "last_reading": {
+        "voltage": 220,
+        "current": 0.00,
+        "power": 0.0,
+        "status": "OFF",
+        "runtime": 0
+      }
+    }
+  ],
+  "alerts": [
+    {
+      "device_id": "8C4F00AB61C5",
+      "name": "Television",
+      "type": "High Power",
+      "message": "Power exceeded threshold",
+      "severity": "Warning",
+      "timestamp": "2026-04-12T14:32:00"
+    },
+    {
+      "device_id": "8C4F00AB61C4",
+      "name": "PC",
+      "type": "Voltage Drop",
+      "message": "Voltage dropped below 215V",
+      "severity": "Critical",
+      "timestamp": "2026-04-12T09:15:00"
+    }
+  ],
+  "rate_per_kwh": 11.0
+}
