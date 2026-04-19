@@ -54,20 +54,28 @@ def summary():
     ]
 
     # ── PREDICTIONS ───────────────────────
-    kwh_per_second = total_energy_kwh / max(sum(d["runtime"] for d in devices), 1)
+    total_consumption   = sum(d["consumption"] for d in enriched_devices)
+    total_runtime_hours = sum(d["runtime"] for d in devices) / 3600 or 1
+    kwh_per_hour        = total_consumption / total_runtime_hours
+    daily_kwh           = round(kwh_per_hour * 24, 4)
 
-    weekly_kwh = round(kwh_per_second * 7 * 24 * 3600, 4)
-    monthly_kwh = round(kwh_per_second * 30 * 24 * 3600, 4)
+    weekly_kwh   = round(daily_kwh * 7,  4)
+    monthly_kwh  = round(daily_kwh * 30, 4)
+    weekly_cost  = round(weekly_kwh  * rate_per_kwh, 2)
+    monthly_cost = round(monthly_kwh * rate_per_kwh, 2)
 
     return jsonify({
-        "active_devices": active_count,
-        "total_devices": len(devices),
+        "active_devices":  active_count,
+        "total_devices":   len(devices),
 
-        "live_readings": enriched_devices,
-        "device_consumption": device_consumption,
+        "live_readings":       enriched_devices,
+        "device_consumption":  device_consumption,
 
-        "weekly_predicted_kwh": weekly_kwh,
-        "monthly_predicted_kwh": monthly_kwh,
+        "total_energy_kwh":       total_energy_kwh,
+        "weekly_predicted_kwh":   weekly_kwh,
+        "weekly_predicted_cost":  weekly_cost,
+        "monthly_predicted_kwh":  monthly_kwh,
+        "monthly_predicted_cost": monthly_cost,
 
         "rate_per_kwh": rate_per_kwh,
     })

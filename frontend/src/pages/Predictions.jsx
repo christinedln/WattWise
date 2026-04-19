@@ -1,56 +1,79 @@
 'use client';
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import DashboardHeader from "../components/DashboardHeader";
 import Layout from "../components/layout";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line
 } from "recharts";
 
 export default function PredictionsPage() {
+  const [data, setData]       = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(null);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:5000/api/predictions/summary")
+      .then((res) => res.json())
+      .then((json) => {
+        setData(json);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return (
+    <Layout>
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-gray-500">Loading predictions...</p>
+      </div>
+    </Layout>
+  );
+
+  if (error) return (
+    <Layout>
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-500">Cannot connect to server. Make sure Flask is running.</p>
+      </div>
+    </Layout>
+  );
+
+  // ── Map API data ──────────────
   const weeklyPredictions = [
     {
-      period: 'This Week',
-      cost: '₱230.40',
-      estimatedUsage: '237.21 kWh',
-      trend: 'up',
-      trendPercent: '3.2%',
-      trendLabel: 'Mon - Sun (current billing period)',
-      bgColor: 'bg-yellow-50',
+      period:         'This Week',
+      cost:           `₱${data.weekly_predicted_cost.toFixed(2)}`,
+      estimatedUsage: `${data.weekly_predicted_kwh} kWh`,
+      trend:          'up',
+      trendPercent:   '3.2%',
+      trendLabel:     'Mon - Sun (current billing period)',
+      bgColor:        'bg-yellow-50',
     },
     {
-      period: 'This Month',
-      cost: '₱921.60',
-      estimatedUsage: '912.80 kWh',
-      trend: 'up',
-      trendPercent: '2.3%',
-      trendLabel: 'Feb 1 - Feb 28 (projected)',
-      bgColor: 'bg-blue-50',
+      period:         'This Month',
+      cost:           `₱${data.monthly_predicted_cost.toFixed(2)}`,
+      estimatedUsage: `${data.monthly_predicted_kwh} kWh`,
+      trend:          'up',
+      trendPercent:   '2.3%',
+      trendLabel:     '30-day projection',
+      bgColor:        'bg-blue-50',
     },
   ];
 
-  const forecastData = [
-    { date: 'Mar 15', consumption: 38.2, cost: 5.35, actual: 37.5 },
-    { date: 'Mar 16', consumption: 42.1, cost: 5.89, actual: 41.8 },
-    { date: 'Mar 17', consumption: 39.5, cost: 5.53, actual: 40.2 },
-    { date: 'Mar 18', consumption: 45.3, cost: 6.34, actual: 44.9 },
-    { date: 'Mar 19', consumption: 38.8, cost: 5.43, actual: 39.1 },
-  ];
+  // daily_forecast from API already has { date, consumption, cost }
+  const forecastData = data.daily_forecast;
 
-  const predictedVsActual = [
-    { date: 'Mar 10', predicted: 38.5, actual: 37.9 },
-    { date: 'Mar 11', predicted: 41.2, actual: 42.1 },
-    { date: 'Mar 12', predicted: 39.8, actual: 39.3 },
-    { date: 'Mar 13', predicted: 44.5, actual: 45.2 },
-    { date: 'Mar 14', predicted: 37.2, actual: 36.8 },
-  ];
+  // actual_vs_predicted from API already has { date, actual, predicted }
+  const predictedVsActual = data.actual_vs_predicted;
 
   return (
     <Layout>
       <div className="h-screen w-screen flex overflow-hidden bg-gray-50">
-        {/* Sidebar */}
         <Sidebar />
 
         {/* Main Content */}
@@ -64,11 +87,9 @@ export default function PredictionsPage() {
               <h1 className="text-3xl font-bold text-gray-900">Energy Predictions</h1>
               <p className="text-gray-500">Forecast your energy costs and usage patterns</p>
             </div>
-
-            {/* Content Grid */}
             <div className="space-y-6">
 
-              {/* Weekly/Monthly Predictions (aligned with Dashboard cards) */}
+              {/* Weekly/Monthly Predictions*/}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {weeklyPredictions.map((pred, index) => (
                   <div key={index} className={`${pred.bgColor} rounded-lg p-6 border border-gray-200`}>
@@ -97,9 +118,9 @@ export default function PredictionsPage() {
                 ))}
               </div>
 
-              {/* Daily Forecast Chart */}
+              {/* Daily Forecast Chart*/}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h2 className="font-bold text-lg mb-4">Next 5 Days Forecast</h2>
+                <h2 className="font-bold text-lg mb-4">Next 7 Days Forecast</h2>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={forecastData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
