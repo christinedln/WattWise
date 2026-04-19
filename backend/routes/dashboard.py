@@ -1,0 +1,73 @@
+from flask import Blueprint, jsonify
+
+from services.data_service import get_devices, get_rate
+from utils.mapper import merge_device_data
+from utils.calculations import calc_kwh
+
+dashboard_bp = Blueprint("dashboard", __name__)
+
+
+@dashboard_bp.route("/summary")
+def summary():
+
+    # ── SINGLE SOURCE OF TRUTH ─────────────
+    enriched_devices = merge_device_data()
+    devices = get_devices()
+    rate_per_kwh = get_rate()
+
+    # ── STATS ──────────────────────────────
+    active_count = sum(1 for d in enriched_devices if d["status"] == "active")
+
+    # ── ENERGY TOTAL ───────────────────────
+    total_energy_kwh = round(
+        sum(calc_kwh(d["power"], d["runtime"]) for d in devices),
+        4
+    )
+
+    grand_total = total_energy_kwh or 1
+
+    # ── DEVICE BREAKDOWN (USE MAPPER DATA) ─
+    device_consumption = [
+        {
+            "device_id": d["device_id"],
+            "name": d["name"],
+
+            "kwh": calc_kwh(
+                next(x["power"] for x in devices if x["device_id"] == d["device_id"]),
+                next(x["runtime"] for x in devices if x["device_id"] == d["device_id"]),
+            ),
+
+            "percent_of_total": round(
+                calc_kwh(
+                    next(x["power"] for x in devices if x["device_id"] == d["device_id"]),
+                    next(x["runtime"] for x in devices if x["device_id"] == d["device_id"]),
+                ) / grand_total * 100,
+                1
+            ),
+
+            "voltage": d["voltage"],
+            "current": d["current"],
+            "power": d["power"],
+            "status": d["status"],
+        }
+        for d in enriched_devices
+    ]
+
+    # ── PREDICTIONS ───────────────────────
+    kwh_per_second = total_energy_kwh / max(sum(d["runtime"] for d in devices), 1)
+
+    weekly_kwh = round(kwh_per_second * 7 * 24 * 3600, 4)
+    monthly_kwh = round(kwh_per_second * 30 * 24 * 3600, 4)
+
+    return jsonify({
+        "active_devices": active_count,
+        "total_devices": len(devices),
+
+        "live_readings": enriched_devices,
+        "device_consumption": device_consumption,
+
+        "weekly_predicted_kwh": weekly_kwh,
+        "monthly_predicted_kwh": monthly_kwh,
+
+        "rate_per_kwh": rate_per_kwh,
+    })

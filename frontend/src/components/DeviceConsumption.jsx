@@ -42,10 +42,10 @@ export default function DeviceConsumption({ devices = [], totalEnergyKwh = 0 }) 
                 <td className="py-4 px-4">
                   {/* Status badge */}
                   <span className={`px-3 py-1 rounded-full text-sm font-medium
-                    ${device.status === "ON"
+                    ${device.status === "active"
                       ? "bg-green-100 text-green-800"
                       : "bg-gray-100 text-gray-500"}`}>
-                    {device.status === "ON" ? "Normal" : "Offline"}
+                    {device.status === "active" ? "ACTIVE" : "OFFLINE"}
                   </span>
                 </td>
               </tr>
