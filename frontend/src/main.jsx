@@ -8,6 +8,7 @@ import AlertsPage from "./pages/Alerts";
 import DevicesPage from "./pages/Devices";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
+import SettingsPage from "./pages/Settings";
 import './index.css';
 
 createRoot(document.getElementById("root")).render(
@@ -20,6 +21,7 @@ createRoot(document.getElementById("root")).render(
       <Route path="/predictions" element={<PredictionsPage />} />
       <Route path="/devices" element={<DevicesPage />} />
       <Route path="/alerts" element={<AlertsPage />} />
+      <Route path="/settings" element={<SettingsPage />} /> 
       
     </Routes>
   </BrowserRouter>
