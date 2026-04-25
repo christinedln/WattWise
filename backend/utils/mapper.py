@@ -1,14 +1,17 @@
-#utils/mapper.py
+# utils/mapper.py
+
 from services.data_service import get_devices, get_registry
 from utils.alerts import generate_alerts
 from utils.time_helper import now_time
-import random
+from services.settings_service import get_user_settings
+from firebase_config import db
 
-def merge_device_data():
-    devices = get_devices()
+def merge_device_data(user_id):
+    devices = get_devices(user_id)
     registry = get_registry()
 
-    alerts = generate_alerts(devices)
+    settings = get_user_settings(user_id) or {}
+    alerts = generate_alerts(devices, settings or {})
 
     merged = []
 
@@ -22,21 +25,28 @@ def merge_device_data():
     }
 
     for d in devices:
-        device_id = d["device_id"]
+        device_id = d.get("device_id")
         meta = registry.get(device_id, {})
 
-        device_alerts = [a for a in alerts if a["device_id"] == device_id]
+        # ── FIND DEVICE ALERT GROUP ──
+        device_group = next(
+            (a for a in alerts if a.get("device_id") == device_id),
+            None
+        )
 
-        # ── HEALTH + MESSAGE (FROM ALERT ENGINE ONLY) ──
-        if device_alerts:
-            best = max(device_alerts, key=lambda x: priority.get(x.get("health", "Normal"), 0))
+        # ── DETERMINE HEALTH + MESSAGE ──
+        if device_group and device_group.get("alerts"):
+            best = max(
+                device_group["alerts"],
+                key=lambda x: priority.get(x.get("health", "Normal"), 0)
+            )
             health = best.get("health", "Normal")
             message = best.get("message", "No issues detected")
         else:
             health = "Normal"
             message = "No issues detected"
 
-                # ── ACTIVITY TIMELINE (SIMULATED / TEMPORARY) ──
+        # ── ACTIVITY TIMELINE ──
         timeline = [
             {
                 "time": now_time(),
@@ -44,8 +54,7 @@ def merge_device_data():
             }
         ]
 
-        # add behavior-based event
-        if d["status"] == "ON":
+        if d.get("status") == "ON":
             timeline.append({
                 "time": now_time(),
                 "event": "Device active"
@@ -67,6 +76,7 @@ def merge_device_data():
                 "event": "Warning condition detected"
             })
 
+        # ── FINAL MERGED DEVICE OBJECT ──
         merged.append({
             "id": f"device-{device_id}",
             "device_id": device_id,
@@ -75,17 +85,17 @@ def merge_device_data():
             "type": meta.get("type", "Unknown"),
             "location": meta.get("location", "Unknown"),
 
-            "voltage": d["voltage"],
-            "current": d["current"],
-            "power": d["power"],
-            "runtime": d["runtime"],
+            "voltage": d.get("voltage", 0),
+            "current": d.get("current", 0),
+            "power": d.get("power", 0),
+            "runtime": d.get("runtime", 0),
 
-            "status": "active" if d["status"] == "ON" else "offline",
+            "status": "active" if d.get("status") == "ON" else "offline",
 
             "health": health,
-            "alert_message": message,   
+            "alert_message": message,
 
-            "consumption": round((d["power"] * d["runtime"]) / 1000, 2),
+            "consumption": round((d.get("power", 0) * d.get("runtime", 0)) / 1000, 2),
 
             "lastUpdated": now_time(),
 

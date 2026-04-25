@@ -1,69 +1,92 @@
-def generate_alerts(devices):
-    alerts = []
+from services.data_service import get_registry
+
+def generate_alerts(devices, settings):
+
+    grouped_alerts = {}
+
+    level = settings.get("security_alert_level", 3)
+    energy_limit = settings.get("energy_alert_threshold", 5000)
+
+    print("\n--- ALERT ENGINE DEBUG ---")
+    print("Security Level:", level)
+    print("Energy Threshold:", energy_limit)
+
+    if level == 1:
+        current_limit = 15
+        voltage_limit = 260
+    elif level == 2:
+        current_limit = 12
+        voltage_limit = 250
+    else:
+        current_limit = 10
+        voltage_limit = 240
+
+    registry = get_registry()
 
     for d in devices:
 
-        # OFFLINE
-        if d["status"] == "OFF":
-            alerts.append({
-                "device_id": d["device_id"],
-                "health": "Offline",
-                "message": "Device not responding",
-                "severity": "Offline"
-            })
-            continue
+        print("\nDEVICE CHECK:", d)
 
-        # OVERLOAD (CRITICAL)
-        if d["power"] > 1000:
+        device_id = str(d["device_id"])
+        device_name = d.get("name", "Unknown")
+
+        if device_id not in grouped_alerts:
+            grouped_alerts[device_id] = {
+                "device_id": device_id,
+                "name": device_name,
+                "alerts": []
+            }
+
+        alerts = grouped_alerts[device_id]["alerts"]
+
+        has_issue = False
+
+    # ENERGY
+        if d["power"] >= energy_limit:
+            print("ENERGY ALERT TRIGGERED")
             alerts.append({
-                "device_id": d["device_id"],
                 "health": "Critical",
-                "message": "Power overload detected",
-                "severity": "Critical"
+                "message": "Energy threshold exceeded"
             })
+            has_issue = True
 
-        # SUSPICIOUS PATTERN
-        elif d["power"] > 700:
+    # CURRENT
+        if d["current"] > current_limit:
+            print("⚠ CURRENT ALERT")
             alerts.append({
-                "device_id": d["device_id"],
-                "health": "Suspicious",
-                "message": "Irregular usage detected",
-                "severity": "Suspicious"
-            })
-
-        # WARNING
-        elif d["power"] > 250:
-            alerts.append({
-                "device_id": d["device_id"],
                 "health": "Warning",
-                "message": "Elevated usage detected",
-                "severity": "Warning"
+                "message": "High current detected"
             })
+            has_issue = True
 
-        # VOLTAGE / CURRENT WARNINGS
-        if d["current"] > 10:
+    # VOLTAGE
+        if d["voltage"] > voltage_limit:
+            print("⚠ VOLTAGE ALERT")
             alerts.append({
-                "device_id": d["device_id"],
                 "health": "Warning",
-                "message": "High current detected",
-                "severity": "Warning"
+                "message": "High voltage detected"
             })
+            has_issue = True
 
-        if d["voltage"] > 240:
+    # NORMAL
+        if not has_issue:
             alerts.append({
-                "device_id": d["device_id"],
-                "health": "Warning",
-                "message": "High voltage detected",
-                "severity": "Warning"
-            })
-
-        # NORMAL CASE
-        if d["power"] <= 250 and d["voltage"] <= 240 and d["current"] <= 10:
-            alerts.append({
-                "device_id": d["device_id"],
                 "health": "Normal",
-                "message": "No issues detected",
-                "severity": "Normal"
+                "message": "No issues detected"
             })
 
-    return alerts
+    # flatten
+    flat = []
+
+    for device in grouped_alerts.values():
+        for a in device["alerts"]:
+            flat.append({
+                "device_id": device["device_id"],
+                "device_name": device["name"],
+                "severity": a["health"],
+                "message": a["message"]
+            })
+
+    print("\nFINAL FLAT ALERTS:", flat)
+
+    return flat

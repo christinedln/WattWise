@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify
 from services.data_service import get_devices, get_rate
 from utils.mapper import merge_device_data
 from utils.calculations import calc_kwh
+from firebase_config import db
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -11,16 +12,17 @@ dashboard_bp = Blueprint("dashboard", __name__)
 def summary():
 
     # ── SINGLE SOURCE OF TRUTH ─────────────
-    enriched_devices = merge_device_data()
-    devices = get_devices()
-    rate_per_kwh = get_rate()
+    user_id = "test_user"
+    enriched_devices = merge_device_data(user_id)
+    devices = get_devices(user_id)
+    rate_per_kwh = get_rate(user_id)
 
     # ── STATS ──────────────────────────────
     active_count = sum(1 for d in enriched_devices if d["status"] == "active")
 
     # ── ENERGY TOTAL ───────────────────────
     total_energy_kwh = round(
-        sum(calc_kwh(d["power"], d["runtime"]) for d in devices),
+        sum(calc_kwh(d["power"], d.get("runtime", 0)) for d in devices),
         4
     )
 
@@ -34,13 +36,13 @@ def summary():
 
             "kwh": calc_kwh(
                 next(x["power"] for x in devices if x["device_id"] == d["device_id"]),
-                next(x["runtime"] for x in devices if x["device_id"] == d["device_id"]),
+                next(x.get("runtime", 0) for x in devices if x["device_id"] == d["device_id"]),
             ),
 
             "percent_of_total": round(
                 calc_kwh(
                     next(x["power"] for x in devices if x["device_id"] == d["device_id"]),
-                    next(x["runtime"] for x in devices if x["device_id"] == d["device_id"]),
+                    next(x.get("runtime", 0) for x in devices if x["device_id"] == d["device_id"]),
                 ) / grand_total * 100,
                 1
             ),
@@ -55,7 +57,7 @@ def summary():
 
     # ── PREDICTIONS ───────────────────────
     total_consumption   = sum(d["consumption"] for d in enriched_devices)
-    total_runtime_hours = sum(d["runtime"] for d in devices) / 3600 or 1
+    total_runtime_hours = max(sum(d.get("runtime", 0) for d in devices) / 3600, 1)
     kwh_per_hour        = total_consumption / total_runtime_hours
     daily_kwh           = round(kwh_per_hour * 24, 4)
 
