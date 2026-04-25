@@ -14,7 +14,7 @@ def summary():
     # ── SINGLE SOURCE OF TRUTH ─────────────
     user_id = "test_user"
     enriched_devices = merge_device_data(user_id)
-    devices = get_devices(user_id)
+    devices = [d for d in get_devices(user_id) if d.get("enabled", True)]
     rate_per_kwh = get_rate(user_id)
 
     # ── STATS ──────────────────────────────
@@ -35,14 +35,14 @@ def summary():
             "name": d["name"],
 
             "kwh": calc_kwh(
-                next(x["power"] for x in devices if x["device_id"] == d["device_id"]),
-                next(x.get("runtime", 0) for x in devices if x["device_id"] == d["device_id"]),
+                next((x["power"] for x in devices if x["device_id"] == d["device_id"]), 0),
+                next((x.get("runtime", 0) for x in devices if x["device_id"] == d["device_id"]), 0),
             ),
 
             "percent_of_total": round(
                 calc_kwh(
-                    next(x["power"] for x in devices if x["device_id"] == d["device_id"]),
-                    next(x.get("runtime", 0) for x in devices if x["device_id"] == d["device_id"]),
+                    next((x["power"] for x in devices if x["device_id"] == d["device_id"]), 0),
+                    next((x.get("runtime", 0) for x in devices if x["device_id"] == d["device_id"]), 0),
                 ) / grand_total * 100,
                 1
             ),

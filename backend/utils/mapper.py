@@ -4,7 +4,6 @@ from services.data_service import get_devices, get_registry
 from utils.alerts import generate_alerts
 from utils.time_helper import now_time
 from services.settings_service import get_user_settings
-from firebase_config import db
 
 def merge_device_data(user_id):
     devices = get_devices(user_id)
@@ -25,8 +24,8 @@ def merge_device_data(user_id):
     }
 
     for d in devices:
-        device_id = d.get("device_id")
-        meta = registry.get(device_id, {})
+        device_id = d.get("device_id") or d.get("id")
+        meta = registry.get(str(device_id), {})
 
         # ── FIND DEVICE ALERT GROUP ──
         device_group = next(
@@ -81,9 +80,9 @@ def merge_device_data(user_id):
             "id": f"device-{device_id}",
             "device_id": device_id,
 
-            "name": meta.get("name", f"Device {device_id}"),
-            "type": meta.get("type", "Unknown"),
-            "location": meta.get("location", "Unknown"),
+            "name": d.get("name", f"Device {device_id}"),
+            "location": d.get("location", "Unknown"),
+            "type": d.get("type", "Unknown"),
 
             "voltage": d.get("voltage", 0),
             "current": d.get("current", 0),
@@ -91,6 +90,8 @@ def merge_device_data(user_id):
             "runtime": d.get("runtime", 0),
 
             "status": "active" if d.get("status") == "ON" else "offline",
+
+            "enabled": d.get("enabled", True),
 
             "health": health,
             "alert_message": message,

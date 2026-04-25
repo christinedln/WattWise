@@ -25,6 +25,9 @@ def generate_alerts(devices, settings):
 
     for d in devices:
 
+        if not d.get("enabled", True):
+            continue
+        
         print("\nDEVICE CHECK:", d)
 
         device_id = str(d["device_id"])
