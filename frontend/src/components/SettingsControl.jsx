@@ -13,12 +13,42 @@ export default function SettingsControl() {
   const [securityLevel, setSecurityLevel] = useState(3);
 
   // Devices
-  const [devices, setDevices] = useState([
-    { id: 1, name: "Air Conditioner", location: "Living Room", enabled: true },
-    { id: 2, name: "Refrigerator", location: "Kitchen", enabled: true },
-    { id: 3, name: "Washing Machine", location: "Laundry Room", enabled: false },
-    { id: 4, name: "Water Heater", location: "Bathroom", enabled: true },
-  ]);
+const [devices, setDevices] = useState([]);
+
+useEffect(() => {
+  fetch("http://127.0.0.1:5000/api/devices/test_user")
+    .then(res => res.json())
+    .then(data => {
+      console.log("FULL DEVICE RESPONSE:", data);
+
+      // ✅ FORCE CORRECT ARRAY NO MATTER WHAT BACKEND RETURNS
+      const list =
+        data?.devices ||
+        data?.merged_devices ||
+        data?.data ||
+        (Array.isArray(data) ? data : []);
+
+      const mapped = list.map(d => ({
+        id: d.device_id || d.id,
+
+        // ✅ FIX NAME (this is your MAIN BUG)
+        name: d.name || d.device_name || `Device ${d.device_id}`,
+
+        // ✅ FIX LOCATION
+        location: d.location ?? "Unknown",
+
+        // ✅ FIX ENABLED (important: backend sometimes sends "true")
+        enabled: d.enabled === true || d.enabled === "true",
+
+        // optional but useful
+        status: d.status || "UNKNOWN",
+      }));
+
+      console.log("MAPPED DEVICES:", mapped);
+      setDevices(mapped);
+    })
+    .catch(err => console.error("DEVICE LOAD ERROR:", err));
+}, []);
 
   const [saved, setSaved] = useState(false);
 
@@ -63,11 +93,40 @@ export default function SettingsControl() {
     console.error("Save failed:", err);
   }
 };
-  const toggleDevice = (id) => {
-    setDevices((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, enabled: !d.enabled } : d))
+  const toggleDevice = async (id) => {
+  const updatedDevice = devices.find((d) => String(d.id) === String(id));
+
+  if (!updatedDevice) return;
+
+  const newEnabled = !updatedDevice.enabled;
+
+  // 1. update UI immediately (optimistic update)
+  setDevices((prev) =>
+    prev.map((d) =>
+      String(d.id) === String(id)
+        ? { ...d, enabled: newEnabled }
+        : d
+    )
+  );
+
+  // 2. send update to backend
+  try {
+    await fetch(
+      `http://127.0.0.1:5000/api/devices/test_user/${updatedDevice.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          enabled: newEnabled,
+        }),
+      }
     );
-  };
+  } catch (err) {
+    console.error("Device update failed:", err);
+  }
+};
 
   if (
   rate === null ||
@@ -252,8 +311,13 @@ export default function SettingsControl() {
                 className="flex justify-between items-center py-4 border-b border-gray-100 last:border-0"
               >
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">{device.name}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{device.location}</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {device.name}
+                    <span className="text-xs text-gray-400 ml-2">
+                      ({device.enabled ? "ON" : "OFF"})
+                    </span>
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{device.location || "No location set"}</p>
                 </div>
                 <div
                   onClick={() => toggleDevice(device.id)}
