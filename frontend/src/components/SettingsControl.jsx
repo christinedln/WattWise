@@ -1,14 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const LEVEL_LABELS = ["Low", "Med", "High", "Crit", "Sec"];
 
 export default function SettingsControl() {
+  
   const [activeTab, setActiveTab] = useState("Billing");
 
-  // Billing
-  const [rate, setRate] = useState(12.5);
-
-  // Monitoring
+ 
+  const [rate, setRate] = useState(0);
   const [pollingInterval, setPollingInterval] = useState(5);
   const [energyThreshold, setEnergyThreshold] = useState(5000);
   const [securityLevel, setSecurityLevel] = useState(3);
@@ -23,18 +22,61 @@ export default function SettingsControl() {
 
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+  fetch("http://127.0.0.1:5000/api/settings/test_user")
+    .then(res => res.json())
+    .then(data => {
+      console.log("LOADED FROM FIREBASE:", data);
+
+      setRate(data.electricity_rate ?? 0);
+      setPollingInterval(data.polling_interval ?? 5);
+      setEnergyThreshold(data.energy_alert_threshold ?? 5000);
+      setSecurityLevel(data.security_alert_level ?? 3);
+    })
+    .catch(err => console.error("LOAD ERROR:", err));
+}, []);
+
   const monthlyEstimate = ((rate * 150 * 30) / 1000).toFixed(2);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+  try {
+    const res = await fetch("http://127.0.0.1:5000/api/settings/test_user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        electricity_rate: rate,
+        polling_interval: pollingInterval,
+        energy_alert_threshold: energyThreshold,
+        security_alert_level: securityLevel
+      })
+    });
+
+    const data = await res.json();
+    console.log("Saved:", data);
+
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
 
+  } catch (err) {
+    console.error("Save failed:", err);
+  }
+};
   const toggleDevice = (id) => {
     setDevices((prev) =>
       prev.map((d) => (d.id === id ? { ...d, enabled: !d.enabled } : d))
     );
   };
+
+  if (
+  rate === null ||
+  pollingInterval === null ||
+  energyThreshold === null ||
+  securityLevel === null
+) {
+  return <div className="p-6 text-gray-500">Loading settings...</div>;
+}
 
   return (
     <div className="w-full">
@@ -88,11 +130,20 @@ export default function SettingsControl() {
 
           <div className="flex justify-end">
             <button
-              onClick={handleSave}
-              className="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-7 py-2.5 rounded-lg transition-colors"
-            >
-              {saved ? "✓ Saved!" : "Save Changes"}
-            </button>
+  onClick={handleSave}
+  style={{
+    backgroundColor: "#16a34a",
+    color: "white",
+    padding: "10px 18px",
+    borderRadius: "8px",
+    border: "none",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: "pointer"
+  }}
+>
+  {saved ? "✓ Saved!" : "Save Changes"}
+</button>
           </div>
         </div>
       )}
@@ -170,11 +221,20 @@ export default function SettingsControl() {
 
           <div className="flex justify-end">
             <button
-              onClick={handleSave}
-              className="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-7 py-2.5 rounded-lg transition-colors"
-            >
-              {saved ? "✓ Saved!" : "Save Changes"}
-            </button>
+  onClick={handleSave}
+  style={{
+    backgroundColor: "#16a34a",
+    color: "white",
+    padding: "10px 18px",
+    borderRadius: "8px",
+    border: "none",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: "pointer"
+  }}
+>
+  {saved ? "✓ Saved!" : "Save Changes"}
+</button>
           </div>
         </div>
       )}
@@ -213,11 +273,20 @@ export default function SettingsControl() {
 
           <div className="flex justify-end">
             <button
-              onClick={handleSave}
-              className="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-7 py-2.5 rounded-lg transition-colors"
-            >
-              {saved ? "✓ Saved!" : "Save Changes"}
-            </button>
+  onClick={handleSave}
+  style={{
+    backgroundColor: "#16a34a",
+    color: "white",
+    padding: "10px 18px",
+    borderRadius: "8px",
+    border: "none",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: "pointer"
+  }}
+>
+  {saved ? "✓ Saved!" : "Save Changes"}
+</button>
           </div>
         </div>
       )}

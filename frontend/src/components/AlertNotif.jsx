@@ -1,9 +1,13 @@
+import { useEffect } from "react";
 import { useState } from "react";
 import { Mail, Clock, Volume2, Eye, EyeOff, Trash2 } from "lucide-react";
 import { mockAlerts, TYPE } from "./AlertsData";
 import EmailModal from "./EmailModal";
 import SoundModal from "./SoundModal";
 import HistoryDrawer from "./HistoryDrawer";
+
+
+
 
 
 const Badge = ({ type }) => (
@@ -14,7 +18,36 @@ const Badge = ({ type }) => (
 
 
 export default function AlertNotif() {
-  const [alerts, setAlerts] = useState(mockAlerts);
+  const [alerts, setAlerts] = useState([]);
+
+  useEffect(() => {
+  fetch("http://127.0.0.1:5000/api/alerts/test_user")
+    .then(res => res.json())
+    .then(data => {
+      
+      const transformed = data.map((alert, index) => ({
+        id: `${alert.device_id}-${index}`,
+        type:
+          alert.severity === "Critical"
+            ? "Critical"
+            : alert.severity === "Warning"
+            ? "Warning"
+            : "Info",
+        title: alert.device_name,
+        description: alert.message,
+        category: alert.severity,
+        time: "Just now",
+        resolved: false,
+      }));
+
+      setAlerts(transformed);
+    })
+    .catch(err => console.error(err));
+}, []);
+
+
+
+
   const [filter, setFilter] = useState("All");
   const [showResolved, setShowResolved] = useState(false);
   const [selected, setSelected] = useState([]);
