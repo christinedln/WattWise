@@ -180,3 +180,8 @@ Thumbs.db
 .pdm-build/
 .pixi
 .abstra/
+
+
+
+# firebase_key
+backend/firebase_key.json
