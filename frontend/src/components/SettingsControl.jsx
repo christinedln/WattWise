@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { apiFetch } from "../api/api";
 
 const LEVEL_LABELS = ["Low", "Med", "High", "Crit", "Sec"];
 
@@ -16,12 +17,12 @@ export default function SettingsControl() {
 const [devices, setDevices] = useState([]);
 
 useEffect(() => {
-  fetch("http://127.0.0.1:5000/api/devices/test_user")
-    .then(res => res.json())
-    .then(data => {
+  const loadDevices = async () => {
+    try {
+      const data = await apiFetch("/devices");
+
       console.log("FULL DEVICE RESPONSE:", data);
 
-      // ✅ FORCE CORRECT ARRAY NO MATTER WHAT BACKEND RETURNS
       const list =
         data?.devices ||
         data?.merged_devices ||
@@ -30,51 +31,48 @@ useEffect(() => {
 
       const mapped = list.map(d => ({
         id: d.device_id || d.id,
-
-        // ✅ FIX NAME (this is your MAIN BUG)
         name: d.name || d.device_name || `Device ${d.device_id}`,
-
-        // ✅ FIX LOCATION
         location: d.location ?? "Unknown",
-
-        // ✅ FIX ENABLED (important: backend sometimes sends "true")
         enabled: d.enabled === true || d.enabled === "true",
-
-        // optional but useful
         status: d.status || "UNKNOWN",
       }));
 
-      console.log("MAPPED DEVICES:", mapped);
       setDevices(mapped);
-    })
-    .catch(err => console.error("DEVICE LOAD ERROR:", err));
+    } catch (err) {
+      console.error("DEVICE LOAD ERROR:", err);
+    }
+  };
+
+  loadDevices();
 }, []);
 
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-  fetch("http://127.0.0.1:5000/api/settings/test_user")
-    .then(res => res.json())
-    .then(data => {
+  const loadSettings = async () => {
+    try {
+      const data = await apiFetch("/settings");
+
       console.log("LOADED FROM FIREBASE:", data);
 
       setRate(data.electricity_rate ?? 0);
       setPollingInterval(data.polling_interval ?? 5);
       setEnergyThreshold(data.energy_alert_threshold ?? 5000);
       setSecurityLevel(data.security_alert_level ?? 3);
-    })
-    .catch(err => console.error("LOAD ERROR:", err));
+    } catch (err) {
+      console.error("LOAD ERROR:", err);
+    }
+  };
+
+  loadSettings();
 }, []);
 
   const monthlyEstimate = ((rate * 150 * 30) / 1000).toFixed(2);
 
   const handleSave = async () => {
   try {
-    const res = await fetch("http://127.0.0.1:5000/api/settings/test_user", {
+    const data = await apiFetch("/settings", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
       body: JSON.stringify({
         electricity_rate: rate,
         polling_interval: pollingInterval,
@@ -83,7 +81,6 @@ useEffect(() => {
       })
     });
 
-    const data = await res.json();
     console.log("Saved:", data);
 
     setSaved(true);
@@ -93,14 +90,14 @@ useEffect(() => {
     console.error("Save failed:", err);
   }
 };
+
   const toggleDevice = async (id) => {
   const updatedDevice = devices.find((d) => String(d.id) === String(id));
-
   if (!updatedDevice) return;
 
   const newEnabled = !updatedDevice.enabled;
 
-  // 1. update UI immediately (optimistic update)
+  // optimistic UI update
   setDevices((prev) =>
     prev.map((d) =>
       String(d.id) === String(id)
@@ -109,20 +106,13 @@ useEffect(() => {
     )
   );
 
-  // 2. send update to backend
   try {
-    await fetch(
-      `http://127.0.0.1:5000/api/devices/test_user/${updatedDevice.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          enabled: newEnabled,
-        }),
-      }
-    );
+    await apiFetch(`/devices/${updatedDevice.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        enabled: newEnabled,
+      }),
+    });
   } catch (err) {
     console.error("Device update failed:", err);
   }

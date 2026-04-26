@@ -6,6 +6,7 @@ import DeviceHealthSummary from "../components/DeviceHealthSummary";
 import DeviceConsumption from "../components/DeviceConsumption";
 import CostPredictions from "../components/CostPredictions";
 import Layout from "../components/layout";
+import { apiFetch } from "../api/api";
 
 export default function DashboardPage() {
   const [data, setData]       = useState(null);
@@ -13,16 +14,20 @@ export default function DashboardPage() {
   const [error, setError]     = useState(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/dashboard/summary")
-      .then((res) => res.json())
-      .then((json) => {
-        setData(json);
+    const fetchData = async () => {
+      try {
+        const data = await apiFetch("/dashboard/summary"); 
+
+        setData(data);
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
+        console.error(err); // add this for debugging
         setError(err.message);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, []);
 
   if (loading) return (
@@ -62,22 +67,17 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            {/* ── CONTENT ───────────────────────── */}
             <div className="space-y-6">
 
-              {/* LIVE READINGS */}
               <LiveReadings readings={data.live_readings} />
 
-              {/* NEW: HEALTH SUMMARY (ADDED UNDER LIVE READINGS) */}
               <DeviceHealthSummary readings={data.live_readings} />
 
-              {/* DEVICE CONSUMPTION */}
               <DeviceConsumption
                 devices={data.device_consumption}
                 totalEnergyKwh={data.total_energy_kwh}
               />
 
-              {/* COST PREDICTIONS */}
               <CostPredictions
                 weeklyCost={data.weekly_predicted_cost}
                 weeklyKwh={data.weekly_predicted_kwh}

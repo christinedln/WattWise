@@ -5,10 +5,7 @@ import { mockAlerts, TYPE } from "./AlertsData";
 import EmailModal from "./EmailModal";
 import SoundModal from "./SoundModal";
 import HistoryDrawer from "./HistoryDrawer";
-
-
-
-
+import { apiFetch } from "../api/api";
 
 const Badge = ({ type }) => (
   <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${TYPE[type].badge}`}>
@@ -21,10 +18,10 @@ export default function AlertNotif() {
   const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
-  fetch("http://127.0.0.1:5000/api/alerts/test_user")
-    .then(res => res.json())
-    .then(data => {
-      
+  const fetchAlerts = async () => {
+    try {
+      const data = await apiFetch("/alerts");
+
       const transformed = data.map((alert, index) => ({
         id: `${alert.device_id}-${index}`,
         type:
@@ -41,12 +38,13 @@ export default function AlertNotif() {
       }));
 
       setAlerts(transformed);
-    })
-    .catch(err => console.error(err));
+    } catch (err) {
+      console.error("Alert fetch error:", err);
+    }
+  };
+
+  fetchAlerts();
 }, []);
-
-
-
 
   const [filter, setFilter] = useState("All");
   const [showResolved, setShowResolved] = useState(false);

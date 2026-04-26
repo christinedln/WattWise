@@ -10,6 +10,7 @@ import {
   signInWithPopup,
   updateProfile,
 } from "firebase/auth";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 
 const features = [
   { icon: "📊", title: "Real-Time Monitoring", description: "Voltage, current & power" },
@@ -47,8 +48,16 @@ export default function SignUpPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Set display name
       await updateProfile(user, { displayName: fullName });
+
+      const db = getFirestore();
+
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        fullName: fullName,
+        email: user.email,
+        createdAt: new Date()
+      });
 
       console.log("Signup successful:", user.email);
       navigate("/");

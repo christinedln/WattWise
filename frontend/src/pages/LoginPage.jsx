@@ -28,7 +28,6 @@ export default function LoginPage() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log("Login successful:", user.email);
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error.message);
@@ -42,10 +41,8 @@ export default function LoginPage() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log("Google login successful:", user.email);
       navigate("/dashboard");
     } catch (error) {
-      console.error("Google login error:", error.message);
       alert(error.message);
     }
   };

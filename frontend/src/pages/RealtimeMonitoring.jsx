@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar";
 import DashboardHeader from "../components/DashboardHeader";
 import { CheckCircle, AlertCircle } from "lucide-react";
 import Layout from "../components/layout";
+import { apiFetch } from "../api/api";
 import {
   ResponsiveContainer,
   LineChart,
@@ -18,21 +19,19 @@ export default function RealtimeMonitoringPage() {
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [chartData, setChartData] = useState([]);
 
-  // ─────────────────────────────────────
-  // FETCH DEVICES (REALTIME)
-  // ─────────────────────────────────────
+  // FETCH DEVICES 
   useEffect(() => {
-    const fetchDevices = () => {
-      fetch("http://127.0.0.1:5000/api/realtime/devices")
-        .then(res => res.json())
-        .then(data => {
-          setDevices(data);
+    const fetchDevices = async () => {
+      try {
+        const data = await apiFetch("/realtime/devices");
+        setDevices(data);
 
-          // auto select first device
-          if (!selectedDevice && data.length > 0) {
-            setSelectedDevice(data[0].id);
-          }
-        });
+        if (!selectedDevice && data.length > 0) {
+          setSelectedDevice(data[0].id);
+        }
+      } catch (err) {
+        console.error("Device fetch error:", err);
+      }
     };
 
     fetchDevices();
@@ -40,23 +39,26 @@ export default function RealtimeMonitoringPage() {
     return () => clearInterval(interval);
   }, [selectedDevice]);
 
-  // ─────────────────────────────────────
-  // FETCH POWER TREND (FOR GRAPH)
-  // ─────────────────────────────────────
+  // FETCH POWER TREND
   useEffect(() => {
     if (!selectedDevice) return;
 
-    fetch(`http://127.0.0.1:5000/api/realtime/power-trend/${selectedDevice}`)
-      .then(res => res.json())
-      .then(data => {
-        // backend returns raw values → convert for recharts
+    const fetchTrend = async () => {
+      try {
+        const data = await apiFetch("/realtime/devices");
+
         const formatted = data.map((p, i) => ({
           time: `${i}:00`,
           power: p.power || p
         }));
 
         setChartData(formatted);
-      });
+      } catch (err) {
+        console.error("Trend fetch error:", err);
+      }
+    };
+
+    fetchTrend();
   }, [selectedDevice]);
 
   const device = devices.find((d) => d.id === selectedDevice);
@@ -71,7 +73,7 @@ export default function RealtimeMonitoringPage() {
 
           <div className="flex-1 overflow-auto p-6 space-y-6">
 
-            {/* DEVICE SELECTOR (IMPORTANT ADDITION) */}
+            {/* DEVICE SELECTOR */}
             <div className="flex gap-2 mb-4">
               {devices.map(d => (
                 <button
@@ -161,8 +163,7 @@ export default function RealtimeMonitoringPage() {
                 {/* FOOTER */}
                 <div className="bg-white p-4 rounded border flex justify-between text-sm">
                   <span>
-                    Consumption:{" "}
-                    <b>{device.consumption} kWh</b>
+                    Consumption: <b>{device.consumption} kWh</b>
                   </span>
                   <span>
                     Last Updated:{" "}

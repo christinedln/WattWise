@@ -11,9 +11,13 @@ import {
   Settings,
   LogOut
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 export default function Sidebar() {
   const location = useLocation();
+  const [userData, setUserData] = useState(null);
 
   const menuItems = [
     { name: "Dashboard", to: "/dashboard", icon: <Home size={20} /> },
@@ -23,6 +27,25 @@ export default function Sidebar() {
     { name: "Alerts", to: "/alerts", icon: <Bell size={20} /> },
     { name: "Settings", to: "/settings", icon: <Settings size={20} /> },
   ];
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const auth = getAuth();
+      const db = getFirestore();
+
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+
+      const docRef = doc(db, "users", uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setUserData(docSnap.data());
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   return (
     <div className="w-64 h-screen bg-white shadow-md flex flex-col p-4">
@@ -62,13 +85,18 @@ export default function Sidebar() {
           
           {/* Avatar (Initials) */}
           <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-            JD
+            {userData?.fullName || "User"}
           </div>
 
           {/* User Info */}
           <div>
-            <p className="font-semibold text-gray-900">John Doe</p>
-            <p className="text-sm text-gray-500">john.doe@email.com</p>
+            <p className="font-semibold text-gray-900">
+              {userData?.fullName || "Loading..."}
+            </p>
+
+            <p className="text-sm text-gray-500">
+              {userData?.email || ""}
+            </p>
           </div>
         </div>
 

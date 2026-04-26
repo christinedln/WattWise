@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Power, X } from "lucide-react";
+import { apiFetch } from "../api/api";
 
 const API_URL = "http://localhost:5000/api/devices/";
 
@@ -115,8 +116,7 @@ export default function DeviceManagement() {
 
   useEffect(() => {
     const fetchDevices = async () => {
-      const res = await fetch(API_URL);
-      const json = await res.json();
+      const json = await apiFetch("/devices/");
 
       const formatted = json.data.map((d) => ({
         id: d.id,
@@ -162,7 +162,6 @@ export default function DeviceManagement() {
     <>
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Devices Management</h1>
-        <p className="text-gray-500">Live data from backend</p>
       </div>
 
       {/* ── HEALTH SUMMARY CARDS ───────────────── */}
