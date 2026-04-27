@@ -21,6 +21,19 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate(); 
+  const superAdminPortalUrl = import.meta.env.VITE_SUPERADMIN_PORTAL_URL || "http://localhost:5174/superadmin.html";
+
+  const redirectByRole = async (user) => {
+    const tokenResult = await user.getIdTokenResult(true);
+    const role = tokenResult?.claims?.role || "user";
+
+    if (role === "superadmin") {
+      window.location.assign(superAdminPortalUrl);
+      return;
+    }
+
+    navigate("/dashboard");
+  };
 
   // Email/password login
   const handleSubmit = async (e) => {
@@ -29,7 +42,7 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log("Login successful:", user.email);
-      navigate("/dashboard");
+      await redirectByRole(user);
     } catch (error) {
       console.error("Login error:", error.message);
       alert(error.message);
@@ -43,7 +56,7 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       console.log("Google login successful:", user.email);
-      navigate("/dashboard");
+      await redirectByRole(user);
     } catch (error) {
       console.error("Google login error:", error.message);
       alert(error.message);

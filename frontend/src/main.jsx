@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import DashboardPage from "./pages/Dashboard";
 import RealtimeMonitoringPage from "./pages/RealtimeMonitoring";
 import PredictionsPage from "./pages/Predictions";
@@ -9,20 +9,20 @@ import DevicesPage from "./pages/Devices";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import SettingsPage from "./pages/Settings";
-import './index.css';
+import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />   
+      <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/realtime" element={<RealtimeMonitoringPage />} />
       <Route path="/predictions" element={<PredictionsPage />} />
       <Route path="/devices" element={<DevicesPage />} />
       <Route path="/alerts" element={<AlertsPage />} />
-      <Route path="/settings" element={<SettingsPage />} /> 
-      
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </BrowserRouter>
 );

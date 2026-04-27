@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userRole() {
+      return signedIn() && request.auth.token.role != null
+        ? request.auth.token.role
+        : "user";
+    }
+
+    function userOrganizationId() {
+      return signedIn() && request.auth.token.organizationId != null
+        ? request.auth.token.organizationId
+        : null;
+    }
+
+    function isSuperAdmin() {
+      return userRole() == "superadmin";
+    }
+
+    function isAdmin() {
+      return userRole() == "admin";
+    }
+
+    function isSecurity() {
+      return userRole() == "security";
+    }
+
+    function isSupport() {
+      return userRole() == "support";
+    }
+
+    function isAnalyst() {
+      return userRole() == "analyst";
+    }
+
+    function isAdminOrAbove() {
+      return isSuperAdmin() || isAdmin();
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function sameOrganization(resourceData) {
+      return signedIn()
+        && userOrganizationId() != null
+        && resourceData.organizationId != null
+        && resourceData.organizationId == userOrganizationId();
+    }
+
+    // Admin accounts collection - only superadmin can manage
+    match /admin_accounts/{adminId} {
+      allow read: if isSuperAdmin();
+      allow create, update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isSuperAdmin() || isAdmin() || isSelf(userId) || (isSupport() && isAdminOrAbove()) || (isSecurity() && isAdminOrAbove());
+      allow create: if isSuperAdmin() || (isAdmin() && request.resource.data.organizationId == userOrganizationId());
+      allow update: if isSuperAdmin() || (isAdmin() && sameOrganization(resource.data) && resource.data.role != "superadmin");
+      allow delete: if isSuperAdmin();
+    }
+
+    match /devices/{deviceId} {
+      allow read: if isSuperAdmin() || isAdmin() || isSelf(resource.data.ownerUid) || (isSecurity() && false);
+      allow create: if isSuperAdmin() || isAdmin();
+      allow update: if isSuperAdmin() || isAdmin();
+      allow delete: if isSuperAdmin() || isAdmin();
+    }
+
+    match /readings/{readingId} {
+      allow read: if isSuperAdmin() || isAdmin();
+      allow create: if signedIn();
+      allow update, delete: if false;
+    }
+
+    match /alerts/{alertId} {
+      allow read: if isSuperAdmin() || isAdmin() || isSecurity() || isAnalyst();
+      allow create: if signedIn();
+      allow update: if isSuperAdmin() || isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /reports/{reportId} {
+      allow read: if isSuperAdmin() || isAdmin() || isAnalyst() || (isSecurity() && false);
+      allow create: if isSuperAdmin() || isAdmin();
+      allow update: if isSuperAdmin() || isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if isSuperAdmin() || isAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    match /security_logs/{logId} {
+      allow read: if isSuperAdmin() || isSecurity();
+      allow create, update, delete: if false;
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isSuperAdmin() || isAdmin();
+      allow create, update, delete: if false;
+    }
+  }
+}

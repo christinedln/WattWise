@@ -1,5 +1,4 @@
-@import "@fontsource/inter";
-
+/* Superadmin Light Theme */
 :root {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.5;
@@ -8,17 +7,8 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #e5eefc;
-  background:
-    radial-gradient(circle at top left, rgba(34, 211, 238, 0.1), transparent 26%),
-    radial-gradient(circle at top right, rgba(99, 102, 241, 0.08), transparent 22%),
-    #020617;
-  --sa-bg: #020617;
-  --sa-foreground: #e5eefc;
-}
-
-* {
-  box-sizing: border-box;
+  color: #1f2937;
+  background: #f9fafb;
 }
 
 html {
@@ -30,8 +20,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: var(--sa-bg);
-  color: var(--sa-foreground);
+  background: #f9fafb;
+  color: #1f2937;
   font-family: inherit;
 }
 
@@ -48,15 +38,6 @@ a {
   text-decoration: none;
 }
 
-img {
-  display: block;
-  max-width: 100%;
-}
-
-#root {
-  min-height: 100vh;
-}
-
-button {
-  cursor: pointer;
+* {
+  box-sizing: border-box;
 }

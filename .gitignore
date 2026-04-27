@@ -131,6 +131,19 @@ marimo/_lsp/
 __marimo__/
 
 # =====================================================
+# SENSITIVE / CREDENTIALS
+# =====================================================
+
+keys/
+firebase_key.json
+backend/firebase_key.json
+*.key
+*.pem
+*-service-account.json
+.env.local
+.env.*.local
+
+# =====================================================
 # NODE / VITE / REACT (Frontend)
 # =====================================================
 

@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local Firebase admin credentials
+serviceAccountKey*.json
+firebase-admin-key*.json
+*firebase-adminsdk-*.json
+wattwise-*-firebase-adminsdk-*.json
