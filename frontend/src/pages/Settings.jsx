@@ -20,7 +20,12 @@ export default function Settings() {
           <main className="flex-1 overflow-y-auto">
             <div className="p-6">
               <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+                <h1 
+                  className="text-2xl font-bold text-gray-900" 
+                  style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serifs" }}
+                >
+                  Settings
+              </h1>
                 <p className="text-sm text-gray-500 mt-1">
                   Manage your WattWise preferences and configurations
                 </p>
