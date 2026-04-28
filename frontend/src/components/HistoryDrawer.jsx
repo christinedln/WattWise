@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { mockHistory, TYPE } from "./AlertsData";
 
+// ─── Filter meta — per-filter active color ──────────────
+const filterMeta = [
+  { key: "All",      activeClass: "border-gray-900  text-gray-900  bg-white font-semibold" },
+  { key: "Critical", activeClass: "border-red-500   text-red-600   bg-white font-semibold" },
+  { key: "Warning",  activeClass: "border-amber-500 text-amber-600 bg-white font-semibold" },
+  { key: "Info",     activeClass: "border-blue-500  text-blue-600  bg-white font-semibold" },
+];
 
 const Badge = ({ type }) => (
   <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${TYPE[type].badge}`}>
@@ -13,11 +20,12 @@ export default function HistoryDrawer({ onClose }) {
   const [filter, setFilter] = useState("All");
   const filtered = mockHistory.filter(h => filter === "All" || h.type === filter);
 
-
   return (
     <>
       <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40" onClick={onClose} />
       <div className="fixed top-0 right-0 bottom-0 w-96 bg-white shadow-2xl z-50 flex flex-col" style={{ animation: "slideIn 0.25s ease" }}>
+
+        {/* ── Header ── */}
         <div className="flex justify-between items-start p-6 border-b border-gray-100">
           <div>
             <h2 className="text-base font-bold text-gray-900">🕐 Alert History</h2>
@@ -26,17 +34,24 @@ export default function HistoryDrawer({ onClose }) {
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
         </div>
 
-
+        {/* ── Filter Buttons ── */}
         <div className="flex gap-2 px-5 py-3 border-b border-gray-100 flex-wrap">
-          {["All", "Critical", "Warning", "Info"].map(f => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${filter === f ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}>
-              {f}
+          {filterMeta.map(({ key, activeClass }) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`px-3 py-1 rounded-full text-xs font-medium border-2 transition-all duration-150 ${
+                filter === key
+                  ? activeClass
+                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700"
+              }`}
+            >
+              {key}
             </button>
           ))}
         </div>
 
-
+        {/* ── Timeline ── */}
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {filtered.map((h, i) => {
             const isResolved = h.event === "Resolved";
@@ -61,6 +76,7 @@ export default function HistoryDrawer({ onClose }) {
           })}
         </div>
       </div>
+
       <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
     </>
   );
