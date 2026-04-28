@@ -79,10 +79,10 @@ export default function RealtimeMonitoringPage() {
                 <button
                   key={d.id}
                   onClick={() => setSelectedDevice(d.id)}
-                  className={`px-3 py-1 rounded text-sm border ${
+                 className={`px-3 py-1 rounded-lg text-sm border-2 transition-all duration-200 ${
                     selectedDevice === d.id
-                      ? "bg-black text-white"
-                      : "bg-white"
+                      ? "bg-gray-100 text-gray-900 border-gray-800"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:border-gray-500"
                   }`}
                 >
                   {d.name}

@@ -23,6 +23,14 @@ const TrashIcon = () => (
   </svg>
 );
 
+// ✅ NEW: Pencil Icon
+const PencilIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+  </svg>
+);
+
 
 // ─── Status Badge ─────────────────────────────────
 function StatusBadge({ status, health }) {
@@ -81,11 +89,76 @@ function UsageBar({ pct }) {
 
 // ─── Row ─────────────────────────────────────
 function DeviceRow({ device, pct }) {
+
+  // ✅ ADD THESE STATES
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState(device.name);
+
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [newLocation, setNewLocation] = useState(device.location);
+
   return (
     <tr className="border-b border-gray-100 hover:bg-slate-50 transition-colors duration-150">
-      <td className="px-4 py-3 font-semibold text-sm text-gray-900">{device.name}</td>
+
+      {/* ✅ UPDATED NAME CELL */}
+      <td className="px-4 py-3 font-semibold text-sm text-gray-900">
+        <div className="flex items-center gap-2">
+
+          {/* ✅ ADD CONDITIONAL INPUT */}
+          {isEditingName ? (
+            <input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onBlur={() => setIsEditingName(false)}
+              className="border px-2 py-1 rounded text-sm"
+              autoFocus
+            />
+          ) : (
+            <>
+              {newName}
+              <button
+                title="Edit name"
+                onClick={() => setIsEditingName(true)} 
+                className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-gray-800 transition"
+              >
+                <PencilIcon />
+              </button>
+            </>
+          )}
+
+        </div>
+      </td>
+
       <td className="px-4 py-3 text-sm text-gray-500">{device.type}</td>
-      <td className="px-4 py-3 text-sm text-gray-500">{device.location}</td>
+
+      {/* ✅ UPDATED LOCATION CELL */}
+      <td className="px-4 py-3 text-sm text-gray-500">
+        <div className="flex items-center gap-2">
+
+          {/* ✅ ADD CONDITIONAL INPUT */}
+          {isEditingLocation ? (
+            <input
+              value={newLocation}
+              onChange={(e) => setNewLocation(e.target.value)}
+              onBlur={() => setIsEditingLocation(false)}
+              className="border px-2 py-1 rounded text-sm"
+              autoFocus
+            />
+          ) : (
+            <>
+              {newLocation}
+              <button
+                title="Edit location"
+                onClick={() => setIsEditingLocation(true)} 
+                className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-gray-800 transition"
+              >
+                <PencilIcon />
+              </button>
+            </>
+          )}
+
+        </div>
+      </td>
 
       <td className="px-4 py-3">
         <StatusBadge status={device.status} health={device.health} />
