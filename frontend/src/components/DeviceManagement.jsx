@@ -38,12 +38,54 @@ function UsageBar({ pct }) {
 }
 
 // ─── Row ─────────────────────────────────────
-function DeviceRow({ device, pct }) {
+function DeviceRow({ device, pct, openEdit }) {
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50">
-      <td className="px-4 py-3 font-semibold">{device.name}</td>
+      <td className="px-4 py-3 font-semibold flex items-center gap-2">
+  {device.name}
+  <button
+    onClick={() => openEdit(device, "name")}
+    className="text-gray-400 hover:text-black"
+  >
+    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  className="w-4 h-4"
+  fill="none"
+  viewBox="0 0 24 24"
+  stroke="currentColor"
+>
+  <path
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={2}
+    d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z"
+  />
+</svg>
+  </button>
+</td>
       <td className="px-4 py-3 text-gray-500">{device.type}</td>
-      <td className="px-4 py-3 text-gray-500">{device.location}</td>
+      <td className="px-4 py-3 text-gray-500 flex items-center gap-2">
+  {device.location}
+  <button
+    onClick={() => openEdit(device, "location")}
+    className="text-gray-400 hover:text-black"
+  >
+    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  className="w-4 h-4"
+  fill="none"
+  viewBox="0 0 24 24"
+  stroke="currentColor"
+>
+  <path
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth={2}
+    d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z"
+  />
+</svg>
+  </button>
+</td>
 
       <td className="px-4 py-3">
         <StatusBadge status={device.status} health={device.health} />
@@ -111,8 +153,11 @@ function ActivityTimeline({ device }) {
 
 // ─── Main ─────────────────────────────────────
 export default function DeviceManagement() {
+  
   const [devices, setDevices] = useState([]);
   const [filter, setFilter] = useState("all");
+  const [editing, setEditing] = useState(null);
+
 
   useEffect(() => {
     const fetchDevices = async () => {
@@ -136,6 +181,42 @@ export default function DeviceManagement() {
 
     fetchDevices();
   }, []);
+
+  const openEdit = (device, field) => {
+    setEditing({
+      device_id: device.device_id,
+      field,
+      value: device[field],
+    }); 
+  };
+
+  const closeEdit = () => {
+    setEditing(null);
+  };
+
+  const saveEdit = async () => {
+  try {
+    await apiFetch(`/devices/${editing.device_id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        [editing.field]: editing.value,
+      }),
+    });
+
+    setDevices((prev) =>
+      prev.map((d) =>
+        d.device_id === editing.device_id
+          ? { ...d, [editing.field]: editing.value }
+          : d
+      )
+    );
+
+    closeEdit();
+  } catch (err) {
+    console.error("Update failed", err);
+  }
+};
+
 
   // ─── FILTER LOGIC ─────────────────────────────
   const filteredDevices = devices.filter((d) => {
@@ -245,7 +326,7 @@ export default function DeviceManagement() {
               <React.Fragment key={d.id}>
                 <DeviceRow
                   device={d}
-                  pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0}
+                  pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0} openEdit={openEdit}
                 />
                 <tr>
                   <td colSpan="8">
@@ -257,6 +338,44 @@ export default function DeviceManagement() {
           </tbody>
         </table>
       </div>
+
+
+      {editing && (
+  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl w-80">
+      
+      <h2 className="text-lg font-semibold mb-4">
+        Edit {editing.field}
+      </h2>
+
+      <input
+        type="text"
+        value={editing.value}
+        onChange={(e) =>
+          setEditing({ ...editing, value: e.target.value })
+        }
+        className="w-full border px-3 py-2 rounded mb-4"
+      />
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={closeEdit}
+          className="px-3 py-1 border rounded"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={saveEdit}
+          className="px-3 py-1 bg-black text-white rounded"
+        >
+          Save Changes
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
     </>
   );
 }

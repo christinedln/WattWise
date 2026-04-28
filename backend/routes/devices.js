@@ -67,12 +67,18 @@ router.patch("/:device_id", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
         const deviceId = req.params.device_id;
-        const { enabled } = req.body;
+        const { enabled, name, location } = req.body;
 
-        if (enabled === undefined) {
+        const updates = {};
+
+        if (enabled !== undefined) updates.enabled = enabled;
+        if (name !== undefined) updates.name = name;
+        if (location !== undefined) updates.location = location;
+
+        if (Object.keys(updates).length === 0) {
             return res.status(400).json({
                 status: "error",
-                message: "Missing 'enabled' field"
+                message: "No valid fields to update"
             });
         }
 
@@ -82,12 +88,12 @@ router.patch("/:device_id", authRequired, async (req, res) => {
             .collection("user_devices")
             .doc(deviceId);
 
-        await docRef.update({ enabled });
+        await docRef.update(updates);
 
         res.json({
             status: "success",
             device_id: deviceId,
-            enabled
+            updated: updates
         });
 
     } catch (error) {
