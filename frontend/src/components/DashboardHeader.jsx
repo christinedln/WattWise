@@ -1,20 +1,32 @@
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, Menu } from "lucide-react";
 
-export default function DashboardHeader({ criticalAlerts = 0 }) {
+export default function DashboardHeader({ criticalAlerts = 0, onMenuClick }) {
   return (
-    <div className="bg-white border-b border-gray-200 p-6">
-      <div className="flex items-beforecenter gap-4">
-        {/* Search */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search devices, alerts..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-          />
+    <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="flex items-center justify-between gap-4">
+
+        {/* LEFT SIDE */}
+        <div className="flex items-center gap-4">
+
+          {/* Burger (mobile only) */}
+          <div className="md:hidden flex items-center mr-8">
+  <Menu
+    className="w-6 h-6 text-gray-700 cursor-pointer"
+    onClick={onMenuClick}
+  />
+</div>
+          {/* Search */}
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search devices, alerts..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+            />
+          </div>
         </div>
 
-        {/* Bell */}
+        {/* RIGHT SIDE */}
         <div className="relative">
           <Bell className="w-6 h-6 text-gray-500" />
           {criticalAlerts > 0 && (
@@ -23,6 +35,7 @@ export default function DashboardHeader({ criticalAlerts = 0 }) {
             </span>
           )}
         </div>
+
       </div>
     </div>
   );
