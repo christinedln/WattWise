@@ -9,7 +9,7 @@ const Badge = ({ type }) => (
 );
 
 // ── Shared active/inactive styles ──────────────────────
-const activeBtn  = { backgroundColor: "#111827", color: "#ffffff", borderColor: "#111827" };
+const activeBtn   = { backgroundColor: "#16a34a", color: "#ffffff", borderColor: "#16a34a" };
 const inactiveBtn = { backgroundColor: "#f9fafb", color: "#374151", borderColor: "#e5e7eb" };
 
 export default function SoundModal({ onClose, onSave }) {
@@ -33,9 +33,27 @@ export default function SoundModal({ onClose, onSave }) {
           <div className="flex items-center gap-3">
             <div
               onClick={() => setSound({ ...sound, enabled: !sound.enabled })}
-              className={`w-11 h-6 rounded-full cursor-pointer relative transition-colors ${sound.enabled ? "bg-gray-900" : "bg-gray-300"}`}
+              style={{
+                width: 44,
+                height: 24,
+                borderRadius: 999,
+                cursor: "pointer",
+                position: "relative",
+                transition: "background 0.2s",
+                backgroundColor: sound.enabled ? "#16a34a" : "#d1d5db",
+              }}
             >
-              <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${sound.enabled ? "translate-x-5" : "translate-x-0.5"}`} />
+              <div style={{
+                position: "absolute",
+                top: 2,
+                left: sound.enabled ? 22 : 2,
+                width: 20,
+                height: 20,
+                backgroundColor: "#ffffff",
+                borderRadius: "50%",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                transition: "left 0.2s",
+              }} />
             </div>
             <span className="text-sm font-semibold text-gray-700">{sound.enabled ? "On" : "Off"}</span>
           </div>
@@ -76,7 +94,7 @@ export default function SoundModal({ onClose, onSave }) {
             max={100}
             value={sound.volume}
             onChange={e => setSound({ ...sound, volume: +e.target.value })}
-            className="w-full accent-gray-900"
+            className="w-full accent-green-600"
           />
         </div>
 
@@ -124,7 +142,7 @@ export default function SoundModal({ onClose, onSave }) {
               padding: "10px 0",
               borderRadius: 12,
               border: "none",
-              backgroundColor: "#111827",
+              backgroundColor: "#16a34a",
               color: "#ffffff",
               fontWeight: 700,
               fontSize: 14,

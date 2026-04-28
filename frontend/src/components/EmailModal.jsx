@@ -30,9 +30,13 @@ export default function EmailModal({ onClose, onSave }) {
 
         <div className="mb-5">
           <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-          <input type="email" placeholder="you@example.com" value={email.address}
+          <input
+            type="email"
+            placeholder="you@example.com"
+            value={email.address}
             onChange={e => setEmail({ ...email, address: e.target.value })}
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-900 outline-none focus:border-green-400" />
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-900 outline-none focus:border-green-400"
+          />
         </div>
 
 
@@ -54,18 +58,31 @@ export default function EmailModal({ onClose, onSave }) {
           <div className="flex gap-4 flex-wrap">
             {["Instant", "Hourly Digest", "Daily Digest"].map(f => (
               <label key={f} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input type="radio" name="freq" value={f} checked={email.frequency === f}
-                  onChange={() => setEmail({ ...email, frequency: f })} className="accent-green-600" /> {f}
+                <input
+                  type="radio"
+                  name="freq"
+                  value={f}
+                  checked={email.frequency === f}
+                  onChange={() => setEmail({ ...email, frequency: f })}
+                  className="accent-green-600"
+                /> {f}
               </label>
             ))}
           </div>
         </div>
 
 
-        <button onClick={handleSave}
-          style={saved ? { backgroundColor: "#22C55E", color: "#ffffff", border: "none" } : { backgroundColor: "#111827", color: "#ffffff", border: "none" }}
-          className={`w-full py-2.5 rounded-xl font-bold text-sm ${saved ? "btn-saved" : "btn-dark"}`}>
-          <span style={{ color: "#ffffff" }}>{saved ? "✓ Saved!" : "Save Preferences"}</span>
+        <button
+          onClick={handleSave}
+          style={{
+            backgroundColor: saved ? "#16a34a" : "#22c55e",
+            color: "#ffffff",
+            border: "none",
+            transition: "background-color 0.2s",
+          }}
+          className="w-full py-2.5 rounded-xl font-bold text-sm"
+        >
+          {saved ? "✓ Saved!" : "Save Preferences"}
         </button>
       </div>
     </div>
