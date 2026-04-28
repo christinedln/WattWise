@@ -391,46 +391,52 @@ export default function DeviceManagement() {
       </div>
 
       {/* ── TABLE ───────────────────────────── */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
-              {["Name", "Type", "Location", "Status / Health", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
-                <th
-                  key={h}
-                  className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider"
-                >
-                  {h}
-                </th>
-              ))}
+<div className="bg-white border border-gray-200 rounded-xl shadow-sm">
+  
+  {/* ✅ enables horizontal scroll on small screens */}
+  <div className="overflow-x-auto">
+    <table className="min-w-[900px] w-full">
+      
+      <thead>
+        <tr className="border-b border-gray-100 bg-gray-50">
+          {["Name", "Type", "Location", "Status / Health", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
+            <th
+              key={h}
+              className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"
+            >
+              {h}
+            </th>
+          ))}
+        </tr>
+      </thead>
+
+      <tbody>
+        {filteredDevices.map((d) => (
+          <React.Fragment key={d.id}>
+            <DeviceRow
+              device={d}
+              pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0}
+            />
+            <tr>
+              <td colSpan="8">
+                <ActivityTimeline device={d} />
+              </td>
             </tr>
-          </thead>
+          </React.Fragment>
+        ))}
 
-          <tbody>
-            {filteredDevices.map((d) => (
-              <React.Fragment key={d.id}>
-                <DeviceRow
-                  device={d}
-                  pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0}
-                />
-                <tr>
-                  <td colSpan="8">
-                    <ActivityTimeline device={d} />
-                  </td>
-                </tr>
-              </React.Fragment>
-            ))}
+        {filteredDevices.length === 0 && (
+          <tr>
+            <td colSpan="8" className="px-4 py-10 text-center text-sm text-gray-400">
+              No devices match the selected filter.
+            </td>
+          </tr>
+        )}
+      </tbody>
 
-            {filteredDevices.length === 0 && (
-              <tr>
-                <td colSpan="8" className="px-4 py-10 text-center text-sm text-gray-400">
-                  No devices match the selected filter.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+    </table>
+  </div>
+</div>
     </>
   );
 }
