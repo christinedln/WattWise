@@ -1,74 +1,80 @@
 export default function LiveReadings({ readings = [] }) {
-  // ✅ Centralized status → color map
-  const statusColors = {
-    critical: "bg-red-100 text-red-700",
-    suspicious: "bg-purple-100 text-purple-700",
-    warning: "bg-yellow-100 text-yellow-700",
-    normal: "bg-blue-100 text-blue-700",
-    active: "bg-green-100 text-green-700",
-    on: "bg-green-100 text-green-700",
-    offline: "bg-gray-100 text-gray-500",
-    off: "bg-gray-100 text-gray-500",
-  };
+  const data = readings[0] || {};
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="font-bold text-lg mb-1">Live Readings</h3>
+    <div className="bg-green-50/40 border border-green-200 rounded-2xl p-6 shadow-sm">
 
-      <p className="text-gray-500 text-sm mb-6">
-        Last updated{" "}
-        {readings[0]?.lastUpdated
-          ? new Date(readings[0].lastUpdated).toLocaleString()
-          : "—"}
-      </p>
+      {/* Header */}
+      <div className="mb-5">
+        <h3 className="font-semibold text-lg text-gray-900">
+          Live Readings
+        </h3>
 
-      {readings.map((device) => {
-        // ✅ Normalize status (fixes mismatch issue)
-        const status = device.status?.toLowerCase().trim();
+        <p className="text-xs text-gray-500 mt-1">
+          Last updated{" "}
+          {data.lastUpdated
+            ? new Date(data.lastUpdated).toLocaleTimeString()
+            : "—"}
+        </p>
+      </div>
 
-        return (
-          <div key={device.device_id} className="mb-6">
-            <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-              {device.name}
+      {/* Cards */}
+      <div className="grid grid-cols-3 gap-4">
 
-              {/* ✅ STATUS BADGE */}
-              <span
-                className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
-                  statusColors[status] || "bg-gray-100 text-gray-500"
-                }`}
-              >
-                {device.status || "Unknown"}
-              </span>
-            </p>
+        {/* Voltage */}
+        <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+  <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
+    <img
+      src="/voltage.png"
+      alt="Voltage"
+      className="w-8 h-8 object-contain"
+    />
+  </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-yellow-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2">⚡ Voltage</p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {device.voltage}
-                  <span className="text-lg ml-1">V</span>
-                </p>
-              </div>
+  <div>
+    <p className="text-xs text-gray-500">Voltage</p>
+    <p className="text-xl font-bold text-gray-900">
+      {data.voltage || "—"} <span className="text-sm font-medium">V</span>
+    </p>
+  </div>
+</div>
+        {/* Current */}
+       <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+  <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+    {/* Current Image Icon */}
+    <img
+      src="/current.png"
+      alt="Current"
+      className="w-8 h-8 object-contain"
+    />
+  </div>
 
-              <div className="bg-blue-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2">🔌 Current</p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {device.current}
-                  <span className="text-lg ml-1">A</span>
-                </p>
-              </div>
+  <div>
+    <p className="text-xs text-gray-500">Current</p>
+    <p className="text-xl font-bold text-gray-900">
+      {data.current || "—"} <span className="text-sm font-medium">A</span>
+    </p>
+  </div>
+</div>
 
-              <div className="bg-green-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2">💡 Power</p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {device.power}
-                  <span className="text-lg ml-1">W</span>
-                </p>
-              </div>
-            </div>
+        {/* Power */}
+        <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+          <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+            {/* Energy / power symbol */}
+            <svg className="w-5 h-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M13 2L4 14h7l-1 8 10-12h-7l0-8z" />
+            </svg>
           </div>
-        );
-      })}
+
+          <div>
+            <p className="text-xs text-gray-500">Power</p>
+            <p className="text-xl font-bold text-gray-900">
+              {data.power || "—"} <span className="text-sm font-medium">kW</span>
+            </p>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }
