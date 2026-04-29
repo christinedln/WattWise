@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../api/api";
 
+
 const LEVEL_LABELS = ["Low", "Med", "High", "Crit", "Sec"];
 
+
 export default function SettingsControl() {
-  
+ 
   const [activeTab, setActiveTab] = useState("Billing");
+
 
  
   const [rate, setRate] = useState(0);
@@ -13,21 +16,26 @@ export default function SettingsControl() {
   const [energyThreshold, setEnergyThreshold] = useState(5000);
   const [securityLevel, setSecurityLevel] = useState(3);
 
+
   // Devices
 const [devices, setDevices] = useState([]);
+
 
 useEffect(() => {
   const loadDevices = async () => {
     try {
       const data = await apiFetch("/devices");
 
+
       console.log("FULL DEVICE RESPONSE:", data);
+
 
       const list =
         data?.devices ||
         data?.merged_devices ||
         data?.data ||
         (Array.isArray(data) ? data : []);
+
 
       const mapped = list.map(d => ({
         id: d.device_id || d.id,
@@ -37,23 +45,29 @@ useEffect(() => {
         status: d.status || "UNKNOWN",
       }));
 
+
       setDevices(mapped);
     } catch (err) {
       console.error("DEVICE LOAD ERROR:", err);
     }
   };
 
+
   loadDevices();
 }, []);
 
+
   const [saved, setSaved] = useState(false);
+
 
   useEffect(() => {
   const loadSettings = async () => {
     try {
       const data = await apiFetch("/settings");
 
+
       console.log("LOADED FROM FIREBASE:", data);
+
 
       setRate(data.electricity_rate ?? 0);
       setPollingInterval(data.polling_interval ?? 5);
@@ -64,10 +78,13 @@ useEffect(() => {
     }
   };
 
+
   loadSettings();
 }, []);
 
+
   const monthlyEstimate = ((rate * 150 * 30) / 1000).toFixed(2);
+
 
   const handleSave = async () => {
   try {
@@ -81,21 +98,27 @@ useEffect(() => {
       })
     });
 
+
     console.log("Saved:", data);
+
 
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+
 
   } catch (err) {
     console.error("Save failed:", err);
   }
 };
 
+
   const toggleDevice = async (id) => {
   const updatedDevice = devices.find((d) => String(d.id) === String(id));
   if (!updatedDevice) return;
 
+
   const newEnabled = !updatedDevice.enabled;
+
 
   // optimistic UI update
   setDevices((prev) =>
@@ -105,6 +128,7 @@ useEffect(() => {
         : d
     )
   );
+
 
   try {
     await apiFetch(`/devices/${updatedDevice.id}`, {
@@ -118,6 +142,7 @@ useEffect(() => {
   }
 };
 
+
   if (
   rate === null ||
   pollingInterval === null ||
@@ -127,8 +152,10 @@ useEffect(() => {
   return <div className="p-6 text-gray-500">Loading settings...</div>;
 }
 
+
   return (
     <div className="w-full">
+
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 bg-white rounded-t-xl shadow-sm mb-6 w-full">
@@ -147,12 +174,14 @@ useEffect(() => {
         ))}
       </div>
 
+
       {/* BILLING TAB */}
       {activeTab === "Billing" && (
         <div className="w-full">
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5 w-full">
             <p className="text-sm font-bold text-gray-900 mb-1">Electricity Rate Configuration</p>
             <p className="text-xs text-gray-500 mb-5">Set your local electricity rate for accurate cost predictions</p>
+
 
             <label className="block text-xs font-semibold text-gray-700 mb-1">Rate (₱/kWh)</label>
             <div className="flex items-center gap-3">
@@ -168,6 +197,7 @@ useEffect(() => {
             </div>
             <p className="text-xs text-gray-400 mt-1">This rate is used to calculate your weekly and monthly energy cost predictions</p>
 
+
             <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
               <span className="text-blue-500 text-lg mt-0.5">ℹ</span>
               <div>
@@ -176,6 +206,7 @@ useEffect(() => {
               </div>
             </div>
           </div>
+
 
           <div className="flex justify-end">
             <button
@@ -197,12 +228,14 @@ useEffect(() => {
         </div>
       )}
 
+
       {/* MONITORING TAB */}
       {activeTab === "Monitoring" && (
         <div className="w-full">
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5 w-full">
             <p className="text-sm font-bold text-gray-900 mb-1">Real-Time Monitoring Configuration</p>
             <p className="text-xs text-gray-500 mb-6">Adjust polling intervals and alert thresholds</p>
+
 
             {/* Polling Interval */}
             <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -218,6 +251,7 @@ useEffect(() => {
               className="w-full accent-gray-900 mb-1"
             />
             <p className="text-xs text-gray-400 mb-6">Interval between each meter reading (1–60 seconds)</p>
+
 
             {/* Energy Alert Threshold */}
             <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -236,6 +270,7 @@ useEffect(() => {
               <span className="text-sm text-gray-500 whitespace-nowrap">{energyThreshold}W</span>
             </div>
             <p className="text-xs text-gray-400 mt-1 mb-6">Alert will trigger when consumption exceeds this threshold</p>
+
 
             {/* Security Alert Level - Slider */}
             <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -268,6 +303,7 @@ useEffect(() => {
             <p className="text-xs text-gray-400">Anomaly detection sensitivity level for unauthorized usage</p>
           </div>
 
+
           <div className="flex justify-end">
             <button
   onClick={handleSave}
@@ -288,12 +324,14 @@ useEffect(() => {
         </div>
       )}
 
+
       {/* DEVICES TAB */}
       {activeTab === "Devices" && (
         <div className="w-full">
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5 w-full">
             <p className="text-sm font-bold text-gray-900 mb-1">Device Management</p>
             <p className="text-xs text-gray-500 mb-5">Enable or disable monitoring for each device</p>
+
 
             {devices.map((device) => (
               <div
@@ -325,6 +363,7 @@ useEffect(() => {
             ))}
           </div>
 
+
           <div className="flex justify-end">
             <button
   onClick={handleSave}
@@ -345,6 +384,8 @@ useEffect(() => {
         </div>
       )}
 
+
     </div>
   );
 }
+
