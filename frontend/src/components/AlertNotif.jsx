@@ -54,12 +54,28 @@ const TrashIcon = () => (
 );
 
 // ─── Filter meta ──────────────────────────────────────
-const filterMeta = [
-  { key: "All",      activeClass: "border-gray-900  text-gray-900  bg-white font-semibold" },
-  { key: "Critical", activeClass: "border-red-500   text-red-600   bg-white font-semibold" },
-  { key: "Warning",  activeClass: "border-amber-500 text-amber-600 bg-white font-semibold" },
-  { key: "Info",     activeClass: "border-blue-500  text-blue-600  bg-white font-semibold" },
-];
+const filterMeta = {
+  All: {
+    label: "All",
+    activeClass:
+      "!bg-green-800 !text-white !border-green-900 shadow-[0_0_10px_rgba(20,83,45,0.55)] !rounded-full",
+  },
+  Critical: {
+    label: "Critical",
+    activeClass:
+      "!bg-red-100 !text-red-900 !border-red-300 shadow-[0_0_6px_rgba(239,68,68,0.35)] !rounded-full",
+  },
+  Warning: {
+    label: "Warning",
+    activeClass:
+      "!bg-amber-100 !text-amber-900 !border-amber-300 shadow-[0_0_6px_rgba(245,158,11,0.35)] !rounded-full",
+  },
+  Info: {
+    label: "Info",
+    activeClass:
+      "!bg-blue-100 !text-blue-900 !border-blue-300 shadow-[0_0_6px_rgba(59,130,246,0.35)] !rounded-full",
+  },
+};
 
 const Badge = ({ type }) => (
   <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${TYPE[type].badge}`}>
@@ -70,10 +86,25 @@ const Badge = ({ type }) => (
 // ─── Summary Card — matches DeviceManagement style ────
 function SummaryCard({ label, value, sub, colorClass }) {
   return (
-    <div className={`rounded-xl border p-4 ${colorClass}`}>
-      <p className="text-xs font-semibold uppercase tracking-wider mb-1 opacity-70">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
-      <p className="text-xs mt-1 opacity-60">{sub}</p>
+    <div
+      className={`
+        rounded-2xl border p-4 
+        shadow-sm hover:shadow-md 
+        transition-all duration-200
+        ${colorClass}
+      `}
+    >
+      <p className="text-xs font-semibold uppercase tracking-wider mb-1 opacity-70">
+        {label}
+      </p>
+
+      <p className="text-2xl font-bold">
+        {value}
+      </p>
+
+      <p className="text-xs mt-1 opacity-60">
+        {sub}
+      </p>
     </div>
   );
 }
@@ -213,22 +244,23 @@ export default function AlertNotif() {
         </button>
 
         {/* Filter Buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-gray-500 font-medium">Filter:</span>
-          {filterMeta.map(({ key, activeClass }) => (
-            <button
-              key={key}
-              onClick={() => setFilter(key)}
-              className={`px-4 py-1.5 text-sm rounded-full border-2 transition-all duration-150 font-medium ${
-                filter === key
-                  ? activeClass
-                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              {key}
-            </button>
-          ))}
-        </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-gray-500 font-medium">Filter:</span>
+
+              {Object.entries(filterMeta).map(([key, { label, activeClass }]) => (
+                <button
+                  key={key}
+                  onClick={() => setFilter(key)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-150 ${
+                    filter === key
+                      ? activeClass
+                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
 
         {selected.length > 0 && (
           <button
