@@ -4,17 +4,29 @@ const router = express.Router();
 const authRequired = require("../utils/auth");
 const { getRate } = require("../services/data_service");
 
+// ===============================
+// ANALYTICS
+// ===============================
 const {
     getDailyConsumption,
     computeForecast
 } = require("../services/energyAnalytics");
 
+// ===============================
+// DEBUG: FILE LOADED CHECK
+// ===============================
 console.log("📦 predictions.js LOADED");
 
+// ===============================
+// SAFE NUMBER HELPER
+// ===============================
 function safe(n) {
     return Number.isFinite(n) ? n : 0;
 }
 
+// ===============================
+// SUMMARY ROUTE
+// ===============================
 router.get("/summary", (req, res, next) => {
     console.log("🔥 RAW REQUEST HIT (NO AUTH YET)");
     next();
@@ -23,18 +35,26 @@ router.get("/summary", (req, res, next) => {
     console.log("\n🔥 PREDICTIONS ROUTE HIT");
 
     const userId = req.user_id;
+
     console.log("USER ID:", userId);
 
     try {
+        // ===============================
+        // RATE
+        // ===============================
         const rate = await getRate(userId);
         console.log("RATE PER KWH:", rate);
 
+        // ===============================
+        // DAILY DATA (LAST 7 DAYS EXPECTED)
+        // ===============================
         const dailyData = await getDailyConsumption(userId);
         console.log("🔥 DAILY DATA FROM ANALYTICS:", dailyData);
+
         console.log("RAW DAILY DATA:", dailyData);
 
         const dailyEntries = Object.entries(dailyData)
-            .sort(([a], [b]) => new Date(a) - new Date(b)) // fix the order for trend
+            .sort(([a], [b]) => new Date(a) - new Date(b)) // fix date sorting
             .map(([date, consumption]) => ({
                 date,
                 consumption: safe(Number(consumption)).toFixed(4),
@@ -43,8 +63,12 @@ router.get("/summary", (req, res, next) => {
 
         console.log("DAILY ENTRIES:", dailyEntries);
 
+        // ===============================
+        // EMPTY CHECK
+        // ===============================
         if (!dailyEntries.length) {
             console.log("⚠ NO DATA FOUND");
+
             return res.json({
                 weekly_predicted_kwh: 0,
                 weekly_predicted_cost: 0,
@@ -57,22 +81,31 @@ router.get("/summary", (req, res, next) => {
             });
         }
 
+        // ===============================
+        // FORECAST COMPUTATION
+        // ===============================
         const forecast = computeForecast(dailyData, rate);
+
         const avgDailyKwh = safe(forecast.average_daily_kwh);
+
         console.log("AVG DAILY KWH:", avgDailyKwh);
 
-        // CalcPanel: Energy (kWh) = Power (kW) × Time (hours)
-        // CalcPanel: Monthly Energy = Daily Energy × 30
-        // CalcPanel: Cost = Energy (kWh) × Rate (₱/kWh)
-        const weeklyKwh  = avgDailyKwh * 7;
+        // ===============================
+        // WEEK / MONTH
+        // ===============================
+        const weeklyKwh = avgDailyKwh * 7;
         const monthlyKwh = avgDailyKwh * 30;
-        const weeklyCost  = weeklyKwh  * rate;
+
+        const weeklyCost = weeklyKwh * rate;
         const monthlyCost = monthlyKwh * rate;
 
         console.log("WEEKLY KWH:", weeklyKwh);
         console.log("WEEKLY COST:", weeklyCost);
         console.log("MONTHLY COST:", monthlyCost);
 
+        // ===============================
+        // NEXT 7 DAYS FORECAST
+        // ===============================
         const today = new Date();
 
         const dailyForecast = Array.from({ length: 7 }).map((_, i) => {
@@ -85,10 +118,13 @@ router.get("/summary", (req, res, next) => {
                     day: "2-digit"
                 }),
                 consumption: Number(avgDailyKwh.toFixed(4)),
-                cost: Number((avgDailyKwh * rate).toFixed(2)) // Cost = Energy × Rate
+                cost: Number((avgDailyKwh * rate).toFixed(2))
             };
         });
 
+        // ===============================
+        // ACTUAL VS PREDICTED
+        // ===============================
         const last7 = dailyEntries.slice(-7);
 
         const actual_vs_predicted = last7.map((d) => ({
@@ -99,11 +135,14 @@ router.get("/summary", (req, res, next) => {
 
         console.log("✔ PREDICTION SUCCESS");
 
+        // ===============================
+        // RESPONSE
+        // ===============================
         return res.json({
-            weekly_predicted_kwh:  safe(weeklyKwh),
+            weekly_predicted_kwh: safe(weeklyKwh),
             weekly_predicted_cost: safe(weeklyCost),
 
-            monthly_predicted_kwh:  safe(monthlyKwh),
+            monthly_predicted_kwh: safe(monthlyKwh),
             monthly_predicted_cost: safe(monthlyCost),
 
             rate_per_kwh: rate,
