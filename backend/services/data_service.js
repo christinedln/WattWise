@@ -52,8 +52,6 @@ async function getDevices(userId) {
             devices.push(d);
         });
 
-        console.log("TOTAL DEVICES LOADED:", devices.length);
-        console.log("FINAL DEVICES:", devices);
 
         return devices;
 

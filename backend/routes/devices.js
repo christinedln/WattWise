@@ -11,7 +11,7 @@ const authRequired = require("../utils/auth");
 
 
 // ===============================
-// GET ALL DEVICES
+// GET ALL DEVICES (REAL-TIME READ ONLY)
 // ===============================
 router.get("/", authRequired, async (req, res) => {
     try {
@@ -36,7 +36,7 @@ router.get("/", authRequired, async (req, res) => {
 
 
 // ===============================
-// GET DEVICES BY USER (same as above)
+// GET DEVICES BY USER (redundant but kept for frontend compatibility)
 // ===============================
 router.get("/devices", authRequired, async (req, res) => {
     try {
@@ -62,11 +62,13 @@ router.get("/devices", authRequired, async (req, res) => {
 
 // ===============================
 // UPDATE DEVICE (PATCH)
+// Only allows: name, location, enabled
 // ===============================
 router.patch("/:device_id", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
         const deviceId = req.params.device_id;
+
         const { enabled, name, location } = req.body;
 
         const updates = {};
@@ -146,6 +148,7 @@ router.get("/summary", authRequired, async (req, res) => {
             message: "Server error"
         });
     }
+    
 });
 
 module.exports = router;

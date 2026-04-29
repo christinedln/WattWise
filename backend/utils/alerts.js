@@ -100,7 +100,6 @@ function generateAlerts(devices, settings) {
         });
     });
 
-    console.log("\nFINAL FLAT ALERTS:", flat);
 
     return flat;
 }

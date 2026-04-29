@@ -1,98 +1,161 @@
 const express = require("express");
 const router = express.Router();
 
-const { mergeDeviceData } = require("../utils/mapper");
+const authRequired = require("../utils/auth");
 const { getRate } = require("../services/data_service");
 
-// Helper for dates
-const { format } = require("date-fns");
+// ===============================
+// ANALYTICS
+// ===============================
+const {
+    getDailyConsumption,
+    computeForecast
+} = require("../services/energyAnalytics");
 
+// ===============================
+// DEBUG: FILE LOADED CHECK
+// ===============================
+console.log("📦 predictions.js LOADED");
+
+// ===============================
+// SAFE NUMBER HELPER
+// ===============================
+function safe(n) {
+    return Number.isFinite(n) ? n : 0;
+}
+
+// ===============================
 // SUMMARY ROUTE
-router.get("/summary", async (req, res) => {
-    try {
-        const devices = await mergeDeviceData();
-        const rate = await getRate();
+// ===============================
+router.get("/summary", (req, res, next) => {
+    console.log("🔥 RAW REQUEST HIT (NO AUTH YET)");
+    next();
+}, authRequired, async (req, res) => {
 
-        // ── Base rate from current consumption ───────────────────────────────
-        const totalConsumption = devices.reduce(
-            (sum, d) => sum + (d.consumption || 0),
-            0
+    console.log("\n🔥 PREDICTIONS ROUTE HIT");
+
+    const userId = req.user_id;
+
+    console.log("USER ID:", userId);
+
+    try {
+        // ===============================
+        // RATE
+        // ===============================
+        const rate = await getRate(userId);
+        console.log("RATE PER KWH:", rate);
+
+        // ===============================
+        // DAILY DATA (LAST 7 DAYS EXPECTED)
+        // ===============================
+        const dailyData = await getDailyConsumption(userId);
+        console.log("🔥 DAILY DATA FROM ANALYTICS:", dailyData);
+
+        console.log("RAW DAILY DATA:", dailyData);
+
+        const dailyEntries = Object.entries(dailyData).map(
+            ([date, consumption]) => ({
+                date,
+                consumption: safe(Number(consumption)).toFixed(4),
+                cost: safe(Number(consumption) * rate).toFixed(2)
+            })
         );
 
-        const totalRuntimeHours =
-            (devices.reduce((sum, d) => sum + (d.runtime || 0), 0) / 3600) || 1;
+        console.log("DAILY ENTRIES:", dailyEntries);
 
-        const kwhPerHour = totalConsumption / totalRuntimeHours;
-        const dailyKwh = Number((kwhPerHour * 24).toFixed(4));
+        // ===============================
+        // EMPTY CHECK
+        // ===============================
+        if (!dailyEntries.length) {
+            console.log("⚠ NO DATA FOUND");
 
-        const weeklyKwh = Number((dailyKwh * 7).toFixed(4));
-        const monthlyKwh = Number((dailyKwh * 30).toFixed(4));
+            return res.json({
+                weekly_predicted_kwh: 0,
+                weekly_predicted_cost: 0,
+                monthly_predicted_kwh: 0,
+                monthly_predicted_cost: 0,
+                rate_per_kwh: rate,
+                daily_forecast: [],
+                actual_vs_predicted: [],
+                raw_daily_data: []
+            });
+        }
 
-        const weeklyCost = Number((weeklyKwh * rate).toFixed(2));
-        const monthlyCost = Number((monthlyKwh * rate).toFixed(2));
+        // ===============================
+        // FORECAST COMPUTATION
+        // ===============================
+        const forecast = computeForecast(dailyData, rate);
 
-        // ── Dates ────────────────────────────────────────────────────────────
+        const avgDailyKwh = safe(forecast.average_daily_kwh);
+
+        console.log("AVG DAILY KWH:", avgDailyKwh);
+
+        // ===============================
+        // WEEK / MONTH
+        // ===============================
+        const weeklyKwh = avgDailyKwh * 7;
+        const monthlyKwh = avgDailyKwh * 30;
+
+        const weeklyCost = weeklyKwh * rate;
+        const monthlyCost = monthlyKwh * rate;
+
+        console.log("WEEKLY KWH:", weeklyKwh);
+        console.log("WEEKLY COST:", weeklyCost);
+        console.log("MONTHLY COST:", monthlyCost);
+
+        // ===============================
+        // NEXT 7 DAYS FORECAST
+        // ===============================
         const today = new Date();
 
-        // ── Daily forecast (next 7 days) ─────────────────────────────────────
         const dailyForecast = Array.from({ length: 7 }).map((_, i) => {
             const d = new Date(today);
             d.setDate(today.getDate() + i);
 
             return {
-                date: d.toLocaleDateString("en-US", { month: "short", day: "2-digit" }),
-                consumption: dailyKwh,
-                cost: Number((dailyKwh * rate).toFixed(2)),
+                date: d.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "2-digit"
+                }),
+                consumption: Number(avgDailyKwh.toFixed(4)),
+                cost: Number((avgDailyKwh * rate).toFixed(2))
             };
         });
 
-        // ── Actual vs predicted (last 7 days) ───────────────────────────────
-        const actualVsPredicted = Array.from({ length: 7 }).map((_, i) => {
-            const d = new Date(today);
-            d.setDate(today.getDate() - (6 - i));
+        // ===============================
+        // ACTUAL VS PREDICTED
+        // ===============================
+        const last7 = dailyEntries.slice(-7);
 
-            return {
-                date: d.toLocaleDateString("en-US", { month: "short", day: "2-digit" }),
-                actual: Number((dailyKwh * (0.95 + 0.01 * i)).toFixed(4)),
-                predicted: dailyKwh,
-            };
-        });
+        const actual_vs_predicted = last7.map((d) => ({
+            date: d.date,
+            actual: Number(d.consumption),
+            predicted: Number(avgDailyKwh.toFixed(4))
+        }));
 
-        // ── Per device ───────────────────────────────────────────────────────
-        const perDevice = {};
+        console.log("✔ PREDICTION SUCCESS");
 
-        devices.forEach(d => {
-            const runtimeHours = (d.runtime || 0) / 3600 || 1;
-            const kwhPerHourDevice = (d.consumption || 0) / runtimeHours;
+        // ===============================
+        // RESPONSE
+        // ===============================
+        return res.json({
+            weekly_predicted_kwh: safe(weeklyKwh),
+            weekly_predicted_cost: safe(weeklyCost),
 
-            const daily = kwhPerHourDevice * 24;
-            const weekly = daily * 7;
-            const monthly = daily * 30;
+            monthly_predicted_kwh: safe(monthlyKwh),
+            monthly_predicted_cost: safe(monthlyCost),
 
-            perDevice[d.device_id] = {
-                name: d.name,
-                weekly_kwh: Number(weekly.toFixed(4)),
-                weekly_cost: Number((weekly * rate).toFixed(2)),
-                monthly_kwh: Number(monthly.toFixed(4)),
-                monthly_cost: Number((monthly * rate).toFixed(2)),
-            };
-        });
-
-        // ── RESPONSE ─────────────────────────────────────────────────────────
-        res.json({
-            weekly_predicted_kwh: weeklyKwh,
-            weekly_predicted_cost: weeklyCost,
-            monthly_predicted_kwh: monthlyKwh,
-            monthly_predicted_cost: monthlyCost,
             rate_per_kwh: rate,
+
             daily_forecast: dailyForecast,
-            actual_vs_predicted: actualVsPredicted,
-            per_device: perDevice,
+            actual_vs_predicted,
+
+            raw_daily_data: dailyEntries
         });
 
     } catch (error) {
-        console.error("Predictions error:", error);
-        res.status(500).json({ error: "Server error" });
+        console.error("❌ Predictions error:", error);
+        return res.status(500).json({ error: "Server error" });
     }
 });
 
