@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { getDevices, getRate } = require("../services/data_service");
+const { getDevices } = require("../services/data_service");
 const { mergeDeviceData } = require("../utils/mapper");
 const { calcKwh } = require("../utils/calculations");
 const authRequired = require("../utils/auth");
@@ -13,18 +13,14 @@ router.get("/summary", authRequired, async (req, res) => {
 
         const enrichedDevices = await mergeDeviceData(userId);
 
-        const devices = (await getDevices(userId)).filter(
-            d => d.enabled !== false
-        );
+        const devices = await getDevices(userId);
 
-        const ratePerKwh = await getRate(userId);
-
-        // STATS
+        // ACTIVE DEVICES
         const activeCount = enrichedDevices.filter(
             d => d.status === "active"
         ).length;
 
-        // ENERGY TOTAL
+        // TOTAL ENERGY
         const totalEnergyKwh = Number(
             enrichedDevices
                 .reduce((sum, d) => sum + calcKwh(d.power, d.runtime || 0), 0)
@@ -35,13 +31,7 @@ router.get("/summary", authRequired, async (req, res) => {
 
         // DEVICE BREAKDOWN
         const deviceConsumption = enrichedDevices.map(d => {
-            const power =
-                devices.find(x => x.device_id === d.device_id)?.power || 0;
-
-            const runtime =
-                devices.find(x => x.device_id === d.device_id)?.runtime || 0;
-
-            const kwh = calcKwh(power, runtime);
+            const kwh = calcKwh(d.power, d.runtime || 0);
 
             return {
                 device_id: d.device_id,
@@ -60,7 +50,10 @@ router.get("/summary", authRequired, async (req, res) => {
             };
         });
 
-        // PREDICTIONS
+        // USE DEVICE SETTINGS (NO getRate anymore)
+        const ratePerKwh = enrichedDevices[0]?.settings?.electricity_rate || 12.5;
+
+        // TOTAL CONSUMPTION
         const totalConsumption = enrichedDevices.reduce(
             (sum, d) => sum + (d.consumption || 0),
             0
@@ -92,8 +85,10 @@ router.get("/summary", authRequired, async (req, res) => {
             device_consumption: deviceConsumption,
 
             total_energy_kwh: totalEnergyKwh,
+
             weekly_predicted_kwh: weeklyKwh,
             weekly_predicted_cost: weeklyCost,
+
             monthly_predicted_kwh: monthlyKwh,
             monthly_predicted_cost: monthlyCost,
 

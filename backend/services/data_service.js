@@ -1,88 +1,98 @@
 const { db } = require("../firebase_config");
 
-// DEVICE REGISTRY (same as Python object)
-const registry = {
-    "1": {
-        name: "Electric Fan",
-        type: "Appliance",
-        location: "Bedroom"
-    },
-    "2": {
-        name: "Rice Cooker",
-        type: "Appliance",
-        location: "Kitchen"
-    }
+// DEFAULT SETTINGS (fallback for all devices)
+const DEFAULT_SETTINGS = {
+  electricity_rate: 12.5,
+  polling_interval: 5,
+  energy_alert_threshold: 5000,
+  security_alert_level: 3
 };
 
-// RATE CONFIG
-const ratePerKwh = 12.5;
-
-
-// ===============================
-// GET DEVICES
-// ===============================
+// Get Devices (with latest + settings)
 async function getDevices(userId) {
-    try {
-        console.log("\n================ FIRESTORE DEVICE FETCH ================");
-        console.log("USER ID:", userId);
+  try {
+    const devicesRef = db
+      .collection("test_user")
+      .doc(userId)
+      .collection("devices");
 
-        const snapshot = await db
-            .collection("devices")
-            .doc(userId)
-            .collection("user_devices")
-            .get();
+    const snapshot = await devicesRef.get();
 
-        const devices = [];
+    const devices = [];
 
-        snapshot.forEach(doc => {
-            let d = doc.data();
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
 
-            console.log("RAW DEVICE DOC:", doc.id, d);
+      let enabled = data.enabled ?? true;
 
-            d.device_id = doc.id;
+      if (typeof enabled === "string") {
+        enabled = enabled.toLowerCase() === "true";
+      }
 
-            let enabled = d.enabled ?? true;
+      // Get latest data
+      let latestData = {};
+      const latestSnap = await doc.ref.collection("latest").limit(1).get();
 
-            if (typeof enabled === "string") {
-                enabled = enabled.toLowerCase() === "true";
-            }
+      if (!latestSnap.empty) {
+        latestData = latestSnap.docs[0].data();
+      }
 
-            d.enabled = enabled;
+      // Get settings
+      let settingsData = {};
+      const settingsSnap = await doc.ref.collection("settings").limit(1).get();
 
-            devices.push(d);
-        });
+      if (!settingsSnap.empty) {
+        settingsData = settingsSnap.docs[0].data();
+      }
 
-        console.log("TOTAL DEVICES LOADED:", devices.length);
-        console.log("FINAL DEVICES:", devices);
+      // MERGE DEFAULT + DEVICE SETTINGS (ONLY HERE)
+      const finalSettings = {
+        ...DEFAULT_SETTINGS,
+        ...settingsData
+      };
 
-        return devices;
+      devices.push({
+        device_id: doc.id,
+        name: data.name,
+        location: data.location,
+        enabled,
+        status: data.status,
 
-    } catch (error) {
-        console.error("Devices fetch error:", error);
-        return [];
+        // latest sensor values
+        ...latestData,
+
+        // normalized settings
+        settings: finalSettings
+      });
     }
+
+    return devices;
+
+  } catch (error) {
+    console.error("Devices fetch error:", error);
+    return [];
+  }
 }
 
+// Get electricity rate per device (FIXED: uses mapper now)
+async function getRate(userId, deviceId) {
+  try {
+    const devices = await getDevices(userId);
+    const device = devices.find(d => d.device_id === deviceId);
 
-// ===============================
-// GET REGISTRY
-// ===============================
-function getRegistry() {
-    return registry;
+    const rate = device?.settings?.electricity_rate;
+
+    console.log(`[RATE DEBUG] ${deviceId} from mapper:`, rate);
+
+    return rate ?? DEFAULT_SETTINGS.electricity_rate;
+
+  } catch (error) {
+    console.error("Rate fetch error:", error);
+    return DEFAULT_SETTINGS.electricity_rate;
+  }
 }
 
-
-// ===============================
-// GET RATE
-// ===============================
-function getRate(userId) {
-    return ratePerKwh;
-}
-
-
-// EXPORTS
 module.exports = {
-    getDevices,
-    getRegistry,
-    getRate
+  getDevices,
+  getRate
 };

@@ -1,14 +1,10 @@
-const { getDevices, getRegistry } = require("../services/data_service");
+const { getDevices } = require("../services/data_service");
 const { generateAlerts } = require("../utils/alerts");
-const { getUserSettings } = require("../services/settings_service");
-const { nowTime } = require("../utils/time_helper"); // assumed JS version
+const { nowTime } = require("../utils/time_helper");
 
 async function mergeDeviceData(userId) {
     const devices = await getDevices(userId) || [];
-    const registry = await getRegistry() || {};
-    const settings = (await getUserSettings(userId)) || {};
-
-    const alerts = generateAlerts(devices, settings);
+    const alerts = generateAlerts(devices);
 
     const merged = [];
 
@@ -23,7 +19,6 @@ async function mergeDeviceData(userId) {
 
     for (const d of devices) {
         const deviceId = d.device_id || d.id;
-        const meta = registry[String(deviceId)] || {};
 
         // ── FIND DEVICE ALERT GROUP ──
         const deviceGroup = alerts.find(
@@ -99,7 +94,7 @@ async function mergeDeviceData(userId) {
             alert_message: message,
 
             consumption: Number(
-                ((d.power || 0) * (d.runtime || 0)) / 1000
+                ((d.power || 0) * (d.runtime || 0)) / 3600000
             ).toFixed(2),
 
             lastUpdated: nowTime(),

@@ -1,47 +1,75 @@
 const express = require("express");
 const router = express.Router();
 
-// Services
-const { getUserSettings, updateUserSettings } = require("../services/settings_service");
-
-// Auth middleware
 const authRequired = require("../utils/auth");
+const { db } = require("../firebase_config");
+const { getDevices } = require("../services/data_service");
 
-
-// ===============================
-// GET SETTINGS
-// ===============================
-router.get("/", authRequired, async (req, res) => {
+// GET DEVICE SETTINGS
+router.post("/get", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
+        const { deviceId } = req.body;
 
-        const settings = await getUserSettings(userId);
+        if (!deviceId) {
+            return res.status(400).json({ error: "deviceId required" });
+        }
 
-        res.json(settings);
+        const devices = await getDevices(userId);
 
-    } catch (error) {
-        console.error("Fetch settings error:", error);
+        const device = devices.find(d => d.device_id === deviceId);
+
+        if (!device) {
+            return res.status(404).json({ error: "Device not found" });
+        }
+
+        res.json(device.settings);
+
+    } catch (err) {
+        console.error("[GET SETTINGS ERROR]", err);
         res.status(500).json({ error: "Server error" });
     }
 });
 
+// UPDATE DEVICE SETTINGS
+router.post("/update", authRequired, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const { deviceId, settings } = req.body;
 
-// ===============================
-// UPDATE SETTINGS
-// ===============================
-router.post("/", authRequired, async (req, res) => {
-    try {
-        const userId = req.user_id;
-        const data = req.body;
-
-        const updated = await updateUserSettings(userId, data);
-
-        res.json(updated);
-
-    } catch (error) {
-        console.error("Update settings error:", error);
-        res.status(500).json({ error: "Server error" });
+    if (!deviceId) {
+      return res.status(400).json({ error: "deviceId required" });
     }
+
+    if (!settings) {
+      return res.status(400).json({ error: "settings required" });
+    }
+
+    const settingsRef = db
+      .collection("test_user")
+      .doc(userId)
+      .collection("devices")
+      .doc(deviceId)
+      .collection("settings");
+
+    const snapshot = await settingsRef.get();
+    const batch = db.batch();
+
+    snapshot.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    const newDocRef = settingsRef.doc(); 
+    batch.set(newDocRef, settings);
+
+    await batch.commit();
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("[UPDATE SETTINGS ERROR]", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 module.exports = router;

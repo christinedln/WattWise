@@ -1,138 +1,146 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../api/api";
 
-const LEVEL_LABELS = ["Low", "Med", "High", "Crit", "Sec"];
+const LEVEL_LABELS = ["Warning", "Med", "High", "Crit", "Sec"];
 
 export default function SettingsControl() {
-  
+
   const [activeTab, setActiveTab] = useState("Billing");
 
- 
   const [rate, setRate] = useState(0);
   const [pollingInterval, setPollingInterval] = useState(5);
   const [energyThreshold, setEnergyThreshold] = useState(5000);
   const [securityLevel, setSecurityLevel] = useState(3);
 
-  // Devices
-const [devices, setDevices] = useState([]);
-
-useEffect(() => {
-  const loadDevices = async () => {
-    try {
-      const data = await apiFetch("/devices");
-
-      console.log("FULL DEVICE RESPONSE:", data);
-
-      const list =
-        data?.devices ||
-        data?.merged_devices ||
-        data?.data ||
-        (Array.isArray(data) ? data : []);
-
-      const mapped = list.map(d => ({
-        id: d.device_id || d.id,
-        name: d.name || d.device_name || `Device ${d.device_id}`,
-        location: d.location ?? "Unknown",
-        enabled: d.enabled === true || d.enabled === "true",
-        status: d.status || "UNKNOWN",
-      }));
-
-      setDevices(mapped);
-    } catch (err) {
-      console.error("DEVICE LOAD ERROR:", err);
-    }
-  };
-
-  loadDevices();
-}, []);
+  const [devices, setDevices] = useState([]);
+  const [selectedDevice, setSelectedDevice] = useState(null);
 
   const [saved, setSaved] = useState(false);
 
+  // =========================
+  // LOAD DEVICES
+  // =========================
   useEffect(() => {
-  const loadSettings = async () => {
-    try {
-      const data = await apiFetch("/settings");
+    const loadDevices = async () => {
+      try {
+        const data = await apiFetch("/devices");
 
-      console.log("LOADED FROM FIREBASE:", data);
+        const list =
+          data?.devices ||
+          data?.merged_devices ||
+          data?.data ||
+          (Array.isArray(data) ? data : []);
 
-      setRate(data.electricity_rate ?? 0);
-      setPollingInterval(data.polling_interval ?? 5);
-      setEnergyThreshold(data.energy_alert_threshold ?? 5000);
-      setSecurityLevel(data.security_alert_level ?? 3);
-    } catch (err) {
-      console.error("LOAD ERROR:", err);
-    }
-  };
+        const mapped = list.map(d => ({
+          id: d.device_id || d.id,
+          name: d.name || d.device_name || `Device ${d.device_id}`,
+          location: d.location ?? "Unknown",
+          enabled: d.enabled === true || d.enabled === "true",
+          status: d.status || "UNKNOWN",
 
-  loadSettings();
-}, []);
+          settings: {
+            electricity_rate:
+              d.settings?.electricity_rate ?? d.electricity_rate ?? 0,
+
+            polling_interval:
+              d.settings?.polling_interval ?? d.polling_interval ?? 5,
+
+            energy_alert_threshold:
+              d.settings?.energy_alert_threshold ?? d.energy_alert_threshold ?? 5000,
+
+            security_alert_level:
+              d.settings?.security_alert_level ?? d.security_alert_level ?? 3
+          }
+        }));
+
+        setDevices(mapped);
+
+        // auto-select first device
+        if (mapped.length > 0) {
+          setSelectedDevice(mapped[0]);
+        }
+
+      } catch (err) {
+        console.error("DEVICE LOAD ERROR:", err);
+      }
+    };
+
+    loadDevices();
+  }, []);
+
+
+  // =========================
+  // LOAD SETTINGS PER DEVICE
+  // =========================
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        if (!selectedDevice?.id) return;
+
+        const data = await apiFetch("/settings/get", {
+          method: "POST",
+          body: JSON.stringify({
+            deviceId: selectedDevice.id
+          })
+        });
+
+        setRate(data.electricity_rate);
+        setPollingInterval(data.polling_interval);
+        setEnergyThreshold(data.energy_alert_threshold);
+        setSecurityLevel(data.security_alert_level);
+
+      } catch (err) {
+        console.error("LOAD ERROR:", err);
+      }
+    };
+
+    loadSettings();
+  }, [selectedDevice]);
 
   const monthlyEstimate = ((rate * 150 * 30) / 1000).toFixed(2);
 
   const handleSave = async () => {
-  try {
-    const data = await apiFetch("/settings", {
-      method: "POST",
-      body: JSON.stringify({
-        electricity_rate: rate,
-        polling_interval: pollingInterval,
-        energy_alert_threshold: energyThreshold,
-        security_alert_level: securityLevel
-      })
-    });
+    try {
+      await apiFetch("/settings/update", {
+        method: "POST",
+        body: JSON.stringify({
+          deviceId: selectedDevice?.id,
+          settings: {
+            electricity_rate: rate,
+            polling_interval: pollingInterval,
+            energy_alert_threshold: energyThreshold,
+            security_alert_level: securityLevel
+          }
+        })
+      });
 
-    console.log("Saved:", data);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
 
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error("Save failed:", err);
+    }
+  };
 
-  } catch (err) {
-    console.error("Save failed:", err);
-  }
-};
-
-  const toggleDevice = async (id) => {
-  const updatedDevice = devices.find((d) => String(d.id) === String(id));
-  if (!updatedDevice) return;
-
-  const newEnabled = !updatedDevice.enabled;
-
-  // optimistic UI update
-  setDevices((prev) =>
-    prev.map((d) =>
-      String(d.id) === String(id)
-        ? { ...d, enabled: newEnabled }
-        : d
-    )
-  );
-
-  try {
-    await apiFetch(`/devices/${updatedDevice.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        enabled: newEnabled,
-      }),
-    });
-  } catch (err) {
-    console.error("Device update failed:", err);
-  }
-};
+  const selectDevice = (device) => {
+    setSelectedDevice(device);
+  };
 
   if (
-  rate === null ||
-  pollingInterval === null ||
-  energyThreshold === null ||
-  securityLevel === null
-) {
-  return <div className="p-6 text-gray-500">Loading settings...</div>;
-}
+    rate === null ||
+    pollingInterval === null ||
+    energyThreshold === null ||
+    securityLevel === null
+  ) {
+    return <div className="p-6 text-gray-500">Loading settings...</div>;
+  }
 
   return (
     <div className="w-full">
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 bg-white rounded-t-xl shadow-sm mb-6 w-full">
-        {["Billing", "Monitoring", "Devices"].map((tab) => (
+        {["Billing", "Monitoring"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -143,6 +151,23 @@ useEffect(() => {
             }`}
           >
             {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* DEVICE SELECTOR */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {devices.map((device) => (
+          <button
+            key={device.id}
+            onClick={() => selectDevice(device)}
+            className={`px-3 py-2 text-sm rounded-md border ${
+              selectedDevice?.id === device.id
+                ? "bg-green-600 text-white"
+                : "bg-white text-gray-700"
+            }`}
+          >
+            {device.name}
           </button>
         ))}
       </div>
@@ -266,63 +291,6 @@ useEffect(() => {
               ))}
             </div>
             <p className="text-xs text-gray-400">Anomaly detection sensitivity level for unauthorized usage</p>
-          </div>
-
-          <div className="flex justify-end">
-            <button
-  onClick={handleSave}
-  style={{
-    backgroundColor: "#16a34a",
-    color: "white",
-    padding: "10px 18px",
-    borderRadius: "8px",
-    border: "none",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer"
-  }}
->
-  {saved ? "✓ Saved!" : "Save Changes"}
-</button>
-          </div>
-        </div>
-      )}
-
-      {/* DEVICES TAB */}
-      {activeTab === "Devices" && (
-        <div className="w-full">
-          <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5 w-full">
-            <p className="text-sm font-bold text-gray-900 mb-1">Device Management</p>
-            <p className="text-xs text-gray-500 mb-5">Enable or disable monitoring for each device</p>
-
-            {devices.map((device) => (
-              <div
-                key={device.id}
-                className="flex justify-between items-center py-4 border-b border-gray-100 last:border-0"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {device.name}
-                    <span className="text-xs text-gray-400 ml-2">
-                      ({device.enabled ? "ON" : "OFF"})
-                    </span>
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">{device.location || "No location set"}</p>
-                </div>
-                <div
-                  onClick={() => toggleDevice(device.id)}
-                  className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors flex-shrink-0 ${
-                    device.enabled ? "bg-green-600" : "bg-gray-300"
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${
-                      device.enabled ? "left-6" : "left-1"
-                    }`}
-                  />
-                </div>
-              </div>
-            ))}
           </div>
 
           <div className="flex justify-end">

@@ -52,14 +52,13 @@ export default function SignUpPage() {
 
       const db = getFirestore();
 
-      await setDoc(doc(db, "users", user.uid), {
+      await setDoc(doc(db, "test_user", user.uid), {
         uid: user.uid,
         fullName: fullName,
         email: user.email,
         createdAt: new Date()
       });
 
-      console.log("Signup successful:", user.email);
       navigate("/");
     } catch (error) {
       console.error("Signup error:", error.message);
@@ -73,7 +72,6 @@ export default function SignUpPage() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log("Google auth successful:", user.email);
       navigate("/dashboard");
     } catch (error) {
       console.error("Google auth error:", error.message);

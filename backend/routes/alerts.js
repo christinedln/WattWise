@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-// Services (same role as Flask imports)
+// Services
 const { getDevices } = require("../services/data_service");
-const { getUserSettings } = require("../services/settings_service");
 
 // Utils
 const { generateAlerts } = require("../utils/alerts");
@@ -15,9 +14,8 @@ router.get("/", authRequired, async (req, res) => {
         const userId = req.user_id;
 
         const devices = await getDevices(userId);
-        const settings = await getUserSettings(userId);
 
-        const alerts = generateAlerts(devices, settings);
+        const alerts = generateAlerts(devices);
 
         res.json(alerts);
 
