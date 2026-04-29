@@ -235,13 +235,47 @@ function ActivityTimeline({ device }) {
 
 // ─── Filter meta — each filter has its own active color ──
 const filterMeta = {
-  all:        { label: "All",        activeClass: "bg-gray-100 text-gray-900 border-gray-900 font-semibold" },
-  active:     { label: "Active",     activeClass: "bg-emerald-100 text-emerald-800 border-emerald-500 font-semibold" },
-  offline:    { label: "Offline",    activeClass: "bg-gray-100 text-gray-700 border-gray-500 font-semibold" },
-  Normal:     { label: "Normal",     activeClass: "bg-blue-100 text-blue-800 border-blue-500 font-semibold" },
-  Warning:    { label: "Warning",    activeClass: "bg-amber-100 text-amber-800 border-amber-500 font-semibold" },
-  Critical:   { label: "Critical",   activeClass: "bg-red-100 text-red-800 border-red-500 font-semibold" },
-  Suspicious: { label: "Suspicious", activeClass: "bg-purple-100 text-purple-800 border-purple-500 font-semibold" },
+  all: {
+    label: "All",
+    activeClass:
+      "!bg-green-800 !text-white !border-green-900 shadow-[0_0_10px_rgba(20,83,45,0.55)] !rounded-full",
+  },
+
+  active: {
+    label: "Active",
+    activeClass:
+      "!bg-emerald-100 !text-emerald-900 !border-emerald-300 shadow-[0_0_6px_rgba(16,185,129,0.35)] !rounded-full",
+  },
+
+  offline: {
+    label: "Offline",
+    activeClass:
+      "!bg-gray-100 !text-gray-800 !border-gray-300 shadow-[0_0_6px_rgba(156,163,175,0.3)] !rounded-full",
+  },
+
+  Critical: {
+    label: "Critical",
+    activeClass:
+      "!bg-red-100 !text-red-900 !border-red-300 shadow-[0_0_6px_rgba(239,68,68,0.35)] !rounded-full",
+  },
+
+  Suspicious: {
+    label: "Suspicious",
+    activeClass:
+      "!bg-purple-100 !text-purple-900 !border-purple-300 shadow-[0_0_6px_rgba(147,51,234,0.35)] !rounded-full",
+  },
+
+  Warning: {
+    label: "Warning",
+    activeClass:
+      "!bg-amber-100 !text-amber-900 !border-amber-300 shadow-[0_0_6px_rgba(245,158,11,0.35)] !rounded-full",
+  },
+
+  Normal: {
+    label: "Normal",
+    activeClass:
+      "!bg-blue-100 !text-blue-900 !border-blue-300 shadow-[0_0_6px_rgba(59,130,246,0.35)] !rounded-full",
+  },
 };
 
 // ─── Summary Card ────────────────────────────────────
@@ -470,4 +504,4 @@ export default function DeviceManagement() {
 )}
     </>
   );
-}
+} 
