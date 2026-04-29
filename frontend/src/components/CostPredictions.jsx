@@ -9,8 +9,8 @@ export default function CostPredictions({
   const predictions = [
     {
       period: 'This Week',
-      cost: `₱${weeklyCost.toFixed(2)}`,
-      estimatedUsage: `${weeklyKwh} kWh`,
+      cost: `₱${(weeklyCost ?? 0).toFixed(2)}`,
+      estimatedUsage: `${weeklyKwh ?? 0} kWh`,
       trend: 'up',
       trendPercent: '3.2%',
       trendLabel: 'Mon - Sun (current billing period)',
@@ -18,8 +18,8 @@ export default function CostPredictions({
     },
     {
       period: 'This Month',
-      cost: `₱${monthlyCost.toFixed(2)}`,
-      estimatedUsage: `${monthlyKwh} kWh`,
+      cost: `₱${(monthlyCost ?? 0).toFixed(2)}`,
+      estimatedUsage: `${monthlyKwh ?? 0} kWh`,
       trend: 'up',
       trendPercent: '2.3%',
       trendLabel: '30-day projection',

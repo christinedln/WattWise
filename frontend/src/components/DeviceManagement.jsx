@@ -443,7 +443,7 @@ export default function DeviceManagement() {
           </tbody>
         </table>
       </div>
-
+    </div> 
 
       {editing && (
   <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
