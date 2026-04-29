@@ -1,4 +1,3 @@
-// src/components/Sidebar.jsx
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -15,22 +14,19 @@ import {
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
-
 export default function Sidebar() {
   const location = useLocation();
   const [userData, setUserData] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
-
   const menuItems = [
-    { name: "Dashboard", to: "/dashboard", icon: <Home size={20} /> },
-    { name: "Real-Time Monitor", to: "/realtime", icon: <Zap size={20} /> },
-    { name: "Predictions", to: "/predictions", icon: <TrendingUp size={20} /> },
-    { name: "Devices", to: "/devices", icon: <Smartphone size={20} /> },
-    { name: "Alerts", to: "/alerts", icon: <Bell size={20} /> },
-    { name: "Settings", to: "/settings", icon: <Settings size={20} /> },
+    { name: "Dashboard", to: "/dashboard", icon: Home },
+    { name: "Real-Time Monitor", to: "/realtime", icon: Zap },
+    { name: "Predictions", to: "/predictions", icon: TrendingUp },
+    { name: "Devices", to: "/devices", icon: Smartphone },
+    { name: "Alerts", to: "/alerts", icon: Bell },
+    { name: "Settings", to: "/settings", icon: Settings },
   ];
-
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -39,18 +35,14 @@ export default function Sidebar() {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
 
-
       const docRef = doc(db, "users", uid);
       const docSnap = await getDoc(docRef);
-
 
       if (docSnap.exists()) setUserData(docSnap.data());
     };
 
-
     fetchUser();
   }, []);
-
 
   return (
     <>
@@ -59,9 +51,8 @@ export default function Sidebar() {
         onClick={() => setIsOpen(true)}
         className="md:hidden fixed top-4 left-4 z-50 rounded-lg hover:bg-gray-100"
       >
-         <Menu className="w-6 h-6 text-gray-700" />
+        <Menu className="w-6 h-6 text-gray-800" />
       </button>
-
 
       {/* Overlay */}
       {isOpen && (
@@ -70,7 +61,6 @@ export default function Sidebar() {
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
         />
       )}
-
 
       {/* Sidebar */}
       <div
@@ -81,73 +71,83 @@ export default function Sidebar() {
       >
         <div className="flex flex-col p-4 h-full">
 
-
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold">⚡</span>
+              <div className="w-10 h-10 rounded-md overflow-hidden">
+                <img
+                  src="/icon.png"
+                  alt="WattWise Icon"
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <h2 className="text-xl font-bold">WattWise</h2>
+
+              <h2 className="text-xl font-bold text-gray-800">
+                WattWise
+              </h2>
             </div>
 
-
             <button onClick={() => setIsOpen(false)} className="md:hidden">
-              <X size={22} />
+              <X size={22} className="text-gray-800" />
             </button>
           </div>
-
 
           {/* Menu */}
           <nav className="flex flex-col gap-2 flex-grow">
             {menuItems.map((item) => {
               const isActive = location.pathname === item.to;
+              const Icon = item.icon;
+
               return (
                 <Link
                   key={item.name}
                   to={item.to}
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl transition ${
-                    isActive
-                      ? "bg-green-100 text-green-700"
-                      : "hover:bg-gray-100 text-gray-700"
-                  }`}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl transition"
                 >
-                  {item.icon}
-                  {item.name}
+                  {/* ICON */}
+                  <Icon
+                    className={`w-5 h-5 transition ${
+                      isActive ? "text-green-600 stroke-green-600" : "text-gray-800"
+                    }`}
+                  />
+
+                  {/* TEXT */}
+                  <span
+                    className={`transition ${
+                      isActive ? "text-green-600 font-medium" : "text-gray-800"
+                    }`}
+                  >
+                    {item.name}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
+          {/* Bottom Section */}
+          <div className="border-t pt-4 mt-4">
 
-<div className="border-t pt-4 mt-4">
+            {/* USER INFO */}
+            <div className="flex flex-col gap-1 px-2">
+              <p className="font-semibold text-sm text-gray-800">
+                {userData?.fullName || "Loading..."}
+              </p>
 
+              <p className="text-xs text-gray-600 truncate">
+                {userData?.email || ""}
+              </p>
+            </div>
 
-  {/* USER INFO */}
-  <div className="flex flex-col gap-1 px-2">
-    <p className="font-semibold text-sm text-gray-900">
-      {userData?.fullName || "Loading..."}
-    </p>
+            {/* LOGOUT BUTTON */}
+            <button className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-200 text-gray-800 hover:bg-gray-100 transition-all duration-200">
+              <LogOut size={18} className="text-gray-700" />
+              Logout
+            </button>
 
-
-    <p className="text-xs text-gray-500 truncate">
-      {userData?.email || ""}
-    </p>
-  </div>
-
-
-  {/* LOGOUT BUTTON */}
-  <button className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all duration-200">
-    <LogOut size={18} />
-    Logout
-  </button>
-
-
-</div>
+          </div>
         </div>
       </div>
     </>
   );
 }
-

@@ -91,50 +91,21 @@ function UsageBar({ pct }) {
 function DeviceRow({ device, pct, openEdit }) {
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50">
-      <td className="px-4 py-3 font-semibold flex items-center gap-2">
-  {device.name}
-  <button
-    onClick={() => openEdit(device, "name")}
-    className="text-gray-400 hover:text-black"
-  >
-    <svg
-  xmlns="http://www.w3.org/2000/svg"
-  className="w-4 h-4"
-  fill="none"
-  viewBox="0 0 24 24"
-  stroke="currentColor"
->
-  <path
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth={2}
-    d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z"
-  />
-</svg>
-  </button>
+      <td className="px-4 py-3 font-semibold whitespace-nowrap">
+  <div className="flex items-center gap-2">
+    {device.name}
+    <button onClick={() => openEdit(device, "name")} className="p-1">
+      <PencilIcon />
+    </button>
+  </div>
 </td>
-      <td className="px-4 py-3 text-gray-500">{device.type}</td>
-      <td className="px-4 py-3 text-gray-500 flex items-center gap-2">
-  {device.location}
-  <button
-    onClick={() => openEdit(device, "location")}
-    className="text-gray-400 hover:text-black"
-  >
-    <svg
-  xmlns="http://www.w3.org/2000/svg"
-  className="w-4 h-4"
-  fill="none"
-  viewBox="0 0 24 24"
-  stroke="currentColor"
->
-  <path
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth={2}
-    d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z"
-  />
-</svg>
-  </button>
+      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+  <div className="flex items-center gap-2">
+    {device.location}
+    <button onClick={() => openEdit(device, "location")} className="p-1">
+      <PencilIcon />
+    </button>
+  </div>
 </td>
 
       <td className="px-4 py-3">
@@ -299,7 +270,7 @@ export default function DeviceManagement() {
         id: d.id,
         device_id: d.device_id,
         name: d.name,
-        type: d.type,
+       
         location: d.location,
         status: d.status,
         kwh: d.consumption,
@@ -415,7 +386,7 @@ export default function DeviceManagement() {
       
       <thead>
         <tr className="border-b border-gray-100 bg-gray-50">
-          {["Name", "Type", "Location", "Status / Health", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
+          {["Name", "Location", "Status / Health", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
             <th
               key={h}
               className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"
@@ -434,7 +405,7 @@ export default function DeviceManagement() {
                   pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0} openEdit={openEdit}
                 />
                 <tr>
-                  <td colSpan="8">
+                  <td colSpan="7">
                     <ActivityTimeline device={d} />
                   </td>
                 </tr>
@@ -445,37 +416,53 @@ export default function DeviceManagement() {
       </div>
     </div> 
 
-      {editing && (
-  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-xl w-80">
-      
-      <h2 className="text-lg font-semibold mb-4">
+     {editing && (
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+
+    <div className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-6 rounded-2xl w-80 shadow-xl">
+
+      {/* Title */}
+      <h2 className="text-lg font-semibold mb-4 text-center">
         Edit {editing.field}
       </h2>
 
+      {/* Input */}
       <input
         type="text"
         value={editing.value}
         onChange={(e) =>
           setEditing({ ...editing, value: e.target.value })
         }
-        className="w-full border px-3 py-2 rounded mb-4"
+        className="w-full border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-lg mb-5 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
       />
 
-      <div className="flex justify-end gap-2">
+      {/* Buttons */}
+      <div className="flex justify-center items-center gap-3 mt-2">
+
+        {/* Cancel */}
         <button
           onClick={closeEdit}
-          className="px-3 py-1 border rounded"
+          className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
         >
           Cancel
         </button>
 
+        {/* Save */}
         <button
           onClick={saveEdit}
-          className="px-3 py-1 bg-black text-white rounded"
+          className="
+            px-4 py-1.5 rounded-md
+            !bg-emerald-500 !text-white
+            hover:!bg-emerald-600
+            active:scale-95
+            transition-all duration-150
+            shadow-sm
+            focus:outline-none focus:ring-2 focus:ring-emerald-400
+          "
         >
           Save Changes
         </button>
+
       </div>
 
     </div>

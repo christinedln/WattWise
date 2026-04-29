@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../api/api";
 
+
 const LEVEL_LABELS = ["Warning", "Med", "High", "Crit", "Sec"];
 
 export default function SettingsControl() {
@@ -11,6 +12,7 @@ export default function SettingsControl() {
   const [pollingInterval, setPollingInterval] = useState(5);
   const [energyThreshold, setEnergyThreshold] = useState(5000);
   const [securityLevel, setSecurityLevel] = useState(3);
+
 
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
@@ -99,6 +101,7 @@ export default function SettingsControl() {
 
   const monthlyEstimate = ((rate * 150 * 30) / 1000).toFixed(2);
 
+
   const handleSave = async () => {
     try {
       await apiFetch("/settings/update", {
@@ -137,6 +140,7 @@ export default function SettingsControl() {
 
   return (
     <div className="w-full">
+
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200 bg-white rounded-t-xl shadow-sm mb-6 w-full">
@@ -179,6 +183,7 @@ export default function SettingsControl() {
             <p className="text-sm font-bold text-gray-900 mb-1">Electricity Rate Configuration</p>
             <p className="text-xs text-gray-500 mb-5">Set your local electricity rate for accurate cost predictions</p>
 
+
             <label className="block text-xs font-semibold text-gray-700 mb-1">Rate (₱/kWh)</label>
             <div className="flex items-center gap-3">
               <input
@@ -193,6 +198,7 @@ export default function SettingsControl() {
             </div>
             <p className="text-xs text-gray-400 mt-1">This rate is used to calculate your weekly and monthly energy cost predictions</p>
 
+
             <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
               <span className="text-blue-500 text-lg mt-0.5">ℹ</span>
               <div>
@@ -201,6 +207,7 @@ export default function SettingsControl() {
               </div>
             </div>
           </div>
+
 
           <div className="flex justify-end">
             <button
@@ -222,12 +229,14 @@ export default function SettingsControl() {
         </div>
       )}
 
+
       {/* MONITORING TAB */}
       {activeTab === "Monitoring" && (
         <div className="w-full">
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5 w-full">
             <p className="text-sm font-bold text-gray-900 mb-1">Real-Time Monitoring Configuration</p>
             <p className="text-xs text-gray-500 mb-6">Adjust polling intervals and alert thresholds</p>
+
 
             {/* Polling Interval */}
             <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -243,6 +252,7 @@ export default function SettingsControl() {
               className="w-full accent-gray-900 mb-1"
             />
             <p className="text-xs text-gray-400 mb-6">Interval between each meter reading (1–60 seconds)</p>
+
 
             {/* Energy Alert Threshold */}
             <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -261,6 +271,7 @@ export default function SettingsControl() {
               <span className="text-sm text-gray-500 whitespace-nowrap">{energyThreshold}W</span>
             </div>
             <p className="text-xs text-gray-400 mt-1 mb-6">Alert will trigger when consumption exceeds this threshold</p>
+
 
             {/* Security Alert Level - Slider */}
             <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -293,6 +304,7 @@ export default function SettingsControl() {
             <p className="text-xs text-gray-400">Anomaly detection sensitivity level for unauthorized usage</p>
           </div>
 
+
           <div className="flex justify-end">
             <button
   onClick={handleSave}
@@ -313,6 +325,8 @@ export default function SettingsControl() {
         </div>
       )}
 
+
     </div>
   );
 }
+

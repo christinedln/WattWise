@@ -1,104 +1,120 @@
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calendar } from "lucide-react";
 
 export default function CostPredictions({
-  weeklyCost = 0,
-  weeklyKwh = 0,
-  monthlyCost = 0,
-  monthlyKwh = 0,
+  weeklyCost,
+  weeklyKwh,
+  monthlyCost,
+  monthlyKwh,
 }) {
-  const predictions = [
+  // ✅ normalize values (VERY IMPORTANT)
+  const safeWeeklyCost = Number(weeklyCost) || 0;
+  const safeWeeklyKwh = Number(weeklyKwh) || 0;
+  const safeMonthlyCost = Number(monthlyCost) || 0;
+  const safeMonthlyKwh = Number(monthlyKwh) || 0;
+
+  const data = [
     {
-      period: 'This Week',
-      cost: `₱${(weeklyCost ?? 0).toFixed(2)}`,
-      estimatedUsage: `${weeklyKwh ?? 0} kWh`,
-      trend: 'up',
-      trendPercent: '3.2%',
-      trendLabel: 'Mon - Sun (current billing period)',
-      bgColor: 'bg-yellow-50',
+      title: "This Week",
+      cost: safeWeeklyCost,
+      usage: safeWeeklyKwh,
+      max: 245,
+      percent: 89,
+      trend: "up",
+      change: "5.2%",
+      label: "Mon - Sun (current billing period)",
+      color: "yellow",
     },
     {
-      period: 'This Month',
-      cost: `₱${(monthlyCost ?? 0).toFixed(2)}`,
-      estimatedUsage: `${monthlyKwh ?? 0} kWh`,
-      trend: 'up',
-      trendPercent: '2.3%',
-      trendLabel: '30-day projection',
-      bgColor: 'bg-blue-50',
+      title: "This Month",
+      cost: safeMonthlyCost,
+      usage: safeMonthlyKwh,
+      max: 920,
+      percent: 67,
+      trend: "down",
+      change: "2.8%",
+      label: "Feb 1 - Feb 28 (projected)",
+      color: "blue",
     },
   ];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
-      {/* Header */}
-      <h3 className="font-bold text-lg mb-1">Energy Cost Predictions</h3>
-      <p className="text-gray-500 text-sm mb-6">
-        Daily predicted costs based on current usage
+    <div className="bg-white border border-gray-200 rounded-xl p-6">
+      <h2 className="text-xl font-bold text-gray-900">
+        Energy Cost Predictions
+      </h2>
+      <p className="text-sm text-gray-500 mb-6">
+        Weekly and monthly cost forecasts at ₱13.50/kWh
       </p>
 
-      {/* ✅ Responsive Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {predictions.map((pred, index) => (
+      <div className="grid md:grid-cols-2 gap-6">
+        {data.map((item, i) => (
           <div
-            key={index}
-            className={`${pred.bgColor} rounded-lg p-4 sm:p-5 md:p-6`}
+            key={i}
+            className="bg-green-50/40 border border-green-200 rounded-xl p-5 shadow-sm"
           >
-            {/* Period */}
-            <p className="text-sm text-gray-600 mb-2">{pred.period}</p>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`p-2 rounded-lg ${
+                    item.color === "yellow"
+                      ? "bg-yellow-100 text-yellow-600"
+                      : "bg-blue-100 text-blue-600"
+                  }`}
+                >
+                  <Calendar size={16} />
+                </div>
+                <span className="font-semibold text-gray-800">
+                  {item.title}
+                </span>
+              </div>
+
+              <div
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium
+                ${
+                  item.trend === "up"
+                    ? "bg-red-50 text-red-600"
+                    : "bg-green-50 text-green-600"
+                }`}
+              >
+                {item.trend === "up" ? (
+                  <TrendingUp size={14} />
+                ) : (
+                  <TrendingDown size={14} />
+                )}
+                {item.change}
+              </div>
+            </div>
 
             {/* Cost */}
-            <div className="flex flex-wrap items-baseline gap-2 mb-4">
-              <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
-                {pred.cost}
-              </span>
-              <span className="text-xs sm:text-sm text-gray-500">
-                estimated
-              </span>
+            <div className="flex items-baseline gap-2 mb-2">
+              <h3 className="text-3xl font-bold text-green-600">
+                ₱{item.cost.toFixed(2)}
+              </h3>
+              <span className="text-sm text-gray-500">estimated</span>
             </div>
 
-            {/* Details */}
-            <div className="space-y-3">
-
-              {/* Usage + Trend */}
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <span className="text-sm text-gray-600">
-                  {pred.estimatedUsage}
-                </span>
-
-                <div className="flex items-center gap-1">
-                  {pred.trend === 'up' ? (
-                    <TrendingUp className="w-4 h-4 text-red-500" />
-                  ) : (
-                    <TrendingDown className="w-4 h-4 text-green-500" />
-                  )}
-                  <span
-                    className={`text-sm ${
-                      pred.trend === 'up'
-                        ? 'text-red-600'
-                        : 'text-green-600'
-                    }`}
-                  >
-                    {pred.trendPercent}
-                  </span>
-                </div>
-              </div>
-
-              {/* ✅ Responsive Chart */}
-              <div className="w-full h-10 sm:h-12 bg-white/60 rounded flex items-end gap-1 p-1">
-                {[...Array(7)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 bg-gradient-to-t from-blue-400 to-blue-300 rounded-t opacity-70"
-                    style={{ height: `${30 + Math.random() * 40}%` }}
-                  />
-                ))}
-              </div>
-
-              {/* Label */}
-              <p className="text-xs text-gray-600">
-                {pred.trendLabel}
-              </p>
-
+            {/* Usage */}
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>
+                {item.usage}/{item.max} kWh
+              </span>
+              <span className="font-medium">{item.percent}%</span>
             </div>
+
+            {/* Progress */}
+            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-3">
+              <div
+                className={`h-full rounded-full ${
+                  item.color === "yellow"
+                    ? "bg-yellow-400"
+                    : "bg-blue-400"
+                }`}
+                style={{ width: `${item.percent}%` }}
+              />
+            </div>
+
+            <p className="text-xs text-gray-500">{item.label}</p>
           </div>
         ))}
       </div>

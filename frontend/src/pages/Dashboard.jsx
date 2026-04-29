@@ -60,7 +60,7 @@ export default function DashboardPage() {
 
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900">
-                WattWise Dashboard
+                Energy Dashboard
               </h1>
               <p className="text-gray-500">
                 Real-time monitoring and predictions
