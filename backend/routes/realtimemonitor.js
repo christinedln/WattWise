@@ -64,9 +64,18 @@ router.get("/device/:device_id", authRequired, async (req, res) => {
 // ===============================
 router.get("/power-trend/:device_id", authRequired, async (req, res) => {
     try {
+        const userId = req.user_id;
         const deviceId = req.params.device_id;
 
-        const trend = await computePowerTrend(deviceId);
+        const devices = await mergeDeviceData(userId);
+
+        const device = devices.find(d => d.device_id === deviceId);
+
+        if (!device) {
+            return res.status(404).json({ error: "Device not found" });
+        }
+
+        const trend = computePowerTrend(device.realtime_logs);
 
         res.json(trend);
 

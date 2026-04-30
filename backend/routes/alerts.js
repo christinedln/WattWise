@@ -1,11 +1,10 @@
+//routes/alerts
 const express = require("express");
 const router = express.Router();
 
-// Services
-const { getDevices } = require("../services/data_service");
+const { mergeDeviceData } = require("../utils/mapper");
 
-// Utils
-const { generateAlerts } = require("../utils/alerts");
+// Auth
 const authRequired = require("../utils/auth");
 
 // GET ALERTS
@@ -13,9 +12,19 @@ router.get("/", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
 
-        const devices = await getDevices(userId);
+        const devices = await mergeDeviceData(userId);
 
-        const alerts = generateAlerts(devices);
+        // extract only alerts
+        const alerts = [];
+
+        for (const d of devices) {
+            alerts.push({
+                device_id: d.device_id,
+                device_name: d.name,
+                severity: d.severity,
+                message: d.alert_message
+            });
+        }
 
         res.json(alerts);
 

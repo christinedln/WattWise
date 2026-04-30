@@ -46,7 +46,7 @@ router.post("/update", authRequired, async (req, res) => {
     }
 
     const settingsRef = db
-      .collection("test_user")
+      .collection("user")
       .doc(userId)
       .collection("devices")
       .doc(deviceId)

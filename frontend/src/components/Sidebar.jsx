@@ -35,7 +35,7 @@ export default function Sidebar() {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
 
-      const docRef = doc(db, "users", uid);
+      const docRef = doc(db, "user", uid);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) setUserData(docSnap.data());

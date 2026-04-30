@@ -35,8 +35,8 @@ export default function RealtimeMonitoringPage() {
     };
 
     fetchDevices();
-    const interval = setInterval(fetchDevices, 2000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchDevices, 2000);
+    // return () => clearInterval(interval);
   }, [selectedDevice]);
 
   // FETCH POWER TREND

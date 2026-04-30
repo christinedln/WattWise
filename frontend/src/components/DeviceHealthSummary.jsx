@@ -3,10 +3,10 @@ export default function DeviceHealthSummary({ readings = [] }) {
   // ── COUNTERS ─────────────────────────────
   const healthCounts = {
     Active: readings.filter(d => d.status === "active").length,
-    Critical: readings.filter(d => d.health === "Critical").length,
-    Suspicious: readings.filter(d => d.health === "Suspicious").length,
-    Warning: readings.filter(d => d.health === "Warning").length,
-    Normal: readings.filter(d => d.health === "Normal").length,
+    Critical: readings.filter(d => d.severity === "Critical").length,
+    Suspicious: readings.filter(d => d.severity === "Suspicious").length,
+    Warning: readings.filter(d => d.severity === "Warning").length,
+    Normal: readings.filter(d => d.severity === "Normal").length,
     Offline: readings.filter(d => d.status == "offline").length,
   };
 

@@ -8,7 +8,7 @@ const { db } = require("../firebase_config");
 
 // Auth middleware
 const authRequired = require("../utils/auth");
-
+let relayState = "ON";
 
 // ===============================
 // GET ALL DEVICES
@@ -33,6 +33,44 @@ router.get("/", authRequired, async (req, res) => {
         });
     }
 });
+
+router.get("/toggle", authRequired, async (req, res) => {
+    relayState = relayState === "ON" ? "OFF" : "ON";
+
+    res.json({
+        status: "success",
+        relay: relayState
+    });
+});
+
+router.get("/relay", (req, res) => {
+    res.json({ relay: relayState });
+});
+
+// ===============================
+// GET DEVICES BY USER (same as above)
+// ===============================
+router.get("/devices", authRequired, async (req, res) => {
+    try {
+        const userId = req.user_id;
+
+        const devices = await mergeDeviceData(userId);
+
+        res.json({
+            status: "success",
+            count: devices.length,
+            data: devices
+        });
+
+    } catch (error) {
+        console.error("Get user devices error:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Server error"
+        });
+    }
+});
+
 
 // ===============================
 // UPDATE DEVICE (PATCH)

@@ -23,7 +23,7 @@ const TrashIcon = () => (
   </svg>
 );
 
-// NEW: Pencil Icon
+// ✅ NEW: Pencil Icon
 const PencilIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 20h9" />
@@ -33,8 +33,8 @@ const PencilIcon = () => (
 
 
 // ─── Status Badge ─────────────────────────────────
-function StatusBadge({ status, severity }) {
-  if (severity === "Critical") {
+function StatusBadge({ status, health }) {
+  if (health === "Critical") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-red-50 text-red-700 border border-red-200">
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
@@ -43,7 +43,7 @@ function StatusBadge({ status, severity }) {
     );
   }
 
-  if (severity === "Warning") {
+  if (health === "Warning") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-amber-50 text-amber-700 border border-amber-200">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
@@ -52,7 +52,7 @@ function StatusBadge({ status, severity }) {
     );
   }
 
-  if (severity === "Suspicious") {
+  if (health === "Suspicious") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-purple-50 text-purple-700 border border-purple-200">
         <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block" />
@@ -88,7 +88,7 @@ function UsageBar({ pct }) {
 }
 
 // ─── Row ─────────────────────────────────────
-function DeviceRow({ device, pct, openEdit }) {
+function DeviceRow({ device, pct, openEdit, togglePower }) {
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50">
       <td className="px-4 py-3 font-semibold whitespace-nowrap">
@@ -109,7 +109,7 @@ function DeviceRow({ device, pct, openEdit }) {
 </td>
 
       <td className="px-4 py-3">
-        <StatusBadge status={device.status} severity={device.severity} />
+        <StatusBadge status={device.status} health={device.health} />
       </td>
 
       <td className="px-4 py-3 font-mono text-sm text-gray-700 font-medium">{device.kwh}</td>
@@ -128,6 +128,7 @@ function DeviceRow({ device, pct, openEdit }) {
           {/* ── Toggle Power ── */}
           <button
             title="Toggle power"
+            onClick={() => togglePower(device.device_id)}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -274,7 +275,7 @@ export default function DeviceManagement() {
         location: d.location,
         status: d.status,
         kwh: d.consumption,
-        severity: d.severity,
+        health: d.health,
         lastUpdated: d.lastUpdated,
         activity_timeline: d.activity_timeline || []
       }));
@@ -320,6 +321,28 @@ export default function DeviceManagement() {
   }
 };
 
+const togglePower = async (deviceId) => {
+  try {
+    const res = await apiFetch("/devices/toggle", {
+      method: "GET",
+    });
+
+    console.log("Relay:", res.relay);
+
+    // OPTIONAL: update UI instantly
+    setDevices((prev) =>
+      prev.map((d) =>
+        d.device_id === deviceId
+          ? { ...d, status: res.relay === "ON" ? "active" : "offline" }
+          : d
+      )
+    );
+
+  } catch (err) {
+    console.error("Toggle failed", err);
+  }
+};
+
 
   // ─── FILTER LOGIC ─────────────────────────────
   const filteredDevices = devices.filter((d) => {
@@ -327,7 +350,7 @@ export default function DeviceManagement() {
     if (filter === "active") return d.status === "active";
     if (filter === "offline") return d.status === "offline";
 
-    return d.severity === filter;
+    return d.health === filter;
   });
 
   const totalKwh = filteredDevices.reduce((s, d) => s + d.kwh, 0);
@@ -336,10 +359,10 @@ export default function DeviceManagement() {
   const counts = {
     active:     devices.filter(d => d.status === "active").length,
     offline:    devices.filter(d => d.status === "offline").length,
-    Critical:   devices.filter(d => d.severity === "Critical").length,
-    Warning:    devices.filter(d => d.severity === "Warning").length,
-    Suspicious: devices.filter(d => d.severity === "Suspicious").length,
-    Normal:     devices.filter(d => d.severity === "Normal").length,
+    Critical:   devices.filter(d => d.health === "Critical").length,
+    Warning:    devices.filter(d => d.health === "Warning").length,
+    Suspicious: devices.filter(d => d.health === "Suspicious").length,
+    Normal:     devices.filter(d => d.health === "Normal").length,
   };
 
   return (
@@ -350,6 +373,7 @@ export default function DeviceManagement() {
         <p className="text-sm text-gray-400 mt-0.5">Monitor, control, and analyze all connected devices</p>
       </div>
 
+      {/* ── HEALTH SUMMARY CARDS ───────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
         <SummaryCard label="Active"     count={counts.active}     colorClass="bg-emerald-50 border-emerald-100 text-emerald-800" />
         <SummaryCard label="Offline"    count={counts.offline}    colorClass="bg-gray-50 border-gray-200 text-gray-700" />
@@ -379,13 +403,13 @@ export default function DeviceManagement() {
       {/* ── TABLE ───────────────────────────── */}
 <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
   
-  {/* enables horizontal scroll on small screens */}
+  {/* ✅ enables horizontal scroll on small screens */}
   <div className="overflow-x-auto">
     <table className="min-w-[900px] w-full">
       
       <thead>
         <tr className="border-b border-gray-100 bg-gray-50">
-          {["Name", "Location", "Status/Severity", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
+          {["Name", "Location", "Status / Health", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
             <th
               key={h}
               className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"
@@ -401,7 +425,7 @@ export default function DeviceManagement() {
               <React.Fragment key={d.id}>
                 <DeviceRow
                   device={d}
-                  pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0} openEdit={openEdit}
+                  pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0} openEdit={openEdit} togglePower={togglePower}
                 />
                 <tr>
                   <td colSpan="7">
