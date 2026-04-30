@@ -23,7 +23,7 @@ const TrashIcon = () => (
   </svg>
 );
 
-// ✅ NEW: Pencil Icon
+// NEW: Pencil Icon
 const PencilIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 20h9" />
@@ -33,8 +33,8 @@ const PencilIcon = () => (
 
 
 // ─── Status Badge ─────────────────────────────────
-function StatusBadge({ status, health }) {
-  if (health === "Critical") {
+function StatusBadge({ status, severity }) {
+  if (severity === "Critical") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-red-50 text-red-700 border border-red-200">
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
@@ -43,7 +43,7 @@ function StatusBadge({ status, health }) {
     );
   }
 
-  if (health === "Warning") {
+  if (severity === "Warning") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-amber-50 text-amber-700 border border-amber-200">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
@@ -52,7 +52,7 @@ function StatusBadge({ status, health }) {
     );
   }
 
-  if (health === "Suspicious") {
+  if (severity === "Suspicious") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-purple-50 text-purple-700 border border-purple-200">
         <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block" />
@@ -109,7 +109,7 @@ function DeviceRow({ device, pct, openEdit }) {
 </td>
 
       <td className="px-4 py-3">
-        <StatusBadge status={device.status} health={device.health} />
+        <StatusBadge status={device.status} severity={device.severity} />
       </td>
 
       <td className="px-4 py-3 font-mono text-sm text-gray-700 font-medium">{device.kwh}</td>
@@ -308,7 +308,7 @@ export default function DeviceManagement() {
         location: d.location,
         status: d.status,
         kwh: d.consumption,
-        health: d.health,
+        severity: d.severity,
         lastUpdated: d.lastUpdated,
         activity_timeline: d.activity_timeline || []
       }));
@@ -361,7 +361,7 @@ export default function DeviceManagement() {
     if (filter === "active") return d.status === "active";
     if (filter === "offline") return d.status === "offline";
 
-    return d.health === filter;
+    return d.severity === filter;
   });
 
   const totalKwh = filteredDevices.reduce((s, d) => s + d.kwh, 0);
@@ -370,10 +370,10 @@ export default function DeviceManagement() {
   const counts = {
     active:     devices.filter(d => d.status === "active").length,
     offline:    devices.filter(d => d.status === "offline").length,
-    Critical:   devices.filter(d => d.health === "Critical").length,
-    Warning:    devices.filter(d => d.health === "Warning").length,
-    Suspicious: devices.filter(d => d.health === "Suspicious").length,
-    Normal:     devices.filter(d => d.health === "Normal").length,
+    Critical:   devices.filter(d => d.severity === "Critical").length,
+    Warning:    devices.filter(d => d.severity === "Warning").length,
+    Suspicious: devices.filter(d => d.severity === "Suspicious").length,
+    Normal:     devices.filter(d => d.severity === "Normal").length,
   };
 
   return (
@@ -384,7 +384,6 @@ export default function DeviceManagement() {
         <p className="text-sm text-gray-400 mt-0.5">Monitor, control, and analyze all connected devices</p>
       </div>
 
-      {/* ── HEALTH SUMMARY CARDS ───────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
         <SummaryCard label="Active"     count={counts.active}     colorClass="bg-emerald-50 border-emerald-100 text-emerald-800" />
         <SummaryCard label="Offline"    count={counts.offline}    colorClass="bg-gray-50 border-gray-200 text-gray-700" />
@@ -414,13 +413,13 @@ export default function DeviceManagement() {
       {/* ── TABLE ───────────────────────────── */}
 <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
   
-  {/* ✅ enables horizontal scroll on small screens */}
+  {/* enables horizontal scroll on small screens */}
   <div className="overflow-x-auto">
     <table className="min-w-[900px] w-full">
       
       <thead>
         <tr className="border-b border-gray-100 bg-gray-50">
-          {["Name", "Location", "Status / Health", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
+          {["Name", "Location", "Status/Severity", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
             <th
               key={h}
               className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"

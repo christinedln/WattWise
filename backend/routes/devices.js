@@ -34,32 +34,6 @@ router.get("/", authRequired, async (req, res) => {
     }
 });
 
-
-// ===============================
-// GET DEVICES BY USER (same as above)
-// ===============================
-router.get("/devices", authRequired, async (req, res) => {
-    try {
-        const userId = req.user_id;
-
-        const devices = await mergeDeviceData(userId);
-
-        res.json({
-            status: "success",
-            count: devices.length,
-            data: devices
-        });
-
-    } catch (error) {
-        console.error("Get user devices error:", error);
-        res.status(500).json({
-            status: "error",
-            message: "Server error"
-        });
-    }
-});
-
-
 // ===============================
 // UPDATE DEVICE (PATCH)
 // ===============================

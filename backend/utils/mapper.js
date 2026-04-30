@@ -1,78 +1,81 @@
-const { getDevices } = require("../services/data_service");
-const { generateAlerts } = require("../utils/alerts");
+const { getDevices, getRealtimeLogs } = require("../services/data_service");
+const { generateCurrentAlerts } = require("./generateCurrentAlerts");
 const { nowTime } = require("../utils/time_helper");
 
 async function mergeDeviceData(userId) {
     const devices = await getDevices(userId) || [];
-    const alerts = generateAlerts(devices);
 
     const merged = [];
-
-    // severity priority
-    const priority = {
-        Critical: 4,
-        Suspicious: 3,
-        Warning: 2,
-        Normal: 1,
-        Offline: 0
-    };
 
     for (const d of devices) {
         const deviceId = d.device_id || d.id;
 
-        // ── FIND DEVICE ALERT GROUP ──
-        const deviceGroup = alerts.find(
-            a => a.device_id == deviceId
-        );
+        // RAW LOGS
+        const realtimeLogs = await getRealtimeLogs(userId, deviceId, 10);
 
-        // ── DETERMINE HEALTH + MESSAGE ──
-        let health = "Normal";
-        let message = "No issues detected";
+        // ==============================
+        // SIGNAL-SPECIFIC MAPPING
+        // ==============================
+        const structuredLogs = {
+            current: realtimeLogs.map(log => ({
+                value: log.Current ?? 0,
+                timestamp: log.Timestamp,
+                signal: "current"
+            })),
 
-        if (deviceGroup && deviceGroup.alerts?.length) {
-            const best = deviceGroup.alerts.reduce((prev, curr) => {
-                const prevP = priority[prev?.health] || 0;
-                const currP = priority[curr?.health] || 0;
-                return currP > prevP ? curr : prev;
-            });
+            voltage: realtimeLogs.map(log => ({
+                value: log.Voltage ?? 0,
+                timestamp: log.Timestamp,
+                signal: "voltage"
+            })),
 
-            health = best?.health || "Normal";
-            message = best?.message || "No issues detected";
-        }
+            power: realtimeLogs.map(log => ({
+                value: log.Power ?? 0,
+                timestamp: log.Timestamp,
+                signal: "power"
+            }))
+        };
 
-        // ── ACTIVITY TIMELINE ──
+        d.realtime_logs = structuredLogs;
+
+        // ==============================
+        // CURRENT ALERT ENGINE ONLY
+        // ==============================
+        const alerts = generateCurrentAlerts([{
+            ...d,
+            signal_type: "current",
+            logs: structuredLogs.current
+        }]);
+
+        const deviceAlert = alerts[0];
+
+        const severity = deviceAlert?.severity || "Normal";
+        const message = deviceAlert?.message || "No issues detected";
+
+        // ==============================
+        // TIMELINE
+        // ==============================
         const timeline = [
+            { time: nowTime(), event: "Device checked" },
             {
                 time: nowTime(),
-                event: "Device checked"
+                event: d.status === "ON"
+                    ? "Device active"
+                    : "Device offline"
             }
         ];
 
-        if (d.status === "ON") {
-            timeline.push({
-                time: nowTime(),
-                event: "Device active"
-            });
-        } else {
-            timeline.push({
-                time: nowTime(),
-                event: "Device offline"
-            });
+        if (severity === "Critical") {
+            timeline.push({ time: nowTime(), event: "Current critical condition detected" });
+        } else if (severity === "Suspicious") {
+            timeline.push({ time: nowTime(), event: "Current suspicious condition detected" });
+        } else if (severity === "Warning") {
+            timeline.push({ time: nowTime(), event: "Current warning condition detected" });
         }
 
-        if (health === "Critical") {
-            timeline.push({
-                time: nowTime(),
-                event: "Critical condition detected"
-            });
-        } else if (health === "Warning") {
-            timeline.push({
-                time: nowTime(),
-                event: "Warning condition detected"
-            });
-        }
-
-        // ── FINAL MERGED DEVICE OBJECT ──
+        // ==============================
+        // FINAL MERGED DEVICE OBJECT
+        // ==============================
         merged.push({
             id: `device-${deviceId}`,
             device_id: deviceId,
@@ -86,11 +89,13 @@ async function mergeDeviceData(userId) {
             power: d.power || 0,
             runtime: d.runtime || 0,
 
-            status: d.status === "ON" ? "active" : "offline",
+            // IMPORTANT: signal context
+            signal: "current",
 
+            status: d.status === "ON" ? "active" : "offline",
             enabled: d.enabled ?? true,
 
-            health,
+            severity,
             alert_message: message,
 
             consumption: Number(
@@ -99,7 +104,9 @@ async function mergeDeviceData(userId) {
 
             lastUpdated: nowTime(),
 
-            activity_timeline: timeline
+            activity_timeline: timeline,
+
+            realtime_logs: structuredLogs
         });
     }
 

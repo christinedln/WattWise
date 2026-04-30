@@ -1,21 +1,3 @@
-export const mockAlerts = [
-  { id: 1, type: "Warning", title: "Main AC Unit", description: "AC unit consuming higher than usual power", category: "High Consumption", time: "16 minutes ago", resolved: false },
-  { id: 2, type: "Critical", title: "Main AC Unit", description: "AC unit drawing dangerously high current", category: "Overload", time: "1 hour ago", resolved: false },
-  { id: 3, type: "Info", title: "Main AC Unit", description: "AC unit usage peaked at 4.2kWh today", category: "Daily Report", time: "3 hours ago", resolved: true },
-];
-
-
-export const mockHistory = [
-  { id: 1, type: "Warning",  title: "Main AC Unit", event: "Triggered", timestamp: "Mar 13, 2026 · 10:26 AM" },
-  { id: 2, type: "Warning",  title: "Main AC Unit", event: "Resolved",  timestamp: "Mar 13, 2026 · 10:45 AM" },
-  { id: 3, type: "Critical", title: "Main AC Unit", event: "Triggered", timestamp: "Mar 13, 2026 · 09:00 AM" },
-  { id: 4, type: "Critical", title: "Main AC Unit", event: "Resolved",  timestamp: "Mar 13, 2026 · 09:20 AM" },
-  { id: 5, type: "Info",     title: "Main AC Unit", event: "Triggered", timestamp: "Mar 12, 2026 · 08:00 AM" },
-  { id: 6, type: "Warning",  title: "Main AC Unit", event: "Triggered", timestamp: "Mar 11, 2026 · 07:55 PM" },
-  { id: 7, type: "Warning",  title: "Main AC Unit", event: "Resolved",  timestamp: "Mar 11, 2026 · 08:10 PM" },
-];
-
-
 export const TYPE = {
   Warning:  { badge: "bg-orange-100 text-orange-700 border-orange-200", dot: "bg-orange-400" },
   Critical: { badge: "bg-red-100 text-red-700 border-red-200",         dot: "bg-red-500"    },

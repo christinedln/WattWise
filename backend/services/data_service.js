@@ -1,3 +1,4 @@
+//services/data_service
 const { db } = require("../firebase_config");
 
 // DEFAULT SETTINGS (fallback for all devices)
@@ -12,7 +13,7 @@ const DEFAULT_SETTINGS = {
 async function getDevices(userId) {
   try {
     const devicesRef = db
-      .collection("test_user")
+      .collection("user")
       .doc(userId)
       .collection("devices");
 
@@ -74,6 +75,31 @@ async function getDevices(userId) {
   }
 }
 
+async function getRealtimeLogs(userId, deviceId, limit = 10) {
+  try {
+    const logsRef = db
+      .collection("user")
+      .doc(userId)
+      .collection("devices")
+      .doc(deviceId)
+      .collection("realtime_logs");
+
+    const snapshot = await logsRef
+      .orderBy("Timestamp", "desc")
+      .limit(limit)
+      .get();
+
+    const logs = snapshot.docs.map(doc => doc.data());
+
+    // return in chronological order (important for EWMA)
+    return logs.reverse();
+
+  } catch (error) {
+    console.error("Logs fetch error:", error);
+    return [];
+  }
+}
+
 // Get electricity rate per device (FIXED: uses mapper now)
 async function getRate(userId, deviceId) {
   try {
@@ -81,8 +107,6 @@ async function getRate(userId, deviceId) {
     const device = devices.find(d => d.device_id === deviceId);
 
     const rate = device?.settings?.electricity_rate;
-
-    console.log(`[RATE DEBUG] ${deviceId} from mapper:`, rate);
 
     return rate ?? DEFAULT_SETTINGS.electricity_rate;
 
@@ -94,5 +118,6 @@ async function getRate(userId, deviceId) {
 
 module.exports = {
   getDevices,
-  getRate
+  getRate,
+  getRealtimeLogs
 };

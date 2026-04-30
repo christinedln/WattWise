@@ -93,7 +93,7 @@ export default function SignUpPage() {
 
       const db = getFirestore();
 
-      await setDoc(doc(db, "test_user", user.uid), {
+      await setDoc(doc(db, "user", user.uid), {
         uid: user.uid,
         fullName,
         email: user.email,

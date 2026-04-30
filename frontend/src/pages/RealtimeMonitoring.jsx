@@ -27,7 +27,7 @@ export default function RealtimeMonitoringPage() {
         setDevices(data);
 
         if (!selectedDevice && data.length > 0) {
-          setSelectedDevice(data[0].id);
+          setSelectedDevice(data[0].device_id);
         }
       } catch (err) {
         console.error("Device fetch error:", err);
@@ -35,8 +35,8 @@ export default function RealtimeMonitoringPage() {
     };
 
     fetchDevices();
-    const interval = setInterval(fetchDevices, 2000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchDevices, 2000);
+    // return () => clearInterval(interval);
   }, [selectedDevice]);
 
   // FETCH POWER TREND
@@ -44,24 +44,29 @@ export default function RealtimeMonitoringPage() {
     if (!selectedDevice) return;
 
     const fetchTrend = async () => {
-      try {
-        const data = await apiFetch("/realtime/devices");
+  try {
+    const data = await apiFetch(`/realtime/power-trend/${selectedDevice}`);
 
-        const formatted = data.map((p, i) => ({
-          time: `${i}:00`,
-          power: p.power || p
-        }));
+    const formatted = data.map(point => ({
+  ...point,
+  time: new Date(point.time).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  })
+}));
 
-        setChartData(formatted);
-      } catch (err) {
-        console.error("Trend fetch error:", err);
-      }
-    };
+setChartData(formatted);
+  } catch (err) {
+    console.error("Trend fetch error:", err);
+  }
+};
 
     fetchTrend();
   }, [selectedDevice]);
 
-  const device = devices.find((d) => d.id === selectedDevice);
+  const device = devices.find((d) => d.device_id === selectedDevice);
 
   return (
     <Layout>
@@ -195,11 +200,13 @@ export default function RealtimeMonitoringPage() {
                       <YAxis />
                       <Tooltip />
                       <Line
-                        type="monotone"
-                        dataKey="power"
-                        stroke="#16a34a"
-                        strokeWidth={2}
-                      />
+  type="monotone"
+  dataKey="power"
+  stroke="#16a34a"
+  strokeWidth={2}
+  dot={{ r: 3 }}
+  activeDot={{ r: 6 }}
+/>
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
