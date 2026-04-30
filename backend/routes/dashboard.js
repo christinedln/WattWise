@@ -5,6 +5,7 @@ const { getDevices, getRate } = require("../services/data_service");
 const { mergeDeviceData } = require("../utils/mapper");
 const { calcKwh } = require("../utils/calculations");
 const authRequired = require("../utils/auth");
+const { getDailyConsumption, computeForecast } = require("../services/energyAnalytics");
 
 // SUMMARY
 router.get("/summary", authRequired, async (req, res) => {
@@ -61,27 +62,13 @@ router.get("/summary", authRequired, async (req, res) => {
         });
 
         // PREDICTIONS
-        const totalConsumption = enrichedDevices.reduce(
-            (sum, d) => sum + (d.consumption || 0),
-            0
-        );
+        const dailyData   = await getDailyConsumption(userId);
+        const forecast    = computeForecast(dailyData, ratePerKwh);
 
-        const totalRuntimeHours = Math.max(
-            devices.reduce(
-                (sum, d) => sum + (d.runtime || 0),
-                0
-            ) / 3600,
-            1
-        );
-
-        const kwhPerHour = totalConsumption / totalRuntimeHours;
-
-        const dailyKwh = Number((kwhPerHour * 24).toFixed(4));
-        const weeklyKwh = Number((dailyKwh * 7).toFixed(4));
-        const monthlyKwh = Number((dailyKwh * 30).toFixed(4));
-
-        const weeklyCost = Number((weeklyKwh * ratePerKwh).toFixed(2));
-        const monthlyCost = Number((monthlyKwh * ratePerKwh).toFixed(2));
+        const weeklyKwh   = Number(forecast.weekly_kwh.toFixed(4));
+        const monthlyKwh  = Number(forecast.monthly_kwh.toFixed(4));
+        const weeklyCost  = Number(forecast.weekly_cost.toFixed(2));
+        const monthlyCost = Number(forecast.monthly_cost.toFixed(2));
 
         // RESPONSE
         res.json({
