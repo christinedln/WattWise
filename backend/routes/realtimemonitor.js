@@ -16,9 +16,9 @@ router.get("/devices", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
 
-        const devices = await mergeDeviceData(userId);
+        const devices = await mergeDeviceData(userId) || [];
 
-        const updated = devices.map(d => ({
+        const updated = (devices || []).map(d => ({
             ...d,
             message: d.alert_message || null
         }));
@@ -40,9 +40,15 @@ router.get("/device/:device_id", authRequired, async (req, res) => {
         const userId = req.user_id;
         const deviceId = req.params.device_id;
 
-        const devices = await mergeDeviceData(userId);
+        if (!deviceId || typeof deviceId !== "string" || deviceId.trim() === "") {
+            return res.status(400).json({
+                error: "Invalid device ID"
+            });
+        }
 
-        const device = devices.find(d => d.device_id === deviceId);
+        const devices = await mergeDeviceData(userId) || [];
+
+        const device = (devices || []).find(d => d.device_id === deviceId);
 
         if (!device) {
             return res.status(404).json({ error: "Device not found" });
@@ -67,15 +73,15 @@ router.get("/power-trend/:device_id", authRequired, async (req, res) => {
         const userId = req.user_id;
         const deviceId = req.params.device_id;
 
-        const devices = await mergeDeviceData(userId);
+        const devices = await mergeDeviceData(userId) || [];
 
-        const device = devices.find(d => d.device_id === deviceId);
+        const device = (devices || []).find(d => d.device_id === deviceId);
 
         if (!device) {
             return res.status(404).json({ error: "Device not found" });
         }
 
-        const trend = computePowerTrend(device.realtime_logs);
+        const trend = computePowerTrend(device.realtime_logs || []);
 
         res.json(trend);
 

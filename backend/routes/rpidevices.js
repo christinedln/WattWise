@@ -17,7 +17,7 @@ router.get("/", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
 
-        const devices = await mergeDeviceData(userId);
+        const devices = await mergeDeviceData(userId) || [];
 
         res.json({
             status: "success",
@@ -43,7 +43,7 @@ router.get("/toggle", authRequired, async (req, res) => {
     });
 });
 
-router.get("/relay", (req, res) => {
+router.get("/relay", authRequired, (req, res) => {
     res.json({ relay: relayState });
 });
 
@@ -54,7 +54,7 @@ router.get("/devices", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
 
-        const devices = await mergeDeviceData(userId);
+        const devices = await mergeDeviceData(userId) || [];
 
         res.json({
             status: "success",
@@ -79,13 +79,53 @@ router.patch("/:device_id", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
         const deviceId = req.params.device_id;
+        if (!deviceId || typeof deviceId !== "string" || deviceId.trim() === "") {
+            return res.status(400).json({
+                status: "error",
+                message: "Invalid device ID"
+            });
+        }
         const { enabled, name, location } = req.body;
 
+        if (enabled !== undefined && typeof enabled !== "boolean") {
+            return res.status(400).json({
+                status: "error",
+                message: "enabled must be boolean"
+            });
+        }
+
+        if (name !== undefined && typeof name !== "string") {
+            return res.status(400).json({
+                status: "error",
+                message: "name must be string"
+            });
+        }
+
+        if (location !== undefined && typeof location !== "string") {
+            return res.status(400).json({
+                status: "error",
+                message: "location must be string"
+            });
+        }
+
+        if (updates.name === "") {
+            return res.status(400).json({
+                status: "error",
+                message: "Name cannot be empty"
+            });
+        }
+
+        if (updates.location === "") {
+            return res.status(400).json({
+                status: "error",
+                message: "Location cannot be empty"
+            });
+        }
         const updates = {};
 
         if (enabled !== undefined) updates.enabled = enabled;
-        if (name !== undefined) updates.name = name;
-        if (location !== undefined) updates.location = location;
+        if (name !== undefined) updates.name = name.trim();
+        if (location !== undefined) updates.location = location.trim();
 
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({
@@ -126,8 +166,21 @@ router.get("/summary", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
 
-        const devices = await mergeDeviceData(userId);
-        const rate = await getRate(userId);
+        const devices = await mergeDeviceData(userId) || [];
+        const rate = await getRate(userId) || 0;
+
+        if (!devices.length) {
+            return res.json({
+                status: "success",
+                data: {
+                    total_devices: 0,
+                    active: 0,
+                    offline: 0,
+                    total_kwh: 0,
+                    estimated_cost: 0
+                }
+            });
+        }
 
         const totalKwh = devices.reduce(
             (sum, d) => sum + (d.consumption || 0),

@@ -1,5 +1,7 @@
 function generateCurrentAlerts(devices) {
 
+    if (!Array.isArray(devices)) return [];
+
     const severityRank = {
         Normal: 0,
         Warning: 1,
@@ -13,24 +15,32 @@ function generateCurrentAlerts(devices) {
 
         const deviceId = String(d.device_id);
 
-        const logs = d.logs || [];
+        const logs = Array.isArray(d.logs) ? d.logs : [];
 
         grouped[deviceId] = {
             device_id: deviceId,
-            name: d.name,
+            name: d.name || "Unknown Device",
             alerts: []
         };
 
         if (logs.length === 0) continue;
 
         // extract values from structured logs
-        const I = logs.map(x => x.value ?? 0);
-
-        const mean = I.reduce((a, b) => a + b, 0) / I.length;
-
-        const std = Math.sqrt(
-            I.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / I.length
+        const I = logs.map(x =>
+            typeof x.value === "number" ? x.value : 0
         );
+
+        const mean =
+            I.length > 0
+                ? I.reduce((a, b) => a + b, 0) / I.length
+                : 0;
+
+        const std =
+            I.length > 0
+                ? Math.sqrt(
+                    I.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / I.length
+                )
+                : 0;
 
         const z = (x) => std === 0 ? 0 : (x - mean) / std;
 
@@ -39,7 +49,7 @@ function generateCurrentAlerts(devices) {
 
         for (const log of logs) {
 
-            const i = log.value ?? 0;   
+            const i = typeof log.value === "number" ? log.value : 0;  
             const zi = Math.abs(z(i));
 
             let severity = "Normal";
