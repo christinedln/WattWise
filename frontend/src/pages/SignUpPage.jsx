@@ -30,18 +30,27 @@ export default function SignUpPage() {
 
   const navigate = useNavigate();
 
-  // Handle email/password signup
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!agreeToTerms) {
-      alert("You must agree to the terms and privacy policy.");
-      return;
+    if (!fullName.trim()) {
+      return alert("Full name is required");
+    }
+
+    if (!email || !email.includes("@")) {
+      return alert("Please enter a valid email");
+    }
+
+    if (!password || password.length < 6) {
+      return alert("Password must be at least 6 characters");
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
+      return alert("Passwords do not match.");
+    }
+
+    if (!agreeToTerms) {
+      return alert("You must agree to the terms and privacy policy.");
     }
 
     try {
@@ -59,19 +68,26 @@ export default function SignUpPage() {
         createdAt: new Date()
       });
 
-      navigate("/");
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+
+      navigate("/dashboard");
     } catch (error) {
       console.error("Signup error:", error.message);
       alert(error.message);
     }
   };
 
-  // Handle Google signup/login
   const handleGoogleAuth = async () => {
     const provider = new GoogleAuthProvider();
+
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+
       navigate("/dashboard");
     } catch (error) {
       console.error("Google auth error:", error.message);
@@ -82,7 +98,6 @@ export default function SignUpPage() {
   return (
     <Layout>
       <div className="h-screen w-screen flex overflow-hidden">
-        {/* Left - Features */}
         <div className="hidden md:flex flex-col flex-1 p-8 overflow-hidden bg-card text-card-foreground">
           <Header />
           <div className="flex flex-col justify-between h-full">
@@ -96,10 +111,7 @@ export default function SignUpPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {features.map((f, i) => (
-                <div
-                  key={i}
-                  className="bg-green-50 border border-green-200 rounded-lg p-4 md:p-6 flex flex-col items-start"
-                >
+                <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 md:p-6 flex flex-col items-start">
                   <div className="text-3xl md:text-4xl mb-2">{f.icon}</div>
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">{f.title}</h3>
                   <p className="text-sm md:text-base text-gray-700 dark:text-gray-300">{f.description}</p>
@@ -109,7 +121,6 @@ export default function SignUpPage() {
           </div>
         </div>
 
-        {/* Right - Signup Form */}
         <div className="flex flex-1 justify-center items-start bg-card text-card-foreground">
           <div className="w-full max-w-md px-6 md:px-8 py-8 md:py-10 overflow-hidden">
             <h2 className="text-2xl md:text-3xl font-bold mb-1 text-foreground">Create account</h2>
@@ -118,7 +129,6 @@ export default function SignUpPage() {
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
-              {/* Full Name */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Full Name</label>
                 <input
@@ -130,7 +140,6 @@ export default function SignUpPage() {
                 />
               </div>
 
-              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Email address</label>
                 <input
@@ -142,7 +151,6 @@ export default function SignUpPage() {
                 />
               </div>
 
-              {/* Password */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Password</label>
                 <div className="relative">
@@ -164,7 +172,6 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              {/* Confirm Password */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Confirm Password</label>
                 <div className="relative">
@@ -186,7 +193,6 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              {/* Terms */}
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
                 <input
                   type="checkbox"
@@ -210,14 +216,12 @@ export default function SignUpPage() {
               </button>
             </form>
 
-            {/* Divider */}
             <div className="flex items-center my-3">
               <hr className="flex-1 border-border" />
               <span className="mx-2 text-muted-foreground text-sm">Or continue with</span>
               <hr className="flex-1 border-border" />
             </div>
 
-            {/* Google Signup/Login */}
             <button
               onClick={handleGoogleAuth}
               className="w-full border border-border py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-muted transition-colors"
@@ -226,7 +230,6 @@ export default function SignUpPage() {
               <span className="text-foreground font-medium">Google</span>
             </button>
 
-            {/* Sign In */}
             <p className="mt-3 text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link to="/" className="font-medium !text-green-700 hover:!text-green-800">Sign In</Link>

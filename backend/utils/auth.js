@@ -1,32 +1,47 @@
 const admin = require("firebase-admin");
 
-function authRequired(req, res, next) {
+/**
+ * Middleware: authRequired
+ * Purpose: Protect routes by verifying Firebase ID token
+ */
+async function authRequired(req, res, next) {
+    // 1. Get Authorization header
     const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
-        return res.status(401).json({ error: "Missing token" });
+    // 2. Check if header exists and follows "Bearer <token>" format
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+            error: "Unauthorized: Missing or invalid token format"
+        });
     }
 
     try {
-        const token = authHeader.split("Bearer ")[1];
+        // 3. Extract token from header
+        // Example header: "Bearer eyJhbGciOiJSUzI1NiIs..."
+        const token = authHeader.split(" ")[1];
 
-        if (!token) {
-            return res.status(401).json({ error: "Invalid token format" });
-        }
+        // 4. Verify token using Firebase Admin SDK
+        // This checks:
+        // - if token is valid
+        // - if token is expired
+        // - if token was issued by Firebase
+        const decoded = await admin.auth().verifyIdToken(token);
 
-        admin.auth().verifyIdToken(token)
-            .then(decoded => {
-                req.user_id = decoded.uid;
-                next();
-            })
-            .catch(err => {
-                console.error("Auth error:", err);
-                return res.status(401).json({ error: "Invalid token" });
-            });
+        // 5. Attach user data to request object
+        // This allows other routes to access user info
+        req.user = decoded;          // full decoded token (email, uid, etc.)
+        req.user_id = decoded.uid;   // shortcut for user ID
+
+        // 6. Continue to next middleware or route
+        next();
 
     } catch (error) {
-        console.error("Auth middleware error:", error);
-        return res.status(401).json({ error: "Invalid token" });
+        // 7. Handle invalid or expired token
+        console.error("Auth error:", error);
+
+        return res.status(401).json({
+            error: "Unauthorized: Invalid or expired token"
+        });
     }
 }
 

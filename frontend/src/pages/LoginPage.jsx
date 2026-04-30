@@ -3,12 +3,9 @@ import { Eye, EyeOff } from "lucide-react";
 import Header from "../components/Header";
 import Layout from "../components/layout";
 import { auth } from "../firebase"; 
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useNavigate, Link } from "react-router-dom";
 
-// Feature data
 const features = [
   { icon: "📊", title: "Real-Time Monitoring", description: "Voltage, current & power" },
   { icon: "🔐", title: "Encrypted Data", description: "End-to-end protection" },
@@ -20,14 +17,26 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
-  // Email/password login
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!email || !email.includes("@")) {
+      return alert("Please enter a valid email");
+    }
+
+    if (!password || password.length < 6) {
+      return alert("Password must be at least 6 characters");
+    }
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error.message);
@@ -35,12 +44,16 @@ export default function LoginPage() {
     }
   };
 
-  // Google login
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
+
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+
       navigate("/dashboard");
     } catch (error) {
       alert(error.message);
@@ -50,7 +63,6 @@ export default function LoginPage() {
   return (
     <Layout>
       <div className="h-screen w-screen flex overflow-hidden">
-        {/* Left - Features */}
         <div className="hidden md:flex flex-col flex-1 p-8 overflow-hidden bg-card text-card-foreground">
           <Header />
           <div className="mt-2 flex flex-col justify-between h-full">
@@ -64,10 +76,7 @@ export default function LoginPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {features.map((f, i) => (
-                <div
-                  key={i}
-                  className="bg-green-50 border border-green-200 rounded-lg p-4 md:p-6 flex flex-col items-start"
-                >
+                <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 md:p-6 flex flex-col items-start">
                   <div className="text-3xl md:text-4xl mb-2">{f.icon}</div>
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">{f.title}</h3>
                   <p className="text-sm md:text-base text-gray-700 dark:text-gray-300">{f.description}</p>
@@ -77,7 +86,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right - Login Form */}
         <div className="flex flex-1 justify-center items-center bg-card text-card-foreground">
           <div className="w-full max-w-md px-6 md:px-8 py-6 md:py-8 overflow-hidden">
             <h2 className="text-2xl md:text-3xl font-bold mb-2 text-foreground">Welcome back</h2>
@@ -85,7 +93,6 @@ export default function LoginPage() {
               Sign in to access your energy dashboard
             </p>
 
-            {/* Sign In Form */}
             <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
@@ -121,7 +128,6 @@ export default function LoginPage() {
                     className="w-full px-3 py-2 md:px-4 md:py-2.5 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
 
-                  {/* Show/Hide password icon */}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -147,14 +153,12 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* Or continue with */}
             <div className="flex items-center my-4">
               <hr className="flex-1 border-border" />
               <span className="mx-2 text-muted-foreground text-sm">Or continue with</span>
               <hr className="flex-1 border-border" />
             </div>
 
-            {/* Google Button */}
             <button
               onClick={handleGoogleLogin}
               className="w-full border border-border py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-muted transition-colors"
@@ -167,7 +171,6 @@ export default function LoginPage() {
               <span className="text-foreground font-medium">Google</span>
             </button>
 
-            {/* Sign Up Link */}
             <p className="mt-4 text-center text-sm text-muted-foreground">
               Don’t have an account?{" "}
               <Link
