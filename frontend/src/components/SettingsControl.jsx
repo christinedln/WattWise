@@ -185,14 +185,6 @@ export default function SettingsControl() {
             </div>
             <p className="text-xs text-gray-400 mt-1">This rate is used to calculate your weekly and monthly energy cost predictions</p>
 
-
-            <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-              <span className="text-blue-500 text-lg mt-0.5">ℹ</span>
-              <div>
-                <p className="text-sm font-semibold text-blue-700 mb-0.5">Monthly Cost Estimate</p>
-                <p className="text-xs text-blue-500">Based on current average consumption: ₱{monthlyEstimate}/month</p>
-              </div>
-            </div>
           </div>
 
 

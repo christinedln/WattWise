@@ -27,7 +27,7 @@ export default function RealtimeMonitoringPage() {
         setDevices(data);
 
         if (!selectedDevice && data.length > 0) {
-          setSelectedDevice(data[0].id);
+          setSelectedDevice(data[0].device_id);
         }
       } catch (err) {
         console.error("Device fetch error:", err);
@@ -44,24 +44,29 @@ export default function RealtimeMonitoringPage() {
     if (!selectedDevice) return;
 
     const fetchTrend = async () => {
-      try {
-        const data = await apiFetch("/realtime/devices");
+  try {
+    const data = await apiFetch(`/realtime/power-trend/${selectedDevice}`);
 
-        const formatted = data.map((p, i) => ({
-          time: `${i}:00`,
-          power: p.power || p
-        }));
+    const formatted = data.map(point => ({
+  ...point,
+  time: new Date(point.time).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  })
+}));
 
-        setChartData(formatted);
-      } catch (err) {
-        console.error("Trend fetch error:", err);
-      }
-    };
+setChartData(formatted);
+  } catch (err) {
+    console.error("Trend fetch error:", err);
+  }
+};
 
     fetchTrend();
   }, [selectedDevice]);
 
-  const device = devices.find((d) => d.id === selectedDevice);
+  const device = devices.find((d) => d.device_id === selectedDevice);
 
   return (
     <Layout>
@@ -77,8 +82,8 @@ export default function RealtimeMonitoringPage() {
             <div className="flex gap-2 mb-4">
               {devices.map(d => (
                 <button
-                  key={d.id}
-                  onClick={() => setSelectedDevice(d.id)}
+                  key={d.device_id}
+                  onClick={() => setSelectedDevice(d.device_id)}
                  className={`px-3 py-1 rounded-lg text-sm border-2 transition-all duration-200 ${
                     selectedDevice === d.id
                       ? "bg-gray-100 text-gray-900 border-gray-800"
@@ -151,11 +156,13 @@ export default function RealtimeMonitoringPage() {
                       <YAxis />
                       <Tooltip />
                       <Line
-                        type="monotone"
-                        dataKey="power"
-                        stroke="#16a34a"
-                        strokeWidth={2}
-                      />
+  type="monotone"
+  dataKey="power"
+  stroke="#16a34a"
+  strokeWidth={2}
+  dot={{ r: 3 }}
+  activeDot={{ r: 6 }}
+/>
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
