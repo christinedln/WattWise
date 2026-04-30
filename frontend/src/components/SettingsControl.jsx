@@ -5,12 +5,13 @@ export default function SettingsControl() {
 
   const [activeTab, setActiveTab] = useState("Billing");
 
-  const [rate, setRate] = useState(12.5);
+  const [rate, setRate] = useState("12.5");
   const [pollingInterval, setPollingInterval] = useState(10);
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
 
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
   // =========================
   // LOAD DEVICES
@@ -80,7 +81,7 @@ export default function SettingsControl() {
         });
 
         setRate(data.electricity_rate);
-        setPollingInterval(data.polling_interval);
+        setPollingInterval(Number(data.polling_interval) || 10);
 
       } catch (err) {
         console.error("LOAD ERROR:", err);
@@ -94,14 +95,30 @@ export default function SettingsControl() {
 
 
   const handleSave = async () => {
+    const numericRate = Number(rate);
     try {
+      setError(""); // clear old errors
+
+      // VALIDATION
+      if (rate === "" || isNaN(numericRate) || numericRate <= 0) {
+        setError("Electricity rate must be greater than 0");
+        return;
+      }
+
+      const numericPolling = Number(pollingInterval);
+
+      if (isNaN(numericPolling) || numericPolling <= 0) {
+        setError("Polling interval must be greater than 0");
+        return;
+      }
+
       await apiFetch("/settings/update", {
         method: "POST",
         body: JSON.stringify({
           deviceId: selectedDevice?.id,
           settings: {
-            electricity_rate: rate,
-            polling_interval: pollingInterval
+            electricity_rate: numericRate,
+            polling_interval: numericPolling
           }
         })
       });
@@ -111,6 +128,7 @@ export default function SettingsControl() {
 
     } catch (err) {
       console.error("Save failed:", err);
+      setError("Failed to save settings. Please try again.");
     }
   };
 
@@ -172,27 +190,30 @@ export default function SettingsControl() {
 
 
             <label className="block text-xs font-semibold text-gray-700 mb-1">Rate (₱/kWh)</label>
-            <div className="flex items-center gap-3">
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={rate}
-                onChange={(e) => setRate(parseFloat(e.target.value) || 0)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-gray-50 outline-none focus:ring-2 focus:ring-green-500"
-              />
-              <span className="text-sm text-gray-500 whitespace-nowrap">₱{rate.toFixed(2)}/kWh</span>
+            <div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={rate}
+                  onChange={(e) => setRate(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-gray-50 outline-none focus:ring-2 focus:ring-green-500"
+                />
+
+                <span className="text-sm text-gray-500 whitespace-nowrap">
+                  ₱{Number(rate || 0).toFixed(2)}/kWh
+                </span>
+              </div>
+
+              {error && (
+                <p className="text-red-500 text-xs mt-2">
+                  {error}
+                </p>
+              )}
             </div>
             <p className="text-xs text-gray-400 mt-1">This rate is used to calculate your weekly and monthly energy cost predictions</p>
 
-
-            <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-              <span className="text-blue-500 text-lg mt-0.5">ℹ</span>
-              <div>
-                <p className="text-sm font-semibold text-blue-700 mb-0.5">Monthly Cost Estimate</p>
-                <p className="text-xs text-blue-500">Based on current average consumption: ₱{monthlyEstimate}/month</p>
-              </div>
-            </div>
           </div>
 
 
