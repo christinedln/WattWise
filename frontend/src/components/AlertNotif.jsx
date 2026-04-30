@@ -69,11 +69,34 @@ const filterMeta = {
   },
 };
 
-const Badge = ({ type }) => (
-  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${TYPE[type].badge}`}>
-    <span className={`w-1.5 h-1.5 rounded-full ${TYPE[type].dot}`} />{type}
-  </span>
-);
+// Add this constant above Badge
+const TYPE = {
+  Critical: {
+    badge: "bg-red-100 text-red-800 border-red-300",
+    dot: "bg-red-500",
+  },
+  Warning: {
+    badge: "bg-amber-100 text-amber-800 border-amber-300",
+    dot: "bg-amber-500",
+  },
+  Info: {
+    badge: "bg-blue-100 text-blue-800 border-blue-300",
+    dot: "bg-blue-500",
+  },
+  Suspicious: {
+    badge: "bg-purple-100 text-purple-800 border-purple-300",
+    dot: "bg-purple-500",
+  },
+};
+
+const Badge = ({ type }) => {
+  const style = TYPE[type] ?? { badge: "bg-gray-100 text-gray-700 border-gray-300", dot: "bg-gray-400" };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${style.badge}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />{type}
+    </span>
+  );
+};
 
 // ─── Summary Card ─────────────────────────────────────
 function SummaryCard({ label, value, sub, colorClass }) {
@@ -145,12 +168,12 @@ export default function AlertNotif() {
       (filter === "All" || a.severity === filter)
   );
 
-const stats = {
-  critical: alerts.filter((a) => a.severity === "Critical" && !a.resolved).length,
-  warnings: alerts.filter((a) => a.severity === "Warning" && !a.resolved).length,
-  suspicious: alerts.filter((a) => a.severity === "Suspicious" && !a.resolved).length,
-  total: alerts.length,
-};
+  const stats = {
+    critical: alerts.filter((a) => a.severity === "Critical" && !a.resolved).length,
+    warnings: alerts.filter((a) => a.severity === "Warning" && !a.resolved).length,
+    suspicious: alerts.filter((a) => a.severity === "Suspicious" && !a.resolved).length,
+    total: alerts.length,
+  };
 
   const toggleSelect = (id) =>
     setSelected((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
@@ -182,19 +205,37 @@ const stats = {
 
       {/* HEADER */}
       <div className="flex justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Alerts & Notifications</h1>
-          <p className="text-sm text-gray-400">Device issues and anomalies</p>
+          <div>
+            <h1 className="text-2xl font-bold">Alerts & Notifications</h1>
+            <p className="text-sm text-gray-400">Device issues and anomalies</p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowEmail(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150"
+             style={{ backgroundColor: "#F0F8F5 ", color: "black", border: "1px solid #86efac" }}
+            >
+          <MailIcon /> Email Alerts
+            </button>
+            <button
+              onClick={() => setShowSound(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150"
+              style={{ backgroundColor: "#F0F8F5", color: "black", border: "1px solid #86efac" }}
+
+            >
+              <VolumeIcon /> Sound
+            </button>
+          </div>
         </div>
-      </div>
 
       {/* STATS */}
-<div className="grid grid-cols-5 gap-3 mb-6">
-  <SummaryCard label="Critical" value={stats.critical} sub="Needs attention" colorClass="bg-red-50" />
-  <SummaryCard label="Warning" value={stats.warnings} sub="Monitor" colorClass="bg-amber-50" />
-  <SummaryCard label="Suspicious" value={stats.suspicious} sub="Unusual behavior" colorClass="bg-purple-50" />
-  <SummaryCard label="Total" value={stats.total} sub="All alerts" colorClass="bg-blue-50" />
-</div>
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        <SummaryCard label="Critical" value={stats.critical} sub="Needs attention" colorClass="bg-red-50" />
+        <SummaryCard label="Warning" value={stats.warnings} sub="Monitor" colorClass="bg-amber-50" />
+        <SummaryCard label="Suspicious" value={stats.suspicious} sub="Unusual behavior" colorClass="bg-purple-50" />
+        <SummaryCard label="Total" value={stats.total} sub="All alerts" colorClass="bg-blue-50" />
+      </div>
 
       {/* Controls */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -280,8 +321,8 @@ const stats = {
       </div>
 
       {/* MODALS */}
-      {showEmail && <EmailModal onClose={() => setShowEmail(false)} />}
-      {showSound && <SoundModal onClose={() => setShowSound(false)} />}
-    </div>
+        {showEmail && <EmailModal onClose={() => setShowEmail(false)} onSave={() => { setShowEmail(false); showToast("Email preferences saved!"); }} />}
+        {showSound && <SoundModal onClose={() => setShowSound(false)} onSave={() => { setShowSound(false); showToast("Sound settings saved!"); }} />}
+            </div>
   );
 }

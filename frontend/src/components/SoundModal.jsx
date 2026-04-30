@@ -9,7 +9,7 @@ const Badge = ({ type }) => (
 );
 
 // ── Shared active/inactive styles ──────────────────────
-const activeBtn   = { backgroundColor: "#16a34a", color: "#ffffff", borderColor: "#16a34a" };
+const activeBtn = { backgroundColor: "#dcfce7", color: "#15803d", borderColor: "#dcfce7" };
 const inactiveBtn = { backgroundColor: "#f9fafb", color: "#374151", borderColor: "#e5e7eb" };
 
 export default function SoundModal({ onClose, onSave }) {
@@ -142,8 +142,8 @@ export default function SoundModal({ onClose, onSave }) {
               padding: "10px 0",
               borderRadius: 12,
               border: "none",
-              backgroundColor: "#16a34a",
-              color: "#ffffff",
+              backgroundColor: "#dcfce7",
+              color: "#15803d",
               fontWeight: 700,
               fontSize: 14,
               cursor: "pointer",

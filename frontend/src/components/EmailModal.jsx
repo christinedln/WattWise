@@ -75,8 +75,8 @@ export default function EmailModal({ onClose, onSave }) {
         <button
           onClick={handleSave}
           style={{
-            backgroundColor: saved ? "#16a34a" : "#22c55e",
-            color: "#ffffff",
+            backgroundColor: saved ? "#bbf7d0" : "#dcfce7",
+            color: "#15803d",
             border: "none",
             transition: "background-color 0.2s",
           }}

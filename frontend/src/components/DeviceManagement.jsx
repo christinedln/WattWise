@@ -159,38 +159,25 @@ function DeviceRow({ device, pct, openEdit }) {
           </button>
 
           {/* ── Remove Device ── */}
-          <button
-            title="Remove device"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "5px 10px",
-              borderRadius: 6,
-              border: "1px solid #fca5a5",
-              background: "transparent",
-              color: "#dc2626",
-              fontSize: 11,
-              fontWeight: 500,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              transition: "background 0.15s, border-color 0.15s, color 0.15s",
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = "#ef4444";
-              e.currentTarget.style.borderColor = "#ef4444";
-              e.currentTarget.style.color = "#ffffff";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.borderColor = "#fca5a5";
-              e.currentTarget.style.color = "#dc2626";
-            }}
-          >
-            <TrashIcon />
-            Remove
-          </button>
-
+            <button
+              title="Remove device"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "8px",
+                borderRadius: 8,
+                border: "none",
+                background: "#F0F0F0",
+                color: "#1e1e1e",
+                cursor: "pointer",
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "#E0E0E0"}
+              onMouseLeave={e => e.currentTarget.style.background = "#F0F0F0"}
+            >
+              <TrashIcon size={14} />
+            </button>
         </div>
       </td>
     </tr>
