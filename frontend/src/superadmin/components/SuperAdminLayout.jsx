@@ -13,6 +13,7 @@ import {
   FileText,
   Bell,
   Search,
+  UserPlus,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission } from "../config/permissions";
@@ -20,6 +21,7 @@ import { hasPermission } from "../config/permissions";
 const navigationItems = [
   { to: "/super-admin/dashboard", label: "Dashboard", icon: LayoutDashboard, action: "view_dashboard" },
   { to: "/super-admin/users", label: "Users", icon: Users, action: "view_users" },
+  { to: "/super-admin/create-account", label: "Create Account", icon: UserPlus, action: "manage_users" },
   { to: "/super-admin/devices", label: "Devices", icon: Server, action: "view_devices" },
   { to: "/super-admin/alerts", label: "Alerts", icon: BellRing, action: "view_alerts" },
   { to: "/super-admin/reports", label: "Reports", icon: FileText, action: "view_reports" },

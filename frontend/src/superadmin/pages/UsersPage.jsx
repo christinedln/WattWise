@@ -1,11 +1,13 @@
 import React from "react";
 import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import PaginatedUsersTable from "../components/PaginatedUsersTable";
 import { hasPermission } from "../config/permissions";
 import { useAuth } from "../context/AuthContext";
 
 export default function UsersPage() {
   const { role } = useAuth();
+  const navigate = useNavigate();
   const canViewUsers = hasPermission(role, "view_users");
   const canManageUsers = hasPermission(role, "manage_users");
 
@@ -34,6 +36,7 @@ export default function UsersPage() {
           {canManageUsers ? (
             <button
               type="button"
+              onClick={() => navigate("/super-admin/create-account")}
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
             >
               <Plus className="h-4 w-4" />

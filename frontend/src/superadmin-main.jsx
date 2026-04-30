@@ -9,6 +9,7 @@ import SuperAdminLayout from "./superadmin/components/SuperAdminLayout";
 import SuperAdminLoginPage from "./superadmin/pages/LoginPage";
 import SuperAdminDashboardPage from "./superadmin/pages/DashboardPage";
 import SuperAdminUsersPage from "./superadmin/pages/UsersPage";
+import CreateAccountPage from "./superadmin/pages/CreateAccountPage";
 import SecurityLogsPage from "./superadmin/pages/SecurityLogsPage";
 import UnauthorizedPage from "./superadmin/pages/UnauthorizedPage";
 import SectionPage from "./superadmin/pages/SectionPage";
@@ -28,6 +29,7 @@ createRoot(document.getElementById("root")).render(
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<SuperAdminDashboardPage />} />
             <Route path="users" element={<SuperAdminUsersPage />} />
+            <Route path="create-account" element={<CreateAccountPage />} />
             <Route path="security-logs" element={<SecurityLogsPage />} />
             <Route
               path="devices"

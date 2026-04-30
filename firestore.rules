@@ -59,6 +59,13 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
+    // Role-based accounts collection - only superadmin can manage
+    match /roleBasedAccounts/{accountId} {
+      allow read: if isSuperAdmin();
+      allow create, update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
     match /users/{userId} {
       allow read: if isSuperAdmin() || isAdmin() || isSelf(userId) || (isSupport() && isAdminOrAbove()) || (isSecurity() && isAdminOrAbove());
       allow create: if isSuperAdmin() || (isAdmin() && request.resource.data.organizationId == userOrganizationId());

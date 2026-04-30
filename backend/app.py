@@ -4,6 +4,7 @@ from routes.dashboard import dashboard_bp
 from routes.devices import devices_bp
 from routes.realtimemonitor import realtime_bp 
 from routes.predictions import predictions_bp
+from routes.adminAccounts import admin_accounts_bp
 
 app = Flask(__name__)
 CORS(app)
