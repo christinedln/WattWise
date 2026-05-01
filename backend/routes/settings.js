@@ -11,13 +11,17 @@ router.post("/get", authRequired, async (req, res) => {
         const userId = req.user_id;
         const { deviceId } = req.body;
 
-        if (!deviceId) {
-            return res.status(400).json({ error: "deviceId required" });
+        if (!deviceId || typeof deviceId !== "string" || deviceId.trim() === "") {
+            return res.status(400).json({ error: "Invalid deviceId" });
         }
 
         const devices = await getDevices(userId);
 
-        const device = devices.find(d => d.device_id === deviceId);
+        const normalizedDeviceId = deviceId.trim();
+
+        const device = (devices || []).find(
+            d => d.device_id === normalizedDeviceId
+        );
 
         if (!device) {
             return res.status(404).json({ error: "Device not found" });
@@ -37,14 +41,17 @@ router.post("/update", authRequired, async (req, res) => {
     const userId = req.user_id;
     const { deviceId, settings } = req.body;
 
-    if (!deviceId) {
-      return res.status(400).json({ error: "deviceId required" });
+    if (!deviceId || typeof deviceId !== "string" || deviceId.trim() === "") {
+        return res.status(400).json({ error: "Invalid deviceId" });
     }
 
-    if (!settings) {
-      return res.status(400).json({ error: "settings required" });
+    if (!settings || typeof settings !== "object") {
+        return res.status(400).json({ error: "Invalid settings object" });
     }
 
+    if (Object.keys(settings).length === 0) {
+        return res.status(400).json({ error: "Settings cannot be empty" });
+    }
     const settingsRef = db
       .collection("user")
       .doc(userId)
@@ -60,7 +67,10 @@ router.post("/update", authRequired, async (req, res) => {
     });
 
     const newDocRef = settingsRef.doc(); 
-    batch.set(newDocRef, settings);
+    batch.set(newDocRef, {
+        ...settings,
+        updatedAt: new Date().toISOString()
+    });
 
     await batch.commit();
 

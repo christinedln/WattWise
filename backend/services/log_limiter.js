@@ -3,6 +3,11 @@ import { db } from "../firebase_config.js";
 const MAX_LOGS = 50;
 
 export async function enforceLogLimit(userId, deviceId) {
+
+  // input validation
+  if (!userId || typeof userId !== "string") return;
+  if (!deviceId || typeof deviceId !== "string") return;
+
   const logsRef = db
     .collection("user")
     .doc(userId)
@@ -14,7 +19,7 @@ export async function enforceLogLimit(userId, deviceId) {
     .orderBy("Timestamp", "desc")
     .get();
 
-  if (snapshot.size <= MAX_LOGS) return;
+  if (!snapshot || snapshot.size <= MAX_LOGS) return;
 
   const batch = db.batch();
 

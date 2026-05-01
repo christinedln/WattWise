@@ -4,8 +4,6 @@ import React, { useState, useEffect } from "react";
 // Icons replaced with inline SVGs
 import { apiFetch } from "../api/api";
 
-const API_URL = "http://localhost:5000/api/devices/";
-
 // ─── Inline SVG Icons ─────────────────────────────
 const PowerIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}>
@@ -128,6 +126,21 @@ function DeviceRow({ device, pct, openEdit }) {
           {/* ── Toggle Power ── */}
           <button
             title="Toggle power"
+            onClick={async () => {
+    try {
+      await apiFetch("/relay/toggle", {
+        method: "POST",
+        body: JSON.stringify({
+          device_id: device.device_id
+        })
+      });
+
+      console.log("Relay toggled from device UI");
+
+    } catch (err) {
+      console.error("Toggle failed", err);
+    }
+  }}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -260,21 +273,20 @@ export default function DeviceManagement() {
   const [devices, setDevices] = useState([]);
   const [filter, setFilter] = useState("all");
   const [editing, setEditing] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
 
 
   useEffect(() => {
     const fetchDevices = async () => {
       const json = await apiFetch("/devices/");
 
-      const formatted = (json.data || []).map((d) => ({
+      const formatted = json.data.map((d) => ({
         id: d.id,
         device_id: d.device_id,
         name: d.name,
        
         location: d.location,
         status: d.status,
-        kwh: d.kwh ?? d.consumption ?? 0,
+        kwh: d.consumption,
         severity: d.severity,
         lastUpdated: d.lastUpdated,
         activity_timeline: d.activity_timeline || []
@@ -287,8 +299,6 @@ export default function DeviceManagement() {
   }, []);
 
   const openEdit = (device, field) => {
-    setErrorMsg("");
-
     setEditing({
       device_id: device.device_id,
       field,
@@ -302,17 +312,11 @@ export default function DeviceManagement() {
 
   const saveEdit = async () => {
   try {
-
-    const payload = {
-      [editing.field]:
-        editing.field === "enabled"
-          ? Boolean(editing.value)
-          : editing.value.trim(),
-    };
-
     await apiFetch(`/devices/${editing.device_id}`, {
       method: "PATCH",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        [editing.field]: editing.value,
+      }),
     });
 
     setDevices((prev) =>
@@ -326,12 +330,6 @@ export default function DeviceManagement() {
     closeEdit();
   } catch (err) {
     console.error("Update failed", err);
-
-    const message =
-      err?.message ||
-      "Changes cannot be empty.";
-
-    setErrorMsg(message);
   }
 };
 
@@ -449,12 +447,6 @@ export default function DeviceManagement() {
         }
         className="w-full border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-lg mb-5 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
       />
-
-      {errorMsg && (
-        <p className="text-red-500 text-xs mt-2 mb-3">
-          {errorMsg}
-        </p>
-      )}
 
       {/* Buttons */}
       <div className="flex justify-center items-center gap-3 mt-2">

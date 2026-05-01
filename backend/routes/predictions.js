@@ -7,11 +7,16 @@ const { getRate } = require("../services/data_service");
 // Helper for dates
 const { format } = require("date-fns");
 
-// SUMMARY ROUTE
-router.get("/summary", async (req, res) => {
+const authRequired = require("../utils/auth");
+
+router.get("/summary", authRequired, async (req, res) => {
     try {
+        const userId = req.user_id;
+        if (!userId) {
+            return res.status(401).json({ error: "Missing user_id" });
+        }
         const devices = await mergeDeviceData();
-        const rate = await getRate();
+        const rate = await getRate(userId);
 
         // ── Base rate from current consumption ───────────────────────────────
         const totalConsumption = devices.reduce(

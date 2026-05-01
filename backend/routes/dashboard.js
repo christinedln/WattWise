@@ -11,9 +11,9 @@ router.get("/summary", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
 
-        const enrichedDevices = await mergeDeviceData(userId);
+        const enrichedDevices = await mergeDeviceData(userId) || [];
 
-        const devices = await getDevices(userId);
+        const devices = await getDevices(userId) || [];
 
         // ACTIVE DEVICES
         const activeCount = enrichedDevices.filter(
@@ -51,13 +51,31 @@ router.get("/summary", authRequired, async (req, res) => {
         });
 
         // USE DEVICE SETTINGS (NO getRate anymore)
-        const ratePerKwh = enrichedDevices[0]?.settings?.electricity_rate || 12.5;
+        const ratePerKwh =
+            enrichedDevices?.[0]?.settings?.electricity_rate ?? 12.5;
 
         // TOTAL CONSUMPTION
         const totalConsumption = enrichedDevices.reduce(
             (sum, d) => sum + (d.consumption || 0),
             0
         );
+
+
+        if (!enrichedDevices.length || !devices.length) {
+            return res.json({
+                active_devices: 0,
+                total_devices: 0,
+                live_readings: [],
+                device_consumption: [],
+                total_energy_kwh: 0,
+                weekly_predicted_kwh: 0,
+                weekly_predicted_cost: 0,
+                monthly_predicted_kwh: 0,
+                monthly_predicted_cost: 0,
+                rate_per_kwh: 12.5,
+            });
+        }
+
 
         const totalRuntimeHours = Math.max(
             devices.reduce(

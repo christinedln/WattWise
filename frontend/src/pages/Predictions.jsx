@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
+import { apiFetch } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import DashboardHeader from "../components/DashboardHeader";
 import Layout from "../components/layout";
@@ -15,8 +16,7 @@ export default function PredictionsPage() {
   const [error, setError]     = useState(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/predictions/summary")
-      .then((res) => res.json())
+    apiFetch("/predictions/summary")
       .then((json) => {
         setData(json);
         setLoading(false);
@@ -50,7 +50,7 @@ export default function PredictionsPage() {
       cost:           `₱${data.weekly_predicted_cost.toFixed(2)}`,
       estimatedUsage: `${data.weekly_predicted_kwh} kWh`,
       trend:          'up',
-      trendPercent:   '3.2%',
+      trendPercent:   '',
       trendLabel:     'Mon - Sun (current billing period)',
       bgColor:        'bg-yellow-50',
     },
@@ -59,7 +59,7 @@ export default function PredictionsPage() {
       cost:           `₱${data.monthly_predicted_cost.toFixed(2)}`,
       estimatedUsage: `${data.monthly_predicted_kwh} kWh`,
       trend:          'up',
-      trendPercent:   '2.3%',
+      trendPercent:   '',
       trendLabel:     '30-day projection',
       bgColor:        'bg-blue-50',
     },
@@ -102,11 +102,7 @@ export default function PredictionsPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600">{pred.estimatedUsage}</span>
                         <div className="flex items-center gap-1">
-                          {pred.trend === 'up' ? (
-                            <TrendingUp className="w-4 h-4 text-red-500" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4 text-green-500" />
-                          )}
+
                           <span className={pred.trend === 'up' ? 'text-red-600' : 'text-green-600'}>
                             {pred.trendPercent}
                           </span>

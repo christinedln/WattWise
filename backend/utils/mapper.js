@@ -3,15 +3,25 @@ const { generateCurrentAlerts } = require("./generateCurrentAlerts");
 const { nowTime } = require("../utils/time_helper");
 
 async function mergeDeviceData(userId) {
-    const devices = await getDevices(userId) || [];
+    if (!userId || typeof userId !== "string") return [];
+    const rawDevices = await getDevices(userId);
+    const devices = Array.isArray(rawDevices) ? rawDevices : [];
 
     const merged = [];
 
     for (const d of devices) {
-        const deviceId = d.device_id || d.id;
+        const deviceId =
+            typeof d.device_id === "string"
+                ? d.device_id
+                : typeof d.id === "string"
+                    ? d.id
+                    : null;
+
+        if (!deviceId) continue;
 
         // RAW LOGS
-        const realtimeLogs = await getRealtimeLogs(userId, deviceId, 10);
+        const logsRaw = await getRealtimeLogs(userId, deviceId, 10);
+        const realtimeLogs = Array.isArray(logsRaw) ? logsRaw : [];
 
         // ==============================
         // SIGNAL-SPECIFIC MAPPING

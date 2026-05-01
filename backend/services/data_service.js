@@ -49,13 +49,13 @@ async function getDevices(userId) {
       // MERGE DEFAULT + DEVICE SETTINGS (ONLY HERE)
       const finalSettings = {
         ...DEFAULT_SETTINGS,
-        ...settingsData
+        ...(settingsData || {})
       };
 
       devices.push({
         device_id: doc.id,
-        name: data.name,
-        location: data.location,
+        name: data.name || "Unnamed Device",
+        location: data.location || "Unknown",
         enabled,
         status: data.status,
 
@@ -77,6 +77,12 @@ async function getDevices(userId) {
 
 async function getRealtimeLogs(userId, deviceId, limit = 10) {
   try {
+
+    if (!userId || !deviceId) {
+      console.warn("Invalid params:", { userId, deviceId });
+      return [];
+    }
+
     const logsRef = db
       .collection("user")
       .doc(userId)
@@ -89,9 +95,8 @@ async function getRealtimeLogs(userId, deviceId, limit = 10) {
       .limit(limit)
       .get();
 
-    const logs = snapshot.docs.map(doc => doc.data());
+    const logs = (snapshot.docs || []).map(doc => doc.data());
 
-    // return in chronological order (important for EWMA)
     return logs.reverse();
 
   } catch (error) {
@@ -104,7 +109,9 @@ async function getRealtimeLogs(userId, deviceId, limit = 10) {
 async function getRate(userId, deviceId) {
   try {
     const devices = await getDevices(userId);
-    const device = devices.find(d => d.device_id === deviceId);
+    const device = (devices || []).find(
+      d => d.device_id === (deviceId || "").trim()
+    );
 
     const rate = device?.settings?.electricity_rate;
 
