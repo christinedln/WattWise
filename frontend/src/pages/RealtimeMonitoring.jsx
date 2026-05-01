@@ -35,36 +35,42 @@ export default function RealtimeMonitoringPage() {
     };
 
     fetchDevices();
-    // const interval = setInterval(fetchDevices, 2000);
-    // return () => clearInterval(interval);
+    //const interval = setInterval(fetchDevices, 5000);
+    //return () => clearInterval(interval);
   }, [selectedDevice]);
 
   // FETCH POWER TREND
-  useEffect(() => {
-    if (!selectedDevice) return;
+useEffect(() => {
+  if (!selectedDevice) return;
 
-    const fetchTrend = async () => {
-  try {
-    const data = await apiFetch(`/realtime/power-trend/${selectedDevice}`);
+  const fetchTrend = async () => {
+    try {
+      const data = await apiFetch(`/realtime/power-trend/${selectedDevice}`);
 
-    const formatted = data.map(point => ({
-  ...point,
-  time: new Date(point.time).toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true
-  })
-}));
+      const formatted = data.map(point => ({
+        ...point,
+        time: new Date(point.time).toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true
+        })
+      }));
 
-setChartData(formatted);
-  } catch (err) {
-    console.error("Trend fetch error:", err);
-  }
-};
+      setChartData(formatted);
+    } catch (err) {
+      console.error("Trend fetch error:", err);
+    }
+  };
 
-    fetchTrend();
-  }, [selectedDevice]);
+  // initial fetch
+  fetchTrend();
+
+  // poll every 5 seconds
+  //const interval = setInterval(fetchTrend, 5000);
+
+  //return () => clearInterval(interval);
+}, [selectedDevice]);
 
   const device = devices.find((d) => d.device_id === selectedDevice);
 

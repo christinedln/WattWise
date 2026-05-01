@@ -91,7 +91,7 @@ async function getRealtimeLogs(userId, deviceId, limit = 10) {
       .collection("realtime_logs");
 
     const snapshot = await logsRef
-      .orderBy("Timestamp", "desc")
+      .orderBy("timestamp", "desc")
       .limit(limit)
       .get();
 

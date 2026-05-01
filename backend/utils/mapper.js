@@ -28,20 +28,20 @@ async function mergeDeviceData(userId) {
         // ==============================
         const structuredLogs = {
             current: realtimeLogs.map(log => ({
-                value: log.Current ?? 0,
-                timestamp: log.Timestamp,
+                value: log.current ?? 0,
+                timestamp: log.timestamp,
                 signal: "current"
             })),
 
             voltage: realtimeLogs.map(log => ({
-                value: log.Voltage ?? 0,
-                timestamp: log.Timestamp,
+                value: log.voltage ?? 0,
+                timestamp: log.timestamp,
                 signal: "voltage"
             })),
 
             power: realtimeLogs.map(log => ({
-                value: log.Power ?? 0,
-                timestamp: log.Timestamp,
+                value: log.power ?? 0,
+                timestamp: log.timestamp,
                 signal: "power"
             }))
         };

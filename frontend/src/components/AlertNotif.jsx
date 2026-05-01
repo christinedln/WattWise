@@ -116,11 +116,17 @@ export default function AlertNotif() {
       (filter === "All" || a.severity === filter)
   );
 
+const activeAlerts = alerts.filter(
+  (a) =>
+    !a.resolved &&
+    ["Critical", "Warning", "Suspicious"].includes(a.severity)
+);
+
 const stats = {
-  critical: alerts.filter((a) => a.severity === "Critical" && !a.resolved).length,
-  warnings: alerts.filter((a) => a.severity === "Warning" && !a.resolved).length,
-  suspicious: alerts.filter((a) => a.severity === "Suspicious" && !a.resolved).length,
-  total: alerts.length,
+  critical: activeAlerts.filter(a => a.severity === "Critical").length,
+  warnings: activeAlerts.filter(a => a.severity === "Warning").length,
+  suspicious: activeAlerts.filter(a => a.severity === "Suspicious").length,
+  total: activeAlerts.length,
 };
 
   const toggleSelect = (id) =>

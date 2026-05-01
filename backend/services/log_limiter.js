@@ -1,6 +1,6 @@
 import { db } from "../firebase_config.js";
 
-const MAX_LOGS = 50;
+const MAX_LOGS = 30;
 
 export async function enforceLogLimit(userId, deviceId) {
 
@@ -16,7 +16,7 @@ export async function enforceLogLimit(userId, deviceId) {
     .collection("realtime_logs");
 
   const snapshot = await logsRef
-    .orderBy("Timestamp", "desc")
+    .orderBy("timestamp", "desc")
     .get();
 
   if (!snapshot || snapshot.size <= MAX_LOGS) return;

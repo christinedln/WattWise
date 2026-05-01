@@ -4,8 +4,6 @@ import React, { useState, useEffect } from "react";
 // Icons replaced with inline SVGs
 import { apiFetch } from "../api/api";
 
-const API_URL = "http://localhost:5000/api/devices/";
-
 // ─── Inline SVG Icons ─────────────────────────────
 const PowerIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}>
