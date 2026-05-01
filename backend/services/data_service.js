@@ -76,7 +76,7 @@ async function getDevices(userId) {
   }
 }
 
-async function getRealtimeLogs(userId, deviceId, limit = 10) {
+async function getRealtimeLogs(userId, deviceId, logWindow) {
   try {
 
     if (!userId || !deviceId) {
@@ -93,7 +93,7 @@ async function getRealtimeLogs(userId, deviceId, limit = 10) {
 
     const snapshot = await logsRef
       .orderBy("timestamp", "desc")
-      .limit(limit)
+      .limit(logWindow)
       .get();
 
     const logs = (snapshot.docs || []).map(doc => doc.data());

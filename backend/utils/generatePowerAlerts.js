@@ -32,9 +32,10 @@ function generatePowerAlerts(devices) {
             .map(x => x.value)
             .filter(v => typeof v === "number");
 
-        if (values.length < TRAINING_SIZE + 1) continue;
+        if (values.length < TRAINING_SIZE) continue;
 
-        const training = values.slice(0, TRAINING_SIZE);
+        const training = values.slice(0, values.length - 1);
+        const x = values[values.length - 1];
 
         const mean =
             training.reduce((a, b) => a + b, 0) / training.length;
@@ -44,8 +45,6 @@ function generatePowerAlerts(devices) {
                 training.reduce((s, x) => s + Math.pow(x - mean, 2), 0) /
                 training.length
             );
-
-        const x = values[values.length - 1];
 
         const eps = 1e-6;
         const z = (x - mean) / (std + eps);

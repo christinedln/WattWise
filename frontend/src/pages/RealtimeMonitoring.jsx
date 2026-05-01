@@ -76,6 +76,11 @@ useEffect(() => {
 
   const device = devices.find((d) => d.device_id === selectedDevice);
 
+  const alerts = device?.alerts || [];
+
+  const activeAlerts = alerts.filter(a => a.severity !== "Normal");
+  const hasActiveAlerts = activeAlerts.length > 0;
+
   return (
     <Layout>
       <div className="h-screen w-screen flex overflow-hidden bg-gray-50">
@@ -126,6 +131,26 @@ useEffect(() => {
                     </span>
                   </div>
 
+                  <div className="flex items-center gap-2">
+                    {hasActiveAlerts ? (
+                      <>
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        <span className="text-red-600 font-semibold">
+                          {activeAlerts
+                            .map((a) => `${a.signal}: ${a.message}`)
+                            .join(" | ")}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <span className="text-green-600 font-semibold">
+                          No anomaly detected
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  </div>
                   {/* Device Message */}
                   {device.message && device.message !== "No issues detected" && (
                     <div className="flex items-center gap-2">
@@ -148,7 +173,7 @@ useEffect(() => {
                   )}
 
                 </div>
-              </div>
+              
                               {/* LIVE READINGS */}
                 <div className="bg-green-50/40 border border-green-200 rounded-2xl p-6 shadow-sm mb-6">
 
