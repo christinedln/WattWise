@@ -39,9 +39,12 @@ const EyeOffIcon = () => (
 );
 
 const TrashIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6l-1 14H6L5 6" />
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
+    <path d="M9 6V4h6v2" />
   </svg>
 );
 
@@ -99,24 +102,16 @@ const Badge = ({ type }) => {
 };
 
 // ─── Summary Card ─────────────────────────────────────
-function SummaryCard({ label, value, sub, colorClass }) {
+function SummaryCard({ label, value, sub, colorClass, textClass }) {
   return (
-    <div
-      className={`
-        rounded-2xl border p-4 
-        shadow-sm hover:shadow-md 
-        transition-all duration-200
-        ${colorClass}
-      `}
-    >
-      <p className="text-xs font-semibold uppercase tracking-wider mb-1 opacity-70">
+    <div className={`rounded-2xl border p-4 shadow-sm hover:shadow-md transition-all duration-200 ${colorClass}`}>
+      <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${textClass}`}>
         {label}
       </p>
-
-      <p className="text-2xl font-bold">
+      <p className={`text-2xl font-bold ${textClass}`}>
         {value}
       </p>
-
+      
       <p className="text-xs mt-1 opacity-60">
         {sub}
       </p>
@@ -168,12 +163,18 @@ export default function AlertNotif() {
       (filter === "All" || a.severity === filter)
   );
 
-  const stats = {
-    critical: alerts.filter((a) => a.severity === "Critical" && !a.resolved).length,
-    warnings: alerts.filter((a) => a.severity === "Warning" && !a.resolved).length,
-    suspicious: alerts.filter((a) => a.severity === "Suspicious" && !a.resolved).length,
-    total: alerts.length,
-  };
+const activeAlerts = alerts.filter(
+  (a) =>
+    !a.resolved &&
+    ["Critical", "Warning", "Suspicious"].includes(a.severity)
+);
+
+const stats = {
+  critical: activeAlerts.filter(a => a.severity === "Critical").length,
+  warnings: activeAlerts.filter(a => a.severity === "Warning").length,
+  suspicious: activeAlerts.filter(a => a.severity === "Suspicious").length,
+  total: activeAlerts.length,
+};
 
   const toggleSelect = (id) =>
     setSelected((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
@@ -231,10 +232,10 @@ export default function AlertNotif() {
 
       {/* STATS */}
       <div className="grid grid-cols-4 gap-3 mb-6">
-        <SummaryCard label="Critical" value={stats.critical} sub="Needs attention" colorClass="bg-red-50" />
-        <SummaryCard label="Warning" value={stats.warnings} sub="Monitor" colorClass="bg-amber-50" />
-        <SummaryCard label="Suspicious" value={stats.suspicious} sub="Unusual behavior" colorClass="bg-purple-50" />
-        <SummaryCard label="Total" value={stats.total} sub="All alerts" colorClass="bg-blue-50" />
+        <SummaryCard label="Critical"    value={stats.critical}   sub="Needs attention"    colorClass="bg-red-50"    textClass="text-red-700" />
+        <SummaryCard label="Suspicious"  value={stats.suspicious} sub="Unusual behavior"   colorClass="bg-purple-50" textClass="text-purple-700" />
+        <SummaryCard label="Warning"     value={stats.warnings}   sub="Monitor"            colorClass="bg-amber-50"  textClass="text-amber-700" />
+        <SummaryCard label="Total"       value={stats.total}      sub="All alerts"         colorClass="bg-blue-50"   textClass="text-blue-700" />
       </div>
 
       {/* Controls */}
