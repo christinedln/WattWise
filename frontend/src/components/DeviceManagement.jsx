@@ -24,7 +24,7 @@ const TrashIcon = () => (
 
 // NEW: Pencil Icon
 const PencilIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", flexShrink: 0 }}>
     <path d="M12 20h9" />
     <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
   </svg>
@@ -88,23 +88,25 @@ function getSeverity(alerts = [], signal) {
 // ─── Row ─────────────────────────────────────
 function DeviceRow({ device, pct, openEdit }) {
   return (
-    <tr className="border-b border-gray-100 hover:bg-gray-50">
-      <td className="px-4 py-3 font-semibold whitespace-nowrap">
-  <div className="flex items-center gap-2">
-    {device.name}
-    <button onClick={() => openEdit(device, "name")} className="p-1">
-      <PencilIcon />
-    </button>
-  </div>
-</td>
-      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-  <div className="flex items-center gap-2">
-    {device.location}
-    <button onClick={() => openEdit(device, "location")} className="p-1">
-      <PencilIcon />
-    </button>
-  </div>
-</td>
+      <tr className="border-b border-gray-100 hover:bg-gray-50">
+        <td className="px-4 py-3 font-semibold whitespace-nowrap">
+          <div className="flex items-center justify-between gap-2">
+            <span>{device.name}</span>
+            <button onClick={() => openEdit(device, "name")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", color: "#9ca3af" }}>
+              <PencilIcon />
+            </button>
+          </div>
+        </td>
+
+       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+        <div className="flex items-center justify-between gap-2">
+          <span>{device.location}</span>
+          <button onClick={() => openEdit(device, "location")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", color: "#9ca3af" }}>
+            <PencilIcon />
+          </button>
+        </div>
+      </td>
+
       <td className="px-4 py-3">
       <DeviceStatusBadge status={device.status} />
       </td>
@@ -136,36 +138,32 @@ function DeviceRow({ device, pct, openEdit }) {
 
           {/* ── Toggle Power ── */}
           <button
-            title="Toggle power"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "5px 10px",
-              borderRadius: 6,
-              border: "1px solid #d1d5db",
-              background: "transparent",
-              color: "#374151",
-              fontSize: 11,
-              fontWeight: 500,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              transition: "background 0.15s, border-color 0.15s, color 0.15s",
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = "#111827";
-              e.currentTarget.style.borderColor = "#111827";
-              e.currentTarget.style.color = "#ffffff";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.borderColor = "#d1d5db";
-              e.currentTarget.style.color = "#374151";
-            }}
-          >
-            <PowerIcon />
-            Power
-          </button>
+          title="Toggle power"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "8px",
+            borderRadius: 8,
+            border: "1px solid #d1d5db",
+            background: "transparent",
+            color: "#374151",
+            cursor: "pointer",
+            transition: "background 0.15s, border-color 0.15s, color 0.15s",
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = "#111827";
+            e.currentTarget.style.borderColor = "#111827";
+            e.currentTarget.style.color = "#ffffff";
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = "#d1d5db";
+            e.currentTarget.style.color = "#374151";
+          }}
+        >
+          <PowerIcon />
+        </button>
 
           {/* ── Remove Device ── */}
             <button
@@ -407,6 +405,11 @@ export default function DeviceManagement() {
 
   return (
     <>
+      {/* ── HEADER ───────────────────────────── */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Devices Management</h1>
+        <p className="text-sm text-gray-400 mt-0.5">Monitor, control, and analyze all connected devices</p>
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
         <SummaryCard label="Active"     count={counts.active}     colorClass="bg-emerald-50 border-emerald-100 text-emerald-800" />
@@ -477,18 +480,19 @@ export default function DeviceManagement() {
 <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
   
   {/* enables horizontal scroll on small screens */}
-  <div className="overflow-x-auto">
-    <table className="min-w-[900px] w-full">
+  <div>
+    <table className="w-full table-fixed">
       
       <thead>
         <tr className="border-b border-gray-100 bg-gray-50">
           {["Name", "Location", "Status", "Current", "Voltage", "Power", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
-            <th
-              key={h}
-              className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"
-            >
-              {h}
-            </th>
+          <th
+            key={h}
+            className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"
+            style={{ width: h === "Name" || h === "Location" ? "13%" : h === "Last Updated" ? "15%" : h === "% Usage" ? "11%" : h === "Actions" ? "10%" : "8%" }}>
+            {h}
+          </th>
+
           ))}
         </tr>
       </thead>
