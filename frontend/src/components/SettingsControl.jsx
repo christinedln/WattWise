@@ -148,38 +148,42 @@ export default function SettingsControl() {
 
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 bg-white rounded-t-xl shadow-sm mb-6 w-full">
-        {["Billing", "Monitoring"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3 text-sm font-medium transition-all border-b-2 ${
-              activeTab === tab
-                ? "border-green-600 text-gray-900 font-semibold bg-gray-50"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+     <div className="flex border-b border-gray-200 bg-white rounded-t-xl shadow-sm mb-6 w-full">
+  {["Billing", "Monitoring"].map((tab) => (
+    <button
+      key={tab}
+      onClick={() => setActiveTab(tab)}
+      className={`flex-1 py-3 text-sm font-medium transition-all ${
+        activeTab === tab
+          ? "!bg-green-600 !text-white"
+          : "!bg-white !text-gray-500 hover:!bg-gray-100 hover:!text-gray-700"
+      }`}
+    >
+      {tab}
+    </button>
+  ))}
+</div>
 
       {/* DEVICE SELECTOR */}
       <div className="flex gap-2 mb-4 flex-wrap">
-        {devices.map((device) => (
-          <button
-            key={device.id}
-            onClick={() => selectDevice(device)}
-            className={`px-3 py-2 text-sm rounded-md border ${
-              selectedDevice?.id === device.id
-                ? "bg-green-600 text-white"
-                : "bg-white text-gray-700"
-            }`}
-          >
-            {device.name}
-          </button>
-        ))}
-      </div>
+  {devices.map((device) => (
+    <button
+      key={device.id}
+      onClick={() => selectDevice(device)}
+      className={`
+        !px-5 !py-2 !rounded-full !text-sm !font-medium 
+        !transition-all !duration-200 !border
+        ${
+          selectedDevice?.id === device.id
+            ? "!bg-green-600 !text-white !shadow-md !shadow-green-300 !border-green-700"
+            : "!bg-white !text-gray-600 !border-gray-300 hover:!bg-gray-100"
+        }
+      `}
+    >
+      {device.name}
+    </button>
+  ))}
+</div>
 
       {/* BILLING TAB */}
       {activeTab === "Billing" && (

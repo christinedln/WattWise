@@ -14,9 +14,9 @@ export default function Alerts() {
       <div className="h-screen w-screen flex overflow-hidden bg-gray-50">
         <Sidebar />
 
+       <div className="flex-1 flex flex-col overflow-hidden">
+          <DashboardHeader />
 
-       
-        <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-auto p-6">
             <AlertNotif />
           </div>

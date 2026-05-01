@@ -45,18 +45,55 @@ const TrashIcon = () => (
   </svg>
 );
 
-// ─── Badge ────────────────────────────────────────────
-const Badge = ({ severity }) => {
-  const style =
-    severity === "Critical"
-      ? "bg-red-50 text-red-600 border-red-200"
-      : severity === "Warning"
-      ? "bg-amber-50 text-amber-600 border-amber-200"
-      : "bg-blue-50 text-blue-600 border-blue-200";
+// ─── Filter meta ──────────────────────────────────────
+const filterMeta = {
+  All: {
+    label: "All",
+    activeClass:
+      "!bg-green-800 !text-white !border-green-900 shadow-[0_0_10px_rgba(20,83,45,0.55)] !rounded-full",
+  },
+  Critical: {
+    label: "Critical",
+    activeClass:
+      "!bg-red-100 !text-red-900 !border-red-300 shadow-[0_0_6px_rgba(239,68,68,0.35)] !rounded-full",
+  },
+  Warning: {
+    label: "Warning",
+    activeClass:
+      "!bg-amber-100 !text-amber-900 !border-amber-300 shadow-[0_0_6px_rgba(245,158,11,0.35)] !rounded-full",
+  },
+  Info: {
+    label: "Info",
+    activeClass:
+      "!bg-blue-100 !text-blue-900 !border-blue-300 shadow-[0_0_6px_rgba(59,130,246,0.35)] !rounded-full",
+  },
+};
 
+// Add this constant above Badge
+const TYPE = {
+  Critical: {
+    badge: "bg-red-100 text-red-800 border-red-300",
+    dot: "bg-red-500",
+  },
+  Warning: {
+    badge: "bg-amber-100 text-amber-800 border-amber-300",
+    dot: "bg-amber-500",
+  },
+  Info: {
+    badge: "bg-blue-100 text-blue-800 border-blue-300",
+    dot: "bg-blue-500",
+  },
+  Suspicious: {
+    badge: "bg-purple-100 text-purple-800 border-purple-300",
+    dot: "bg-purple-500",
+  },
+};
+
+const Badge = ({ type }) => {
+  const style = TYPE[type] ?? { badge: "bg-gray-100 text-gray-700 border-gray-300", dot: "bg-gray-400" };
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${style}`}>
-      {severity}
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${style.badge}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />{type}
     </span>
   );
 };
@@ -64,10 +101,25 @@ const Badge = ({ severity }) => {
 // ─── Summary Card ─────────────────────────────────────
 function SummaryCard({ label, value, sub, colorClass }) {
   return (
-    <div className={`rounded-xl border p-4 ${colorClass}`}>
-      <p className="text-xs font-semibold uppercase mb-1 opacity-70">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
-      <p className="text-xs mt-1 opacity-60">{sub}</p>
+    <div
+      className={`
+        rounded-2xl border p-4 
+        shadow-sm hover:shadow-md 
+        transition-all duration-200
+        ${colorClass}
+      `}
+    >
+      <p className="text-xs font-semibold uppercase tracking-wider mb-1 opacity-70">
+        {label}
+      </p>
+
+      <p className="text-2xl font-bold">
+        {value}
+      </p>
+
+      <p className="text-xs mt-1 opacity-60">
+        {sub}
+      </p>
     </div>
   );
 }
@@ -159,21 +211,104 @@ const stats = {
 
       {/* HEADER */}
       <div className="flex justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Alerts & Notifications</h1>
-          <p className="text-sm text-gray-400">Device issues and anomalies</p>
+          <div>
+            <h1 className="text-2xl font-bold">Alerts & Notifications</h1>
+            <p className="text-sm text-gray-400">Device issues and anomalies</p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowEmail(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150"
+             style={{ backgroundColor: "#F0F8F5 ", color: "black", border: "1px solid #86efac" }}
+            >
+          <MailIcon /> Email Alerts
+            </button>
+            <button
+              onClick={() => setShowSound(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150"
+              style={{ backgroundColor: "#F0F8F5", color: "black", border: "1px solid #86efac" }}
+
+            >
+              <VolumeIcon /> Sound
+            </button>
+          </div>
         </div>
-      </div>
 
       {/* STATS */}
-<div className="grid grid-cols-5 gap-3 mb-6">
-  <SummaryCard label="Critical" value={stats.critical} sub="Needs attention" colorClass="bg-red-50" />
-  <SummaryCard label="Warning" value={stats.warnings} sub="Monitor" colorClass="bg-amber-50" />
-  <SummaryCard label="Suspicious" value={stats.suspicious} sub="Unusual behavior" colorClass="bg-purple-50" />
-  <SummaryCard label="Total" value={stats.total} sub="All alerts" colorClass="bg-blue-50" />
-</div>
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        <SummaryCard label="Critical" value={stats.critical} sub="Needs attention" colorClass="bg-red-50" />
+        <SummaryCard label="Warning" value={stats.warnings} sub="Monitor" colorClass="bg-amber-50" />
+        <SummaryCard label="Suspicious" value={stats.suspicious} sub="Unusual behavior" colorClass="bg-purple-50" />
+        <SummaryCard label="Total" value={stats.total} sub="All alerts" colorClass="bg-blue-50" />
+      </div>
 
-      {/* LIST */}
+      {/* Controls */}
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
+
+        {/* Show / Hide Resolved */}
+        <button
+          onClick={() => setShowResolved(!showResolved)}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "7px 12px",
+            borderRadius: 8,
+            border: showResolved ? "1px solid #86efac" : "1px solid #d1d5db",
+            background: showResolved ? "#f0fdf4" : "#ffffff",
+            color: showResolved ? "#15803d" : "#4b5563",
+            fontSize: 13,
+            fontWeight: 500,
+            cursor: "pointer",
+            transition: "all 0.15s",
+          }}
+        >
+          {showResolved ? <EyeOffIcon /> : <EyeIcon />}
+          {showResolved ? "Hide Resolved" : "Show Resolved"}
+        </button>
+
+        {/* Filter Buttons */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-gray-500 font-medium">Filter:</span>
+
+              {Object.entries(filterMeta).map(([key, { label, activeClass }]) => (
+                <button
+                  key={key}
+                  onClick={() => setFilter(key)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-150 ${
+                    filter === key
+                      ? activeClass
+                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+        {selected.length > 0 && (
+          <button
+            onClick={resolveSelected}
+            className="ml-auto px-3 py-2 rounded-lg bg-green-50 border border-green-300 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
+          >
+            ✓ Resolve {selected.length} selected
+          </button>
+        )}
+      </div>
+
+      {/* Select All */}
+      <div className="flex items-center gap-2 pb-3 border-b border-gray-100 mb-3">
+        <input
+          type="checkbox"
+          checked={selected.length === filtered.length && filtered.length > 0}
+          onChange={selectAll}
+          className="w-4 h-4 accent-gray-900 cursor-pointer"
+        />
+        <span className="text-sm font-medium text-gray-700">Select All</span>
+      </div>
+
+      {/* Alert List */}
       <div className="space-y-3">
         {filtered.map((alert) => (
           <div key={alert.id} className="flex gap-3 border p-4 rounded-xl bg-white">
@@ -192,8 +327,8 @@ const stats = {
       </div>
 
       {/* MODALS */}
-      {showEmail && <EmailModal onClose={() => setShowEmail(false)} />}
-      {showSound && <SoundModal onClose={() => setShowSound(false)} />}
-    </div>
+        {showEmail && <EmailModal onClose={() => setShowEmail(false)} onSave={() => { setShowEmail(false); showToast("Email preferences saved!"); }} />}
+        {showSound && <SoundModal onClose={() => setShowSound(false)} onSave={() => { setShowSound(false); showToast("Sound settings saved!"); }} />}
+            </div>
   );
 }

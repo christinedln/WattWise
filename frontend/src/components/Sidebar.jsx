@@ -95,7 +95,7 @@ export default function Sidebar() {
         <div className="flex flex-col p-4 h-full">
 
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-md overflow-hidden">
                 <img
@@ -115,6 +115,9 @@ export default function Sidebar() {
             </button>
           </div>
 
+          {/* ⭐ Divider Line ⭐ */}
+          <div className="border-b border-gray-300 mb-4"></div>
+
           {/* Menu */}
           <nav className="flex flex-col gap-2 flex-grow">
             {menuItems.map((item) => {
@@ -131,14 +134,18 @@ export default function Sidebar() {
                   {/* ICON */}
                   <Icon
                     className={`w-5 h-5 transition ${
-                      isActive ? "text-green-600 stroke-green-600" : "text-gray-800"
+                      isActive
+                        ? "text-green-600 stroke-green-600"
+                        : "text-gray-800"
                     }`}
                   />
 
                   {/* TEXT */}
                   <span
                     className={`transition ${
-                      isActive ? "text-green-600 font-medium" : "text-gray-800"
+                      isActive
+                        ? "text-green-600 font-medium"
+                        : "text-gray-800"
                     }`}
                   >
                     {item.name}
@@ -176,4 +183,4 @@ export default function Sidebar() {
       </div>
     </>
   );
-}
+} 
