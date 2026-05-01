@@ -1,0 +1,88 @@
+// const express = require("express");
+// const router = express.Router();
+
+// // Utils / services
+// const { mergeDeviceData } = require("../utils/mapper");
+// const { computePowerTrend } = require("../utils/calculations");
+
+// // Auth middleware
+// const authRequired = require("../utils/auth");
+
+
+// // ===============================
+// // ALL DEVICES (REALTIME)
+// // ===============================
+// router.get("/devices", authRequired, async (req, res) => {
+//     try {
+//         const userId = req.user_id;
+
+//         const devices = await mergeDeviceData(userId);
+
+//         const updated = devices.map(d => ({
+//             ...d,
+//             message: d.alert_message || null
+//         }));
+
+//         res.json(updated);
+
+//     } catch (error) {
+//         console.error("Realtime devices error:", error);
+//         res.status(500).json({ error: "Server error" });
+//     }
+// });
+
+
+// // ===============================
+// // SINGLE DEVICE
+// // ===============================
+// router.get("/device/:device_id", authRequired, async (req, res) => {
+//     try {
+//         const userId = req.user_id;
+//         const deviceId = req.params.device_id;
+
+//         const devices = await mergeDeviceData(userId);
+
+//         const device = devices.find(d => d.device_id === deviceId);
+
+//         if (!device) {
+//             return res.status(404).json({ error: "Device not found" });
+//         }
+
+//         device.message = device.alert_message || null;
+
+//         res.json(device);
+
+//     } catch (error) {
+//         console.error("Single device error:", error);
+//         res.status(500).json({ error: "Server error" });
+//     }
+// });
+
+
+// // ===============================
+// // POWER TREND
+// // ===============================
+// router.get("/power-trend/:device_id", authRequired, async (req, res) => {
+//     try {
+//         const userId = req.user_id;
+//         const deviceId = req.params.device_id;
+
+//         const devices = await mergeDeviceData(userId);
+
+//         const device = devices.find(d => d.device_id === deviceId);
+
+//         if (!device) {
+//             return res.status(404).json({ error: "Device not found" });
+//         }
+
+//         const trend = computePowerTrend(device.realtime_logs);
+
+//         res.json(trend);
+
+//     } catch (error) {
+//         console.error("Power trend error:", error);
+//         res.status(500).json({ error: "Server error" });
+//     }
+// });
+
+// module.exports = router;

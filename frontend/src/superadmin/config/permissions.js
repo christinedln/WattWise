@@ -32,6 +32,7 @@ const ROLE_PERMISSIONS = {
     "view_alerts",
     "manage_alerts",
     "view_reports",
+    "configure_mfa",
     "manage_settings_limited", // Limited access to settings
   ],
   [ROLES.SECURITY]: [

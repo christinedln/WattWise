@@ -21,9 +21,9 @@ const requireSuperAdmin = async (req, res, next) => {
     }
 
     const decodedToken = await auth.verifyIdToken(token);
-    const claims = decodedToken.customClaims || {};
+    const role = decodedToken.role || decodedToken.customClaims?.role;
 
-    if (claims.role !== 'superadmin') {
+    if (role !== 'superadmin') {
       return res.status(403).json({ error: 'Superadmin access required' });
     }
 
@@ -33,6 +33,219 @@ const requireSuperAdmin = async (req, res, next) => {
     res.status(401).json({ error: error.message });
   }
 };
+
+/**
+ * POST /api/admin-accounts/create
+ * Create a new admin account
+ * 
+ * Request body:
+ * {
+ *   "email": "admin@wattwise.com",
+ *   "displayName": "John Doe",
+ *   "role": "admin|security|support|analyst"
+ * }
+ */
+router.post('/create', requireSuperAdmin, async (req, res) => {
+  try {
+    const { email, displayName, role } = req.body;
+
+    if (!email || !role) {
+      return res.status(400).json({ error: 'Email and role are required' });
+    }
+
+    // Create Firebase Auth user
+    const userRecord = await auth.createUser({
+      email,
+      password: Math.random().toString(36).slice(-12), // temporary password
+      displayName: displayName || email,
+    });
+
+    // Set custom claims for role
+    await auth.setCustomUserClaims(userRecord.uid, { role });
+
+    // Create Firestore document
+    const db = admin.firestore();
+    await db.collection('roleBasedAccounts').doc(userRecord.uid).set({
+      uid: userRecord.uid,
+      email,
+      displayName: displayName || email,
+      role,
+      status: 'active',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      synced: true,
+    });
+
+    res.status(201).json({
+      uid: userRecord.uid,
+      email: userRecord.email,
+      displayName: userRecord.displayName,
+      role,
+      message: 'Account created successfully',
+    });
+  } catch (error) {
+    console.error('Create account error:', error);
+    if (error.code === 'auth/email-already-exists') {
+      res.status(400).json({ error: 'Email already exists' });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
+  }
+});
+
+/**
+ * PUT /api/admin-accounts/:userId/update-role
+ * Update the role of an account
+ */
+router.put('/:userId/update-role', requireSuperAdmin, async (req, res) => {
+  try {
+    const { role } = req.body;
+    const userId = req.params.userId;
+
+    if (!role) {
+      return res.status(400).json({ error: 'Role is required' });
+    }
+
+    // Update custom claims
+    await auth.setCustomUserClaims(userId, { role });
+
+    // Update Firestore document
+    const db = admin.firestore();
+    await db.collection('roleBasedAccounts').doc(userId).update({
+      role,
+      updatedAt: new Date(),
+    });
+
+    res.status(200).json({
+      message: 'Role updated successfully',
+      userId,
+      role,
+    });
+  } catch (error) {
+    console.error('Update role error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /api/admin-accounts/:userId/disable
+ * Disable an account
+ */
+router.post('/:userId/disable', requireSuperAdmin, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Disable Firebase Auth user
+    await auth.updateUser(userId, { disabled: true });
+
+    // Update Firestore document
+    const db = admin.firestore();
+    await db.collection('roleBasedAccounts').doc(userId).update({
+      status: 'disabled',
+      updatedAt: new Date(),
+    });
+
+    res.status(200).json({
+      message: 'Account disabled successfully',
+      userId,
+    });
+  } catch (error) {
+    console.error('Disable account error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * PUT /api/admin-accounts/:userId/update-display-name
+ * Update display name
+ */
+router.put('/:userId/update-display-name', requireSuperAdmin, async (req, res) => {
+  try {
+    const { displayName } = req.body;
+    const userId = req.params.userId;
+
+    if (!displayName) {
+      return res.status(400).json({ error: 'Display name is required' });
+    }
+
+    // Update Firebase Auth user
+    await auth.updateUser(userId, { displayName });
+
+    // Update Firestore document
+    const db = admin.firestore();
+    await db.collection('roleBasedAccounts').doc(userId).update({
+      displayName,
+      updatedAt: new Date(),
+    });
+
+    res.status(200).json({
+      message: 'Display name updated successfully',
+      userId,
+      displayName,
+    });
+  } catch (error) {
+    console.error('Update display name error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /api/admin-accounts/:userId/reset-password
+ * Set a new password for the account
+ */
+router.post('/:userId/reset-password', requireSuperAdmin, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const { password } = req.body;
+
+    if (!password || password.trim().length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    }
+
+    // Update user's password
+    await auth.updateUser(userId, { password: password.trim() });
+
+    res.status(200).json({
+      message: 'Password updated successfully',
+      userId,
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * DELETE /api/admin-accounts/:userId
+ * Delete an admin account (superadmin only)
+ */
+router.delete('/:userId', requireSuperAdmin, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Prevent deleting the superadmin that's doing the deletion
+    const userRecord = await auth.getUser(userId);
+    if (userRecord.customClaims?.role === 'superadmin' && userId === req.adminUid) {
+      return res.status(400).json({ error: 'Cannot delete your own superadmin account' });
+    }
+
+    // Delete Firebase Auth user
+    await auth.deleteUser(userId);
+
+    // Delete Firestore document
+    const db = admin.firestore();
+    await db.collection('roleBasedAccounts').doc(userId).delete();
+
+    res.status(200).json({
+      message: 'Account deleted successfully',
+      userId,
+    });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 /**
  * POST /api/admin/accounts
@@ -78,10 +291,8 @@ router.post('/', requireSuperAdmin, async (req, res) => {
  */
 router.get('/', requireSuperAdmin, async (req, res) => {
   try {
-    const roleFilter = req.query.role || null;
-    const admins = await AdminService.listAdminAccounts(roleFilter);
-
-    res.status(200).json({ admins, total: admins.length });
+    // Temporarily disabled - use roleBasedAccounts collection directly
+    res.status(200).json({ admins: [], total: 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -93,13 +304,8 @@ router.get('/', requireSuperAdmin, async (req, res) => {
  */
 router.get('/:adminId', requireSuperAdmin, async (req, res) => {
   try {
-    const admin = await AdminService.getAdminAccount(req.params.adminId);
-
-    if (!admin) {
-      return res.status(404).json({ error: 'Admin account not found' });
-    }
-
-    res.status(200).json(admin);
+    // Temporarily disabled
+    res.status(404).json({ error: 'Admin account not found' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -118,13 +324,8 @@ router.get('/:adminId', requireSuperAdmin, async (req, res) => {
  */
 router.put('/:adminId', requireSuperAdmin, async (req, res) => {
   try {
-    const result = await AdminService.updateAdminAccount(
-      req.params.adminId,
-      req.body,
-      req.adminUid
-    );
-
-    res.status(200).json(result);
+    // Temporarily disabled
+    res.status(500).json({ error: 'Endpoint temporarily disabled' });
   } catch (error) {
     if (error.message.includes('Invalid role')) {
       res.status(400).json({ error: error.message });
@@ -140,8 +341,8 @@ router.put('/:adminId', requireSuperAdmin, async (req, res) => {
  */
 router.post('/:adminId/deactivate', requireSuperAdmin, async (req, res) => {
   try {
-    await AdminService.deactivateAdminAccount(req.params.adminId, req.adminUid);
-    res.status(200).json({ message: 'Admin account deactivated' });
+    // Temporarily disabled
+    res.status(500).json({ error: 'Endpoint temporarily disabled' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -153,8 +354,8 @@ router.post('/:adminId/deactivate', requireSuperAdmin, async (req, res) => {
  */
 router.post('/:adminId/reactivate', requireSuperAdmin, async (req, res) => {
   try {
-    await AdminService.reactivateAdminAccount(req.params.adminId, req.adminUid);
-    res.status(200).json({ message: 'Admin account reactivated' });
+    // Temporarily disabled
+    res.status(500).json({ error: 'Endpoint temporarily disabled' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -166,14 +367,8 @@ router.post('/:adminId/reactivate', requireSuperAdmin, async (req, res) => {
  */
 router.delete('/:adminId', requireSuperAdmin, async (req, res) => {
   try {
-    // Prevent deleting the last superadmin
-    const admins = await AdminService.listAdminAccounts('superadmin');
-    if (admins.length <= 1 && req.params.adminId === admins[0].uid) {
-      return res.status(400).json({ error: 'Cannot delete the last superadmin' });
-    }
-
-    await AdminService.deleteAdminAccount(req.params.adminId);
-    res.status(200).json({ message: 'Admin account deleted' });
+    // Temporarily disabled
+    res.status(500).json({ error: 'Endpoint temporarily disabled' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -11,13 +11,13 @@ export default function UnauthorizedPage() {
         </div>
         <h1 className="mt-5 text-3xl font-semibold text-white">Access denied</h1>
         <p className="mt-3 text-sm leading-6 text-slate-300">
-          Your account is authenticated, but the assigned role does not have permission to view this resource.
+          This section is restricted to superadmin accounts only. Your current role does not have permission to access this resource.
         </p>
         <Link
-          to="/super-admin/dashboard"
+          to="/super-admin/login"
           className="mt-6 inline-flex items-center justify-center rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
         >
-          Return to dashboard
+          Return to login
         </Link>
       </div>
     </div>

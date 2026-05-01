@@ -27,7 +27,9 @@ export default function LoginPage() {
     const tokenResult = await user.getIdTokenResult(true);
     const role = tokenResult?.claims?.role || "user";
 
-    if (role === "superadmin") {
+    // All admin roles go to super-admin portal
+    const adminRoles = ["superadmin", "admin", "security", "support", "analyst"];
+    if (adminRoles.includes(role)) {
       window.location.assign(superAdminPortalUrl);
       return;
     }

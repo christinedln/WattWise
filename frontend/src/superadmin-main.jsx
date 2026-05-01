@@ -10,6 +10,7 @@ import SuperAdminLoginPage from "./superadmin/pages/LoginPage";
 import SuperAdminDashboardPage from "./superadmin/pages/DashboardPage";
 import SuperAdminUsersPage from "./superadmin/pages/UsersPage";
 import CreateAccountPage from "./superadmin/pages/CreateAccountPage";
+import RoleBasedAccountsPage from "./superadmin/pages/RoleBasedAccountsPage";
 import SecurityLogsPage from "./superadmin/pages/SecurityLogsPage";
 import UnauthorizedPage from "./superadmin/pages/UnauthorizedPage";
 import SectionPage from "./superadmin/pages/SectionPage";
@@ -23,13 +24,14 @@ createRoot(document.getElementById("root")).render(
         <Route path="/super-admin/unauthorized" element={<UnauthorizedPage />} />
         <Route
           path="/super-admin"
-          element={<ProtectedRoute requiredRoles={["superadmin"]} />}
+          element={<ProtectedRoute />}
         >
           <Route element={<SuperAdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<SuperAdminDashboardPage />} />
             <Route path="users" element={<SuperAdminUsersPage />} />
             <Route path="create-account" element={<CreateAccountPage />} />
+            <Route path="role-based-accounts" element={<RoleBasedAccountsPage />} />
             <Route path="security-logs" element={<SecurityLogsPage />} />
             <Route
               path="devices"

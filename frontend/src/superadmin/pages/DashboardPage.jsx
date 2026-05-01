@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Users, FileText, ShieldCheck, Activity } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { hasPermission } from "../config/permissions";
 import { fetchAuditLogPage } from "../services/auditLogService";
 
 const summaryCards = [
@@ -28,6 +29,18 @@ function formatTimestamp(value) {
 export default function DashboardPage() {
   const { profile, role } = useAuth();
   const [recentLogs, setRecentLogs] = useState([]);
+  const canViewDashboard = hasPermission(role, "view_dashboard");
+
+  if (!canViewDashboard) {
+    return (
+      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-6 text-yellow-800">
+        <h2 className="text-lg font-semibold">Access Restricted</h2>
+        <p className="mt-3 text-sm text-yellow-700">
+          Your role does not have permission to view the dashboard.
+        </p>
+      </div>
+    );
+  }
 
   useEffect(() => {
     let isMounted = true;

@@ -14,6 +14,7 @@ import {
   Bell,
   Search,
   UserPlus,
+  UserCog,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission } from "../config/permissions";
@@ -22,6 +23,7 @@ const navigationItems = [
   { to: "/super-admin/dashboard", label: "Dashboard", icon: LayoutDashboard, action: "view_dashboard" },
   { to: "/super-admin/users", label: "Users", icon: Users, action: "view_users" },
   { to: "/super-admin/create-account", label: "Create Account", icon: UserPlus, action: "manage_users" },
+  { to: "/super-admin/role-based-accounts", label: "Role-Based Accounts", icon: UserCog, action: "view_users" },
   { to: "/super-admin/devices", label: "Devices", icon: Server, action: "view_devices" },
   { to: "/super-admin/alerts", label: "Alerts", icon: BellRing, action: "view_alerts" },
   { to: "/super-admin/reports", label: "Reports", icon: FileText, action: "view_reports" },
@@ -30,8 +32,21 @@ const navigationItems = [
   { to: "/super-admin/mfa-setup", label: "MFA Setup", icon: ShieldCheck, action: "configure_mfa" },
 ];
 
-function NavigationItem({ item }) {
+function NavigationItem({ item, hasAccess }) {
   const Icon = item.icon;
+  
+  if (!hasAccess) {
+    return (
+      <div
+        title={`Requires: ${item.action}`}
+        className="flex items-center gap-3 px-3 py-2 rounded-lg opacity-40 cursor-not-allowed text-gray-400"
+      >
+        <Icon className="h-5 w-5" />
+        <span className="font-medium">{item.label}</span>
+      </div>
+    );
+  }
+
   return (
     <NavLink
       to={item.to}
@@ -53,7 +68,6 @@ function NavigationItem({ item }) {
 export default function SuperAdminLayout() {
   const { profile, role, signOutUser, idleRemaining } = useAuth();
   const location = useLocation();
-  const visibleNavigationItems = navigationItems.filter((item) => hasPermission(role, item.action));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -67,8 +81,12 @@ export default function SuperAdminLayout() {
           </div>
 
           <nav className="flex flex-col gap-2 flex-grow">
-            {visibleNavigationItems.map((item) => (
-              <NavigationItem key={item.to} item={item} />
+            {navigationItems.map((item) => (
+              <NavigationItem 
+                key={item.to} 
+                item={item}
+                hasAccess={hasPermission(role, item.action)}
+              />
             ))}
           </nav>
 
