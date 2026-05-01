@@ -1,6 +1,7 @@
 const { getDevices, getRealtimeLogs } = require("../services/data_service");
 const { generateCurrentAlerts } = require("./generateCurrentAlerts");
 const { nowTime } = require("../utils/time_helper");
+const { calcKwh } = require("../utils/calculations");
 
 async function mergeDeviceData(userId) {
     if (!userId || typeof userId !== "string") return [];
@@ -108,9 +109,7 @@ async function mergeDeviceData(userId) {
             severity,
             alert_message: message,
 
-            consumption: Number(
-                ((d.power || 0) * (d.runtime || 0)) / 3600000
-            ).toFixed(2),
+            consumption: calcKwh(d.power, d.runtime || 0),
 
             lastUpdated: nowTime(),
 

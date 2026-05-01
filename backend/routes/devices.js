@@ -9,10 +9,6 @@ const { db } = require("../firebase_config");
 // Auth middleware
 const authRequired = require("../utils/auth");
 
-
-// ===============================
-// GET ALL DEVICES
-// ===============================
 router.get("/", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
@@ -34,9 +30,6 @@ router.get("/", authRequired, async (req, res) => {
     }
 });
 
-// ===============================
-// UPDATE DEVICE (PATCH)
-// ===============================
 router.patch("/:device_id", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
@@ -49,7 +42,7 @@ router.patch("/:device_id", authRequired, async (req, res) => {
         }
         
         const { enabled, name, location } = req.body;
-        // Validate request body types
+
         if (enabled !== undefined && typeof enabled !== "boolean") {
             return res.status(400).json({
                 status: "error",
@@ -77,9 +70,6 @@ router.patch("/:device_id", authRequired, async (req, res) => {
         if (name !== undefined) updates.name = name.trim();
         if (location !== undefined) updates.location = location.trim();
 
-
-
-        // Prevent empty string updates after trimming
         if (updates.name === "") {
             return res.status(400).json({
                 status: "error",
@@ -126,16 +116,12 @@ router.patch("/:device_id", authRequired, async (req, res) => {
 });
 
 
-// ===============================
-// DEVICE SUMMARY
-// ===============================
 router.get("/summary", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
 
         const devices = await mergeDeviceData(userId) || [];
         const rate = await getRate(userId) || 0;
-
 
         if (!devices.length) {
             return res.json({
@@ -149,8 +135,9 @@ router.get("/summary", authRequired, async (req, res) => {
                 }
             });
         }
+
         const totalKwh = devices.reduce(
-            (sum, d) => sum + (d.consumption || 0),
+            (sum, d) => sum + (Number(d.consumption) || 0),
             0
         );
 

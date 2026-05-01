@@ -91,4 +91,54 @@ router.get("/power-trend/:device_id", authRequired, async (req, res) => {
     }
 });
 
+router.get("/current-trend/:device_id", authRequired, async (req, res) => {
+    try {
+        const userId = req.user_id;
+        const deviceId = req.params.device_id;
+
+        const devices = await mergeDeviceData(userId) || [];
+        const device = devices.find(d => d.device_id === deviceId);
+
+        if (!device) {
+            return res.status(404).json({ error: "Device not found" });
+        }
+
+        const trend = (device.realtime_logs?.current || []).map(p => ({
+            time: p.timestamp,
+            value: p.value
+        }));
+
+        res.json(trend);
+
+    } catch (error) {
+        console.error("Current trend error:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+router.get("/voltage-trend/:device_id", authRequired, async (req, res) => {
+    try {
+        const userId = req.user_id;
+        const deviceId = req.params.device_id;
+
+        const devices = await mergeDeviceData(userId) || [];
+        const device = devices.find(d => d.device_id === deviceId);
+
+        if (!device) {
+            return res.status(404).json({ error: "Device not found" });
+        }
+
+        const trend = (device.realtime_logs?.voltage || []).map(p => ({
+            time: p.timestamp,
+            value: p.value
+        }));
+
+        res.json(trend);
+
+    } catch (error) {
+        console.error("Voltage trend error:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
 module.exports = router;

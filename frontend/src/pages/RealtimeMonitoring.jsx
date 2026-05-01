@@ -18,6 +18,8 @@ export default function RealtimeMonitoringPage() {
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [chartData, setChartData] = useState([]);
+  const [currentData, setCurrentData] = useState([]);
+  const [voltageData, setVoltageData] = useState([]);
 
   // FETCH DEVICES 
   useEffect(() => {
@@ -39,37 +41,37 @@ export default function RealtimeMonitoringPage() {
     //return () => clearInterval(interval);
   }, [selectedDevice]);
 
-  // FETCH POWER TREND
+  // FETCH TREND
 useEffect(() => {
   if (!selectedDevice) return;
 
-  const fetchTrend = async () => {
+  const fetchAllTrends = async () => {
     try {
-      const data = await apiFetch(`/realtime/power-trend/${selectedDevice}`);
+      const [power, current, voltage] = await Promise.all([
+        apiFetch(`/realtime/power-trend/${selectedDevice}`),
+        apiFetch(`/realtime/current-trend/${selectedDevice}`),
+        apiFetch(`/realtime/voltage-trend/${selectedDevice}`)
+      ]);
 
-      const formatted = data.map(point => ({
-        ...point,
-        time: new Date(point.time).toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: true
-        })
-      }));
+      const format = (data) =>
+        data.map(p => ({
+          ...p,
+          time: new Date(p.time).toLocaleTimeString()
+        }));
 
-      setChartData(formatted);
+      setChartData(format(power));
+      setCurrentData(format(current));
+      setVoltageData(format(voltage));
+
     } catch (err) {
       console.error("Trend fetch error:", err);
     }
   };
 
-  // initial fetch
-  fetchTrend();
+  fetchAllTrends();
+  // const interval = setInterval(fetchAllTrends, 5000);
 
-  // poll every 5 seconds
-  //const interval = setInterval(fetchTrend, 5000);
-
-  //return () => clearInterval(interval);
+  // return () => clearInterval(interval);
 }, [selectedDevice]);
 
   const device = devices.find((d) => d.device_id === selectedDevice);
@@ -162,13 +164,45 @@ useEffect(() => {
                       <YAxis />
                       <Tooltip />
                       <Line
-  type="monotone"
-  dataKey="power"
-  stroke="#16a34a"
-  strokeWidth={2}
-  dot={{ r: 3 }}
-  activeDot={{ r: 6 }}
-/>
+                        type="monotone"
+                        dataKey="power"
+                        stroke="#16a34a"
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg border mt-6">
+                  <h2 className="text-xl font-bold mb-4">Current Trend (Live)</h2>
+
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={currentData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="time" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={2}
+                        dot={{ r: 3 }}
+                        activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg border mt-6">
+                  <h2 className="text-xl font-bold mb-4">Voltage Trend (Live)</h2>
+
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={voltageData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="time" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="value" stroke="#f59e0b" strokeWidth={2}
+                        dot={{ r: 3 }}
+                        activeDot={{ r: 6 }}/>
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

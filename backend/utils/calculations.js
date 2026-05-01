@@ -6,14 +6,6 @@ function calcKwh(powerW, runtimeSeconds) {
     return Number(((powerW * runtimeSeconds) / 3600 / 1000).toFixed(4));
 }
 
-function calculateCost(kwh, rate) {
-    if (typeof kwh !== "number" || typeof rate !== "number") {
-        return 0;
-    }
-
-    return Number((kwh * rate).toFixed(2));
-}
-
 function computePowerTrend(realtime_logs) {
     const logs = realtime_logs?.power || [];
 
@@ -31,6 +23,5 @@ function computePowerTrend(realtime_logs) {
 
 module.exports = {
     calcKwh,
-    calculateCost,
     computePowerTrend
 };

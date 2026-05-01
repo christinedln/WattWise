@@ -62,9 +62,6 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold text-gray-900">
                 Energy Dashboard
               </h1>
-              <p className="text-gray-500">
-                Real-time monitoring and predictions
-              </p>
             </div>
 
             <div className="space-y-6">
@@ -85,6 +82,13 @@ export default function DashboardPage() {
                 monthlyKwh={data.monthly_predicted_kwh}
               />
 
+            </div>
+
+            <div className="mt-8 text-center text-xs text-gray-500">
+              Last updated{" "}
+              {data?.live_readings?.[0]?.lastUpdated
+                ? new Date(data.live_readings[0].lastUpdated).toLocaleTimeString()
+                : "—"}
             </div>
 
           </div>
