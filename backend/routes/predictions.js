@@ -17,7 +17,6 @@ router.get("/summary", authRequired, async (req, res) => {
         }
         const devices = await mergeDeviceData(userId);
         const rate = await getRate(userId);
-        console.log("DEVICES:", devices);
 
         // ── Base rate from current consumption ───────────────────────────────
         const totalConsumption = devices.reduce(

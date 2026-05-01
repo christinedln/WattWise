@@ -74,7 +74,6 @@ router.get("/summary", authRequired, async (req, res) => {
             });
         }
 
-
         const totalRuntimeHours = Math.max(
             devices.reduce(
                 (sum, d) => sum + (d.runtime || 0),
