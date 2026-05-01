@@ -451,20 +451,38 @@ export default function DeviceManagement() {
 
 {signalFilter && (
   <div className="flex gap-2 mb-4">
-    {["Critical", "Warning", "Suspicious", "Normal"].map((key) => {
-      const { label, activeClass } = filterMeta[key];
+    {["All", "Critical", "Warning", "Suspicious", "Normal"].map((key) => {
+
+      const isAll = key === "All";
+      const meta = isAll
+        ? {
+            label: "All",
+            activeClass:
+             "!bg-green-800 !text-white !border-green-900 shadow-[0_0_10px_rgba(20,83,45,0.55)] !rounded-full",
+          }
+        : filterMeta[key];
+
+      const isActive =
+        (isAll && severityFilter === null) ||
+        severityFilter === key;
 
       return (
         <button
           key={key}
-          onClick={() => setSeverityFilter(key)}
+          onClick={() => {
+            if (isAll) {
+              setSeverityFilter(null); // RESET
+            } else {
+              setSeverityFilter(key);
+            }
+          }}
           className={`px-3 py-1.5 text-xs rounded-lg border ${
-            severityFilter === key
-              ? activeClass
+            isActive
+              ? meta.activeClass
               : "bg-white text-gray-600 border-gray-200"
           }`}
         >
-          {label}
+          {meta.label}
         </button>
       );
     })}
