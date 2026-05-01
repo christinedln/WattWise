@@ -44,30 +44,52 @@ export default function PredictionsPage() {
     </Layout>
   );
 
+
+  function calculateTrend(actualVsPredicted) {
+    if (!actualVsPredicted || actualVsPredicted.length < 2) {
+      return { trend: "neutral", percent: "0%" };
+    }
+
+    const first = actualVsPredicted[0].actual;
+    const last = actualVsPredicted[actualVsPredicted.length - 1].actual;
+
+    if (!first) return { trend: "neutral", percent: "0%" };
+
+    const diff = ((last - first) / first) * 100;
+
+    return {
+      trend: diff >= 0 ? "up" : "down",
+      percent: `${Math.abs(diff).toFixed(1)}%`,
+    };
+  }
+
+  const forecastData = data?.daily_forecast || [];
+  const predictedVsActual = data?.actual_vs_predicted || [];
+  const trendData = calculateTrend(predictedVsActual);
+
   // ── SAFE DATA MAP ─────────────────────
   const weeklyPredictions = [
     {
       period: 'This Week',
       cost: `₱${data?.weekly_predicted_cost?.toFixed(2) || "0.00"}`,
       estimatedUsage: `${data?.weekly_predicted_kwh || 0} kWh`,
-      trend: 'up',
-      trendPercent: '3.2%',
+      trend: trendData.trend,
+      trendPercent: trendData.percent,
       trendLabel: 'Mon - Sun (current billing period)',
-      percent: 60,
+      percent: Math.min((data?.weekly_predicted_kwh / 245) * 100, 100),
     },
     {
       period: 'This Month',
       cost: `₱${data?.monthly_predicted_cost?.toFixed(2) || "0.00"}`,
       estimatedUsage: `${data?.monthly_predicted_kwh || 0} kWh`,
-      trend: 'up',
-      trendPercent: '2.3%',
+      trend: trendData.trend,
+      trendPercent: trendData.percent,
       trendLabel: '30-day projection',
-      percent: 75,
+      percent: Math.min((data?.monthly_predicted_kwh / 920) * 100, 100),
     },
   ];
 
-  const forecastData = data?.daily_forecast || [];
-  const predictedVsActual = data?.actual_vs_predicted || [];
+  
 
   return (
     <Layout>
