@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
+import { apiFetch } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import DashboardHeader from "../components/DashboardHeader";
 import Layout from "../components/layout";
@@ -16,8 +17,7 @@ export default function PredictionsPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/predictions/summary")
-      .then((res) => res.json())
+    apiFetch("/predictions/summary")
       .then((json) => {
         setData(json);
         setLoading(false);

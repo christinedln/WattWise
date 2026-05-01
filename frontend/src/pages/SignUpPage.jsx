@@ -75,14 +75,24 @@ export default function SignUpPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!agreeToTerms) {
-      alert("You must agree to the terms and privacy policy.");
-      return;
+    if (!fullName.trim()) {
+      return alert("Full name is required");
+    }
+
+    if (!email || !email.includes("@")) {
+      return alert("Please enter a valid email");
+    }
+
+    if (!password || password.length < 6) {
+      return alert("Password must be at least 6 characters");
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
+      return alert("Passwords do not match.");
+    }
+
+    if (!agreeToTerms) {
+      return alert("You must agree to the terms and privacy policy.");
     }
 
     try {
@@ -100,18 +110,26 @@ export default function SignUpPage() {
         createdAt: new Date(),
       });
 
-      navigate("/");
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+
+      navigate("/dashboard");
     } catch (error) {
       console.error("Signup error:", error.message);
       alert(error.message);
     }
   };
 
-  
   const handleGoogleAuth = async () => {
     const provider = new GoogleAuthProvider();
+
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+
       navigate("/dashboard");
     } catch (error) {
       console.error("Google auth error:", error.message);
@@ -192,7 +210,6 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Email address
@@ -212,7 +229,6 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              {/* Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Password
@@ -240,7 +256,6 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              {/* Confirm Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Confirm Password

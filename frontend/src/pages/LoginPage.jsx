@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Header from "../components/Header";
 import Layout from "../components/layout";
-import { auth } from "../firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { auth } from "../firebase"; 
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useNavigate, Link } from "react-router-dom";
 
 
 const features = [
@@ -63,11 +61,24 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!email || !email.includes("@")) {
+      return alert("Please enter a valid email");
+    }
+
+    if (!password || password.length < 6) {
+      return alert("Password must be at least 6 characters");
+    }
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error.message);
@@ -75,11 +86,16 @@ export default function LoginPage() {
     }
   };
 
-
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
+
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const token = await user.getIdToken();
+      localStorage.setItem("token", token);
+
       navigate("/dashboard");
     } catch (error) {
       alert(error.message);

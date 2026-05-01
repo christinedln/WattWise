@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import DashboardHeader from "../components/DashboardHeader";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, Activity } from "lucide-react";
 import Layout from "../components/layout";
 import { apiFetch } from "../api/api";
 import {
@@ -18,6 +18,8 @@ export default function RealtimeMonitoringPage() {
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [chartData, setChartData] = useState([]);
+  const [currentData, setCurrentData] = useState([]);
+  const [voltageData, setVoltageData] = useState([]);
 
   // FETCH DEVICES
   useEffect(() => {
@@ -35,36 +37,42 @@ export default function RealtimeMonitoringPage() {
     };
 
     fetchDevices();
-    // const interval = setInterval(fetchDevices, 2000);
-    // return () => clearInterval(interval);
+    //const interval = setInterval(fetchDevices, 5000);
+    //return () => clearInterval(interval);
   }, [selectedDevice]);
 
-  // FETCH POWER TREND
-  useEffect(() => {
-    if (!selectedDevice) return;
+  // FETCH TREND
+useEffect(() => {
+  if (!selectedDevice) return;
 
-    const fetchTrend = async () => {
-  try {
-    const data = await apiFetch(`/realtime/power-trend/${selectedDevice}`);
+  const fetchAllTrends = async () => {
+    try {
+      const [power, current, voltage] = await Promise.all([
+        apiFetch(`/realtime/power-trend/${selectedDevice}`),
+        apiFetch(`/realtime/current-trend/${selectedDevice}`),
+        apiFetch(`/realtime/voltage-trend/${selectedDevice}`)
+      ]);
 
-    const formatted = data.map(point => ({
-  ...point,
-  time: new Date(point.time).toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true
-  })
-}));
+      const format = (data) =>
+        data.map(p => ({
+          ...p,
+          time: new Date(p.time).toLocaleTimeString()
+        }));
 
-setChartData(formatted);
-  } catch (err) {
-    console.error("Trend fetch error:", err);
-  }
-};
+      setChartData(format(power));
+      setCurrentData(format(current));
+      setVoltageData(format(voltage));
 
-    fetchTrend();
-  }, [selectedDevice]);
+    } catch (err) {
+      console.error("Trend fetch error:", err);
+    }
+  };
+
+  fetchAllTrends();
+  // const interval = setInterval(fetchAllTrends, 5000);
+
+  // return () => clearInterval(interval);
+}, [selectedDevice]);
 
   const device = devices.find((d) => d.device_id === selectedDevice);
 
@@ -83,12 +91,12 @@ setChartData(formatted);
             <div className="flex gap-2 mb-4">
               {devices.map((d) => (
                 <button
-                  key={d.id}
-                  onClick={() => setSelectedDevice(d.id)}
+                  key={d.device_id}
+                  onClick={() => setSelectedDevice(d.device_id)}
                   className={`
                     px-5 py-2 !rounded-full text-sm font-medium transition-all duration-200
                     ${
-                      selectedDevice === d.id
+                      selectedDevice === d.device_id
                         ? "!bg-green-600 !text-white shadow-md shadow-green-300 !border-green-700"
                         : "!bg-white !text-gray-600 !border-gray-300 hover:!bg-gray-100"
                     }
@@ -102,32 +110,46 @@ setChartData(formatted);
             {device && (
               <>
                 {/* HEADER */}
-                <div className="mb-6 flex flex-col md:flex-row justify-between">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900">{device.name}</h1>
-                    <p className="text-gray-500">{device.location}</p>
-                  </div>
-
-                  <div className="flex items-center gap-4 mt-4 md:mt-0">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                      <span className="text-green-600 font-semibold">
-                        {device.status}
-                      </span>
-                    </div>
-
-                    {device.message && device.message !== "No issues detected" && (
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5 text-red-500" />
-                        <span className="text-red-600 font-semibold">
-                          {device.message}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+              <div className="mb-6 flex flex-col md:flex-row justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">{device.name}</h1>
+                  <p className="text-gray-500">{device.location}</p>
                 </div>
 
-                {/* LIVE READINGS */}
+                <div className="flex items-center gap-4 mt-4 md:mt-0">
+                  
+                  {/* Device Status */}
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-green-600 font-semibold">
+                      {device.status}
+                    </span>
+                  </div>
+
+                  {/* Device Message */}
+                  {device.message && device.message !== "No issues detected" && (
+                    <div className="flex items-center gap-2">
+                      {device.message.toLowerCase().includes("stable") ? (
+                        <>
+                          <Activity className="w-5 h-5 text-blue-500" />
+                          <span className="text-blue-600 font-semibold">
+                            {device.message}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-5 h-5 text-red-500" />
+                          <span className="text-red-600 font-semibold">
+                            {device.message}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                </div>
+              </div>
+                              {/* LIVE READINGS */}
                 <div className="bg-green-50/40 border border-green-200 rounded-2xl p-6 shadow-sm mb-6">
 
                   <div className="mb-5">
@@ -200,13 +222,45 @@ setChartData(formatted);
                       <YAxis />
                       <Tooltip />
                       <Line
-  type="monotone"
-  dataKey="power"
-  stroke="#16a34a"
-  strokeWidth={2}
-  dot={{ r: 3 }}
-  activeDot={{ r: 6 }}
-/>
+                        type="monotone"
+                        dataKey="power"
+                        stroke="#16a34a"
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg border mt-6">
+                  <h2 className="text-xl font-bold mb-4">Current Trend (Live)</h2>
+
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={currentData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="time" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={2}
+                        dot={{ r: 3 }}
+                        activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg border mt-6">
+                  <h2 className="text-xl font-bold mb-4">Voltage Trend (Live)</h2>
+
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={voltageData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="time" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="value" stroke="#f59e0b" strokeWidth={2}
+                        dot={{ r: 3 }}
+                        activeDot={{ r: 6 }}/>
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

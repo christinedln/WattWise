@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 // Icons replaced with inline SVGs
 import { apiFetch } from "../api/api";
-import DeviceHealthSummary from "./DeviceHealthSummary";
 
 // ─── Inline SVG Icons ─────────────────────────────
 const PowerIcon = () => (
@@ -32,28 +31,34 @@ const PencilIcon = () => (
 
 
 // ─── Status Badge ─────────────────────────────────
-function StatusBadge({ severity }) {
+function StatusBadge({ status, severity }) {
   if (severity === "Critical") {
-    return <span className="badge red">Critical</span>;
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-red-50 text-red-700 border border-red-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+        Critical
+      </span>
+    );
   }
 
   if (severity === "Warning") {
-    return <span className="badge amber">Warning</span>;
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+        Warning
+      </span>
+    );
   }
 
   if (severity === "Suspicious") {
-    return <span className="badge purple">Suspicious</span>;
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block" />
+        Suspicious
+      </span>
+    );
   }
 
-  return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200">
-      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
-      Normal
-    </span>
-  );
-}
-
-function DeviceStatusBadge({ status }) {
   return status === "active" ? (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
@@ -80,11 +85,6 @@ function UsageBar({ pct }) {
   );
 }
 
-function getSeverity(alerts = [], signal) {
-  return alerts.find(a => a.signal === signal)?.severity || "Normal";
-}
-
-
 // ─── Row ─────────────────────────────────────
 function DeviceRow({ device, pct, openEdit }) {
   return (
@@ -105,20 +105,9 @@ function DeviceRow({ device, pct, openEdit }) {
     </button>
   </div>
 </td>
-      <td className="px-4 py-3">
-      <DeviceStatusBadge status={device.status} />
-      </td>
 
       <td className="px-4 py-3">
-        <StatusBadge severity={getSeverity(device.alerts, "current")} />
-      </td>
-
-      <td className="px-4 py-3">
-        <StatusBadge severity={getSeverity(device.alerts, "voltage")} />
-      </td>
-
-      <td className="px-4 py-3">
-        <StatusBadge severity={getSeverity(device.alerts, "power")} />
+        <StatusBadge status={device.status} severity={device.severity} />
       </td>
 
       <td className="px-4 py-3 font-mono text-sm text-gray-700 font-medium">{device.kwh}</td>
@@ -137,6 +126,21 @@ function DeviceRow({ device, pct, openEdit }) {
           {/* ── Toggle Power ── */}
           <button
             title="Toggle power"
+            onClick={async () => {
+    try {
+      await apiFetch("/relay/toggle", {
+        method: "POST",
+        body: JSON.stringify({
+          device_id: device.device_id
+        })
+      });
+
+      console.log("Relay toggled from device UI");
+
+    } catch (err) {
+      console.error("Toggle failed", err);
+    }
+  }}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -168,25 +172,38 @@ function DeviceRow({ device, pct, openEdit }) {
           </button>
 
           {/* ── Remove Device ── */}
-            <button
-              title="Remove device"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "8px",
-                borderRadius: 8,
-                border: "none",
-                background: "#F0F0F0",
-                color: "#1e1e1e",
-                cursor: "pointer",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = "#E0E0E0"}
-              onMouseLeave={e => e.currentTarget.style.background = "#F0F0F0"}
-            >
-              <TrashIcon size={14} />
-            </button>
+          <button
+            title="Remove device"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              padding: "5px 10px",
+              borderRadius: 6,
+              border: "1px solid #fca5a5",
+              background: "transparent",
+              color: "#dc2626",
+              fontSize: 11,
+              fontWeight: 500,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              transition: "background 0.15s, border-color 0.15s, color 0.15s",
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = "#ef4444";
+              e.currentTarget.style.borderColor = "#ef4444";
+              e.currentTarget.style.color = "#ffffff";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.borderColor = "#fca5a5";
+              e.currentTarget.style.color = "#dc2626";
+            }}
+          >
+            <TrashIcon />
+            Remove
+          </button>
+
         </div>
       </td>
     </tr>
@@ -229,68 +246,15 @@ function ActivityTimeline({ device }) {
   );
 }
 
+// ─── Filter meta — each filter has its own active color ──
 const filterMeta = {
-  all: {
-    label: "All",
-    activeClass:
-      "!bg-green-800 !text-white !border-green-900 shadow-[0_0_10px_rgba(20,83,45,0.55)] !rounded-full",
-  },
-
-  active: {
-    label: "Active",
-    activeClass:
-      "!bg-emerald-100 !text-emerald-900 !border-emerald-300 shadow-[0_0_6px_rgba(16,185,129,0.35)] !rounded-full",
-  },
-
-  offline: {
-    label: "Offline",
-    activeClass:
-      "!bg-gray-100 !text-gray-800 !border-gray-300 shadow-[0_0_6px_rgba(156,163,175,0.3)] !rounded-full",
-  },
-
-  // ── SIGNALS ──
-  current: {
-    label: "Current",
-    activeClass:
-      "!bg-blue-100 !text-blue-900 !border-blue-300 shadow-[0_0_6px_rgba(59,130,246,0.35)] !rounded-full",
-  },
-
-  voltage: {
-    label: "Voltage",
-    activeClass:
-      "!bg-indigo-100 !text-indigo-900 !border-indigo-300 shadow-[0_0_6px_rgba(99,102,241,0.35)] !rounded-full",
-  },
-
-  power: {
-    label: "Power",
-    activeClass:
-      "!bg-pink-100 !text-pink-900 !border-pink-300 shadow-[0_0_6px_rgba(236,72,153,0.35)] !rounded-full",
-  },
-
-  // ── SEVERITY ──
-  Critical: {
-    label: "Critical",
-    activeClass:
-      "!bg-red-100 !text-red-900 !border-red-300 shadow-[0_0_6px_rgba(239,68,68,0.35)] !rounded-full",
-  },
-
-  Warning: {
-    label: "Warning",
-    activeClass:
-      "!bg-amber-100 !text-amber-900 !border-amber-300 shadow-[0_0_6px_rgba(245,158,11,0.35)] !rounded-full",
-  },
-
-  Suspicious: {
-    label: "Suspicious",
-    activeClass:
-      "!bg-purple-100 !text-purple-900 !border-purple-300 shadow-[0_0_6px_rgba(147,51,234,0.35)] !rounded-full",
-  },
-
-  Normal: {
-    label: "Normal",
-    activeClass:
-      "!bg-blue-50 !text-blue-700 !border-blue-200 shadow-[0_0_6px_rgba(59,130,246,0.25)] !rounded-full",
-  },
+  all:        { label: "All",        activeClass: "bg-gray-100 text-gray-900 border-gray-900 font-semibold" },
+  active:     { label: "Active",     activeClass: "bg-emerald-100 text-emerald-800 border-emerald-500 font-semibold" },
+  offline:    { label: "Offline",    activeClass: "bg-gray-100 text-gray-700 border-gray-500 font-semibold" },
+  Normal:     { label: "Normal",     activeClass: "bg-blue-100 text-blue-800 border-blue-500 font-semibold" },
+  Warning:    { label: "Warning",    activeClass: "bg-amber-100 text-amber-800 border-amber-500 font-semibold" },
+  Critical:   { label: "Critical",   activeClass: "bg-red-100 text-red-800 border-red-500 font-semibold" },
+  Suspicious: { label: "Suspicious", activeClass: "bg-purple-100 text-purple-800 border-purple-500 font-semibold" },
 };
 
 // ─── Summary Card ────────────────────────────────────
@@ -309,24 +273,23 @@ export default function DeviceManagement() {
   const [devices, setDevices] = useState([]);
   const [filter, setFilter] = useState("all");
   const [editing, setEditing] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [signalFilter, setSignalFilter] = useState(null); 
-  const [severityFilter, setSeverityFilter] = useState(null);
 
 
   useEffect(() => {
     const fetchDevices = async () => {
       const json = await apiFetch("/devices/");
 
-      const formatted = (json.data || []).map((d) => ({
+      const formatted = json.data.map((d) => ({
         id: d.id,
         device_id: d.device_id,
         name: d.name,
+       
         location: d.location,
         status: d.status,
-        kwh: d.kwh ?? d.consumption ?? 0,
-        alerts: d.alerts || [],   
+        kwh: d.consumption,
+        severity: d.severity,
         lastUpdated: d.lastUpdated,
+        activity_timeline: d.activity_timeline || []
       }));
 
       setDevices(formatted);
@@ -336,8 +299,6 @@ export default function DeviceManagement() {
   }, []);
 
   const openEdit = (device, field) => {
-    setErrorMsg("");
-
     setEditing({
       device_id: device.device_id,
       field,
@@ -351,17 +312,11 @@ export default function DeviceManagement() {
 
   const saveEdit = async () => {
   try {
-
-    const payload = {
-      [editing.field]:
-        editing.field === "enabled"
-          ? Boolean(editing.value)
-          : editing.value.trim(),
-    };
-
     await apiFetch(`/devices/${editing.device_id}`, {
       method: "PATCH",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        [editing.field]: editing.value,
+      }),
     });
 
     setDevices((prev) =>
@@ -375,26 +330,17 @@ export default function DeviceManagement() {
     closeEdit();
   } catch (err) {
     console.error("Update failed", err);
-
-    const message =
-      err?.message ||
-      "Changes cannot be empty.";
-
-    setErrorMsg(message);
   }
 };
 
 
   // ─── FILTER LOGIC ─────────────────────────────
   const filteredDevices = devices.filter((d) => {
-    if (filter === "active" && d.status !== "active") return false;
-    if (filter === "offline" && d.status !== "offline") return false;
-    if (signalFilter && severityFilter) {
-      const severity = getSeverity(d.alerts, signalFilter);
-      return severity === severityFilter;
-    }
+    if (filter === "all") return true;
+    if (filter === "active") return d.status === "active";
+    if (filter === "offline") return d.status === "offline";
 
-    return true;
+    return d.severity === filter;
   });
 
   const totalKwh = filteredDevices.reduce((s, d) => s + d.kwh, 0);
@@ -403,6 +349,10 @@ export default function DeviceManagement() {
   const counts = {
     active:     devices.filter(d => d.status === "active").length,
     offline:    devices.filter(d => d.status === "offline").length,
+    Critical:   devices.filter(d => d.severity === "Critical").length,
+    Warning:    devices.filter(d => d.severity === "Warning").length,
+    Suspicious: devices.filter(d => d.severity === "Suspicious").length,
+    Normal:     devices.filter(d => d.severity === "Normal").length,
   };
 
   return (
@@ -416,67 +366,28 @@ export default function DeviceManagement() {
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
         <SummaryCard label="Active"     count={counts.active}     colorClass="bg-emerald-50 border-emerald-100 text-emerald-800" />
         <SummaryCard label="Offline"    count={counts.offline}    colorClass="bg-gray-50 border-gray-200 text-gray-700" />
+        <SummaryCard label="Critical"   count={counts.Critical}   colorClass="bg-red-50 border-red-100 text-red-800" />
+        <SummaryCard label="Suspicious" count={counts.Suspicious} colorClass="bg-purple-50 border-purple-100 text-purple-800" />
+        <SummaryCard label="Warning"    count={counts.Warning}    colorClass="bg-amber-50 border-amber-100 text-amber-800" />
+        <SummaryCard label="Normal"     count={counts.Normal}     colorClass="bg-blue-50 border-blue-100 text-blue-800" />
       </div>
 
       {/* ── FILTERS ───────────────────────────── */}
       <div className="flex flex-wrap gap-2 mb-5">
-  {Object.entries(filterMeta).map(([key, { label, activeClass }]) => {
-
-    // SHOW ONLY base + signals here
-    const isBase =
-      ["all", "active", "offline", "current", "voltage", "power"].includes(key);
-
-    if (!isBase) return null;
-
-    const isActive =
-      filter === key || signalFilter === key;
-
-    return (
-      <button
-        key={key}
-        onClick={() => {
-          if (["current", "voltage", "power"].includes(key)) {
-            setSignalFilter(key);
-            setSeverityFilter(null);
-          } else {
-            setFilter(key);
-            setSignalFilter(null);
-            setSeverityFilter(null);
-          }
-        }}
-        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-          isActive
-            ? activeClass
-            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-        }`}
-      >
-        {label}
-      </button>
-    );
-  })}
-</div>
-
-{signalFilter && (
-  <div className="flex gap-2 mb-4">
-    {["Critical", "Warning", "Suspicious", "Normal"].map((key) => {
-      const { label, activeClass } = filterMeta[key];
-
-      return (
-        <button
-          key={key}
-          onClick={() => setSeverityFilter(key)}
-          className={`px-3 py-1.5 text-xs rounded-lg border ${
-            severityFilter === key
-              ? activeClass
-              : "bg-white text-gray-600 border-gray-200"
-          }`}
-        >
-          {label}
-        </button>
-      );
-    })}
-  </div>
-)}
+        {Object.entries(filterMeta).map(([key, { label, activeClass }]) => (
+          <button
+            key={key}
+            onClick={() => setFilter(key)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-150 ${
+              filter === key
+                ? activeClass
+                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       {/* ── TABLE ───────────────────────────── */}
 <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
@@ -487,7 +398,7 @@ export default function DeviceManagement() {
       
       <thead>
         <tr className="border-b border-gray-100 bg-gray-50">
-          {["Name", "Location", "Status", "Current", "Voltage", "Power", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
+          {["Name", "Location", "Status/Severity", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
             <th
               key={h}
               className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"
@@ -505,6 +416,11 @@ export default function DeviceManagement() {
                   device={d}
                   pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0} openEdit={openEdit}
                 />
+                <tr>
+                  <td colSpan="7">
+                    <ActivityTimeline device={d} />
+                  </td>
+                </tr>
               </React.Fragment>
             ))}
           </tbody>
@@ -531,12 +447,6 @@ export default function DeviceManagement() {
         }
         className="w-full border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-lg mb-5 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
       />
-
-      {errorMsg && (
-        <p className="text-red-500 text-xs mt-2 mb-3">
-          {errorMsg}
-        </p>
-      )}
 
       {/* Buttons */}
       <div className="flex justify-center items-center gap-3 mt-2">
@@ -572,4 +482,4 @@ export default function DeviceManagement() {
 )}
     </>
   );
-} 
+}

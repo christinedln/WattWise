@@ -5,15 +5,8 @@ export default function LiveReadings({ readings = [] }) {
       {/* Header */}
       <div className="mb-5">
         <h3 className="font-semibold text-lg text-gray-900">
-          Live Readings
+          Readings
         </h3>
-
-        <p className="text-xs text-gray-500 mt-1">
-          Last updated{" "}
-          {readings[0]?.lastUpdated
-            ? new Date(readings[0].lastUpdated).toLocaleTimeString()
-            : "—"}
-        </p>
       </div>
 
       {/* MULTIPLE DEVICES */}

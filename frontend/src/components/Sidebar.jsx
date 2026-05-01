@@ -11,10 +11,13 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { getAuth } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 export default function Sidebar() {
+  const auth = getAuth();
+  const navigate = useNavigate();
   const location = useLocation();
   const [userData, setUserData] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -43,6 +46,26 @@ export default function Sidebar() {
 
     fetchUser();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth();
+
+      //firebase logout
+      await signOut(auth);
+
+      // remove manualtoken
+      localStorage.removeItem("token");
+
+      // clear all cached auth-related data
+      localStorage.removeItem("user");
+
+      // redirect to login
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   return (
     <>
@@ -147,7 +170,10 @@ export default function Sidebar() {
             </div>
 
             {/* LOGOUT BUTTON */}
-            <button className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-200 text-gray-800 hover:bg-gray-100 transition-all duration-200">
+            <button
+              onClick={handleLogout}
+              className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-200 text-gray-800 hover:bg-gray-100 transition-all duration-200"
+            >
               <LogOut size={18} className="text-gray-700" />
               Logout
             </button>

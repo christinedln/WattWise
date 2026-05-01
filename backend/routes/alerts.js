@@ -12,18 +12,25 @@ router.get("/", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
 
-        const devices = await mergeDeviceData(userId);
+        const devices = await mergeDeviceData(userId) || [];
+
+        if (!devices.length) {
+            return res.json([]);
+        }
 
         // extract only alerts
         const alerts = [];
 
-        for (const d of devices) {
-            alerts.push({
-                device_id: d.device_id,
-                device_name: d.name,
-                severity: d.severity,
-                message: d.alert_message
-            });
+        for (const d of devices || []) {
+            for (const a of d.alerts || []) {
+                alerts.push({
+                    device_id: d.device_id,
+                    device_name: d.name,
+                    signal: a.signal,
+                    severity: a.severity,
+                    message: a.message
+                });
+            }
         }
 
         res.json(alerts);

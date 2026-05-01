@@ -1,66 +1,139 @@
 export default function DeviceHealthSummary({ readings = [] }) {
 
-  // ── COUNTERS ─────────────────────────────
+  const allAlerts = readings.flatMap(d => d.alerts || []);
+
+  // DEVICE STATUS 
   const healthCounts = {
     Active: readings.filter(d => d.status === "active").length,
-    Critical: readings.filter(d => d.severity === "Critical").length,
-    Suspicious: readings.filter(d => d.severity === "Suspicious").length,
-    Warning: readings.filter(d => d.severity === "Warning").length,
-    Normal: readings.filter(d => d.severity === "Normal").length,
-    Offline: readings.filter(d => d.status == "offline").length,
+    Offline: readings.filter(d => d.status === "offline").length,
   };
+
+  const count = (alerts, severity) =>
+    alerts.filter(a => a.severity === severity).length;
+
+  const currentAlerts = allAlerts.filter(a => a.signal === "current");
+  const voltageAlerts = allAlerts.filter(a => a.signal === "voltage");
+  const powerAlerts = allAlerts.filter(a => a.signal === "power");
+
+  const Box = ({ label, value, color }) => (
+    <div className={`${color} border rounded-lg p-4`}>
+      <p className="text-sm font-medium">{label}</p>
+      <p className="text-xl font-bold">{value}</p>
+    </div>
+  );
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
 
       <h3 className="font-bold text-lg mb-6">Device Overview</h3>
 
-      {/* ── ALL STATUS IN ONE GRID ───────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+      {/* STATUS */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
 
-        <div className="bg-green-50 border border-green-100 rounded-lg p-4">
-          <p className="text-sm text-green-600 font-medium">Active</p>
-          <p className="text-2xl font-bold text-green-700">
-            {healthCounts.Active}
-          </p>
-        </div>
+        <Box
+          label="Active"
+          value={healthCounts.Active}
+          color="bg-green-50 border-green-100 text-green-700"
+        />
 
-        <div className="bg-red-50 border border-red-100 rounded-lg p-4">
-          <p className="text-sm text-red-600 font-medium">Critical</p>
-          <p className="text-2xl font-bold text-red-700">
-            {healthCounts.Critical}
-          </p>
-        </div>
-
-        <div className="bg-purple-50 border border-purple-100 rounded-lg p-4">
-          <p className="text-sm text-purple-600 font-medium">Suspicious</p>
-          <p className="text-2xl font-bold text-purple-700">
-            {healthCounts.Suspicious}
-          </p>
-        </div>
-
-        <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4">
-          <p className="text-sm text-yellow-600 font-medium">Warning</p>
-          <p className="text-2xl font-bold text-yellow-700">
-            {healthCounts.Warning}
-          </p>
-        </div>
-
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-          <p className="text-sm text-blue-600 font-medium">Normal</p>
-          <p className="text-2xl font-bold text-blue-700">
-            {healthCounts.Normal}
-          </p>
-        </div>
-
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-600 font-medium">Offline</p>
-          <p className="text-2xl font-bold text-gray-700">
-            {healthCounts.Offline}
-          </p>
-        </div>
+        <Box
+          label="Offline"
+          value={healthCounts.Offline}
+          color="bg-gray-50 border-gray-200 text-gray-700"
+        />
 
       </div>
+
+      {/* CURRENT  */}
+      <p className="font-semibold mb-2">Current</p>
+      <div className="grid grid-cols-4 gap-3 mb-5">
+
+        <Box
+          label="Critical"
+          value={count(currentAlerts, "Critical")}
+          color="bg-red-50 border-red-100 text-red-700"
+        />
+
+        <Box
+          label="Warning"
+          value={count(currentAlerts, "Warning")}
+          color="bg-yellow-50 border-yellow-100 text-yellow-700"
+        />
+
+        <Box
+          label="Suspicious"
+          value={count(currentAlerts, "Suspicious")}
+          color="bg-purple-50 border-purple-100 text-purple-700"
+        />
+
+        <Box
+          label="Normal"
+          value={count(currentAlerts, "Normal")}
+          color="bg-green-50 border-green-100 text-green-700"
+        />
+
+      </div>
+
+      {/* VOLTAGE*/}
+      <p className="font-semibold mb-2">Voltage</p>
+      <div className="grid grid-cols-4 gap-3 mb-5">
+
+        <Box
+          label="Critical"
+          value={count(voltageAlerts, "Critical")}
+          color="bg-red-50 border-red-100 text-red-700"
+        />
+
+        <Box
+          label="Warning"
+          value={count(voltageAlerts, "Warning")}
+          color="bg-yellow-50 border-yellow-100 text-yellow-700"
+        />
+
+        <Box
+          label="Suspicious"
+          value={count(voltageAlerts, "Suspicious")}
+          color="bg-purple-50 border-purple-100 text-purple-700"
+        />
+
+        <Box
+          label="Normal"
+          value={count(voltageAlerts, "Normal")}
+          color="bg-green-50 border-green-100 text-green-700"
+        />
+
+      </div>
+
+      {/* POWER*/}
+      <p className="font-semibold mb-2">Power</p>
+      <div className="grid grid-cols-4 gap-3">
+
+        <Box
+          label="Critical"
+          value={count(powerAlerts, "Critical")}
+          color="bg-red-50 border-red-100 text-red-700"
+        />
+
+        <Box
+          label="Warning"
+          value={count(powerAlerts, "Warning")}
+          color="bg-yellow-50 border-yellow-100 text-yellow-700"
+        />
+
+        <Box
+          label="Suspicious"
+          value={count(powerAlerts, "Suspicious")}
+          color="bg-purple-50 border-purple-100 text-purple-700"
+        />
+
+        <Box
+          label="Normal"
+          value={count(powerAlerts, "Normal")}
+          color="bg-green-50 border-green-100 text-green-700"
+        />
+
+      </div>
+
     </div>
   );
 }
