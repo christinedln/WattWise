@@ -76,6 +76,12 @@ useEffect(() => {
 
   const device = devices.find((d) => d.device_id === selectedDevice);
 
+  const alerts = device?.alerts || [];
+
+  const hasAlerts =
+    alerts.length > 0 &&
+    !(alerts.length === 1 && alerts[0].severity === "Normal");
+
   return (
     <Layout>
       <div className="h-screen w-screen flex overflow-hidden bg-gray-50">
@@ -124,14 +130,17 @@ useEffect(() => {
                       </span>
                     </div>
 
-                    {device.message && device.message !== "No issues detected" && (
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5 text-red-500" />
-                        <span className="text-red-600 font-semibold">
-                          {device.message}
-                        </span>
-                      </div>
-                    )}
+                  {hasAlerts && (
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-red-500" />
+                      <span className="text-red-600 font-semibold">
+                        {alerts
+                          .filter((a) => a.severity !== "Normal")
+                          .map((a) => `${a.signal}: ${a.message}`)
+                          .join(" | ")}
+                      </span>
+                    </div>
+                  )}
                   </div>
                 </div>
 

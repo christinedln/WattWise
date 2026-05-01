@@ -22,12 +22,15 @@ router.get("/", authRequired, async (req, res) => {
         const alerts = [];
 
         for (const d of devices || []) {
-            alerts.push({
-                device_id: d.device_id,
-                device_name: d.name,
-                severity: d.severity || "low",
-                message: d.alert_message || "No alert message"
-            });
+            for (const a of d.alerts || []) {
+                alerts.push({
+                    device_id: d.device_id,
+                    device_name: d.name,
+                    signal: a.signal,
+                    severity: a.severity,
+                    message: a.message
+                });
+            }
         }
 
         res.json(alerts);

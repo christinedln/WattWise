@@ -4,9 +4,10 @@ const { db } = require("../firebase_config");
 // DEFAULT SETTINGS (fallback for all devices)
 const DEFAULT_SETTINGS = {
   electricity_rate: 12.5,
-  polling_interval: 5,
-  energy_alert_threshold: 5000,
-  security_alert_level: 3
+  log_window: 10,
+  current_warning_threshold:2.0,
+  current_suspicious_threshold:2.5,
+  current_critical_threshold:3.5
 };
 
 // Get Devices (with latest + settings)
@@ -105,7 +106,7 @@ async function getRealtimeLogs(userId, deviceId, limit = 10) {
   }
 }
 
-// Get electricity rate per device (FIXED: uses mapper now)
+// Get electricity rate per device 
 async function getRate(userId, deviceId) {
   try {
     const devices = await getDevices(userId);

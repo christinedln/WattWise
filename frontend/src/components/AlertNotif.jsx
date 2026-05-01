@@ -314,7 +314,7 @@ const stats = {
           <div key={alert.id} className="flex gap-3 border p-4 rounded-xl bg-white">
 
             <div className="flex-1">
-              <Badge severity={alert.severity} />
+              <Badge type={alert.severity} />
               <p className="font-bold">{alert.title}</p>
               <p className="text-sm text-gray-500">{alert.description}</p>
             </div>

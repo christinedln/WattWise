@@ -1,5 +1,7 @@
 const { getDevices, getRealtimeLogs } = require("../services/data_service");
 const { generateCurrentAlerts } = require("./generateCurrentAlerts");
+const { generateVoltageAlerts } = require("./generateVoltageAlerts");
+const { generatePowerAlerts } = require("./generatePowerAlerts");
 const { nowTime } = require("../utils/time_helper");
 const { calcKwh } = require("../utils/calculations");
 
@@ -20,13 +22,19 @@ async function mergeDeviceData(userId) {
 
         if (!deviceId) continue;
 
+        const settings = d.settings || {};
+
         // RAW LOGS
-        const logsRaw = await getRealtimeLogs(userId, deviceId, 10);
+        const logWindow = settings.log_window;
+
+        const logsRaw = await getRealtimeLogs(
+            userId,
+            deviceId,
+            logWindow
+        );
         const realtimeLogs = Array.isArray(logsRaw) ? logsRaw : [];
 
-        // ==============================
         // SIGNAL-SPECIFIC MAPPING
-        // ==============================
         const structuredLogs = {
             current: realtimeLogs.map(log => ({
                 value: log.current ?? 0,
@@ -49,44 +57,54 @@ async function mergeDeviceData(userId) {
 
         d.realtime_logs = structuredLogs;
 
-        // ==============================
         // CURRENT ALERT ENGINE ONLY
-        // ==============================
-        const alerts = generateCurrentAlerts([{
-            ...d,
-            signal_type: "current",
-            logs: structuredLogs.current
-        }]);
-
-        const deviceAlert = alerts[0];
-
-        const severity = deviceAlert?.severity || "Normal";
-        const message = deviceAlert?.message || "No issues detected";
-
-        // ==============================
-        // TIMELINE
-        // ==============================
-        const timeline = [
-            { time: nowTime(), event: "Device checked" },
+        const currentAlerts = generateCurrentAlerts([
             {
-                time: nowTime(),
-                event: d.status === "ON"
-                    ? "Device active"
-                    : "Device offline"
+                device_id: deviceId,
+                name: d.name,
+                settings,
+                logs: structuredLogs.current
             }
-        ];
+        ]);
 
-        if (severity === "Critical") {
-            timeline.push({ time: nowTime(), event: "Current critical condition detected" });
-        } else if (severity === "Suspicious") {
-            timeline.push({ time: nowTime(), event: "Current suspicious condition detected" });
-        } else if (severity === "Warning") {
-            timeline.push({ time: nowTime(), event: "Current warning condition detected" });
-        }
+        const voltageAlerts = generateVoltageAlerts
+            ? generateVoltageAlerts([
+                {
+                    device_id: deviceId,
+                    name: d.name,
+                    settings,
+                    logs: structuredLogs.voltage
+                }
+            ])
+            : [];
 
-        // ==============================
+        const powerAlerts = generatePowerAlerts
+            ? generatePowerAlerts([
+                {
+                    device_id: deviceId,
+                    name: d.name,
+                    settings,
+                    logs: structuredLogs.power
+                }
+            ])
+            : [];
+
+        // merge everything
+        const alerts = [
+                ...currentAlerts.map(a => ({ ...a, signal: "current" })),
+                ...voltageAlerts.map(a => ({ ...a, signal: "voltage" })),
+                ...powerAlerts.map(a => ({ ...a, signal: "power" }))
+            ];
+
+            if (alerts.length === 0) {
+                alerts.push({
+                    signal: "all",
+                    severity: "Normal",
+                    message: "No issues detected"
+                });
+            }
+        
         // FINAL MERGED DEVICE OBJECT
-        // ==============================
         merged.push({
             id: `device-${deviceId}`,
             device_id: deviceId,
@@ -100,22 +118,20 @@ async function mergeDeviceData(userId) {
             power: d.power || 0,
             runtime: d.runtime || 0,
 
-            // IMPORTANT: signal context
             signal: "current",
 
             status: d.status === "ON" ? "active" : "offline",
             enabled: d.enabled ?? true,
 
-            severity,
-            alert_message: message,
+            alerts,
 
             consumption: calcKwh(d.power, d.runtime || 0),
 
             lastUpdated: nowTime(),
 
-            activity_timeline: timeline,
+            realtime_logs: structuredLogs,
 
-            realtime_logs: structuredLogs
+            settings
         });
     }
 

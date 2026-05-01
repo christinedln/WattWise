@@ -3,7 +3,6 @@ const router = express.Router();
 
 // Services / utils
 const { mergeDeviceData } = require("../utils/mapper");
-const { getRate } = require("../services/data_service");
 const { db } = require("../firebase_config");
 
 // Auth middleware
@@ -111,58 +110,6 @@ router.patch("/:device_id", authRequired, async (req, res) => {
         res.status(500).json({
             status: "error",
             message: error.message
-        });
-    }
-});
-
-
-router.get("/summary", authRequired, async (req, res) => {
-    try {
-        const userId = req.user_id;
-
-        const devices = await mergeDeviceData(userId) || [];
-        const rate = await getRate(userId) || 0;
-
-        if (!devices.length) {
-            return res.json({
-                status: "success",
-                data: {
-                    total_devices: 0,
-                    active: 0,
-                    offline: 0,
-                    total_kwh: 0,
-                    estimated_cost: 0
-                }
-            });
-        }
-
-        const totalKwh = devices.reduce(
-            (sum, d) => sum + (Number(d.consumption) || 0),
-            0
-        );
-
-        const totalCost = Number((totalKwh * rate).toFixed(2));
-
-        const active = devices.filter(d => d.status === "active").length;
-        const offline = devices.filter(d => d.status === "offline").length;
-
-        res.json({
-            status: "success",
-            data: {
-                total_devices: devices.length,
-                active,
-                offline,
-                total_kwh: Number(totalKwh.toFixed(2)),
-                estimated_cost: totalCost
-            }
-        });
-
-    } catch (error) {
-        console.error("Device summary error:", error);
-
-        res.status(500).json({
-            status: "error",
-            message: "Server error"
         });
     }
 });

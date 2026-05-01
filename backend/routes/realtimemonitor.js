@@ -8,10 +8,7 @@ const { computePowerTrend } = require("../utils/calculations");
 // Auth middleware
 const authRequired = require("../utils/auth");
 
-
-// ===============================
-// ALL DEVICES (REALTIME)
-// ===============================
+// ALL DEVICES
 router.get("/devices", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
@@ -20,7 +17,7 @@ router.get("/devices", authRequired, async (req, res) => {
 
         const updated = (devices || []).map(d => ({
             ...d,
-            message: d.alert_message || null
+            alerts: d.alerts || []
         }));
 
         res.json(updated);
@@ -31,10 +28,7 @@ router.get("/devices", authRequired, async (req, res) => {
     }
 });
 
-
-// ===============================
 // SINGLE DEVICE
-// ===============================
 router.get("/device/:device_id", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
@@ -54,7 +48,7 @@ router.get("/device/:device_id", authRequired, async (req, res) => {
             return res.status(404).json({ error: "Device not found" });
         }
 
-        device.message = device.alert_message || null;
+        device.alerts = device.alerts || [];
 
         res.json(device);
 
@@ -64,10 +58,7 @@ router.get("/device/:device_id", authRequired, async (req, res) => {
     }
 });
 
-
-// ===============================
 // POWER TREND
-// ===============================
 router.get("/power-trend/:device_id", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
@@ -91,6 +82,7 @@ router.get("/power-trend/:device_id", authRequired, async (req, res) => {
     }
 });
 
+// current trend
 router.get("/current-trend/:device_id", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
@@ -116,6 +108,7 @@ router.get("/current-trend/:device_id", authRequired, async (req, res) => {
     }
 });
 
+// voltage trend
 router.get("/voltage-trend/:device_id", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
