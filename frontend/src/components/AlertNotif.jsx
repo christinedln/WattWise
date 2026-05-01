@@ -204,28 +204,6 @@ const stats = {
         </div>
       )}
 
-      {/* HEADER */}
-      <div className="flex justify-between mb-6">
-         
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowEmail(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150"
-             style={{ backgroundColor: "#F0F8F5 ", color: "black", border: "1px solid #86efac" }}
-            >
-          <MailIcon /> Email Alerts
-            </button>
-            <button
-              onClick={() => setShowSound(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150"
-              style={{ backgroundColor: "#F0F8F5", color: "black", border: "1px solid #86efac" }}
-
-            >
-              <VolumeIcon /> Sound
-            </button>
-          </div>
-        </div>
 
       {/* STATS */}
       <div className="grid grid-cols-4 gap-3 mb-6">
