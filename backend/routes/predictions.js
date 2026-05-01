@@ -15,7 +15,7 @@ router.get("/summary", authRequired, async (req, res) => {
         if (!userId) {
             return res.status(401).json({ error: "Missing user_id" });
         }
-        const devices = await mergeDeviceData();
+        const devices = await mergeDeviceData(userId);
         const rate = await getRate(userId);
 
         // ── Base rate from current consumption ───────────────────────────────
