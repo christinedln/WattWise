@@ -14,6 +14,7 @@ import RoleBasedAccountsPage from "./superadmin/pages/RoleBasedAccountsPage";
 import SecurityLogsPage from "./superadmin/pages/SecurityLogsPage";
 import UnauthorizedPage from "./superadmin/pages/UnauthorizedPage";
 import SectionPage from "./superadmin/pages/SectionPage";
+import DevicesPage from "./superadmin/pages/DevicesPage";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -33,18 +34,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="create-account" element={<CreateAccountPage />} />
             <Route path="role-based-accounts" element={<RoleBasedAccountsPage />} />
             <Route path="security-logs" element={<SecurityLogsPage />} />
-            <Route
-              path="devices"
-              element={
-                <SectionPage
-                  title="Devices"
-                  description="Manage registered meters, gateways, and device lifecycle events with role checks and server-side validation."
-                  actionLabel="Review dashboard"
-                  actionTo="/super-admin/dashboard"
-                  requiredAction="view_devices"
-                />
-              }
-            />
+              <Route path="devices" element={<DevicesPage />} />
             <Route
               path="alerts"
               element={

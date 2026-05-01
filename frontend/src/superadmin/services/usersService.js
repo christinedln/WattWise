@@ -18,7 +18,7 @@ export async function fetchUsersPage({ cursor = null, organizationId = null, pag
 
   constraints.push(limit(pageSize));
 
-  const snapshot = await getDocs(query(collection(db, "users"), ...constraints));
+  const snapshot = await getDocs(query(collection(db, "user"), ...constraints));
 
   return {
     rows: snapshot.docs.map((document) => ({ id: document.id, ...document.data() })),

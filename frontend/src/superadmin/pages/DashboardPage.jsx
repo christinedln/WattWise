@@ -4,63 +4,79 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission } from "../config/permissions";
 import { fetchAuditLogPage } from "../services/auditLogService";
-
-const summaryCards = [
-  { label: "Total Users", value: "48", icon: Users, color: "bg-blue-100", iconColor: "text-blue-600" },
-  { label: "Active Sessions", value: "24", icon: Activity, color: "bg-green-100", iconColor: "text-green-600" },
-  { label: "Security Logs", value: "1.2K", icon: FileText, color: "bg-purple-100", iconColor: "text-purple-600" },
-  { label: "System Health", value: "99.9%", icon: ShieldCheck, color: "bg-orange-100", iconColor: "text-orange-600" },
-];
+import { collection, getCountFromServer, query, where } from "firebase/firestore";
+import { db } from "../../firebase";
 
 function formatTimestamp(value) {
-  if (!value) {
-    return "-";
-  }
-
+  if (!value) return "-";
   const date = value.toDate ? value.toDate() : new Date(value);
   return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+    month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
   }).format(date);
 }
 
 export default function DashboardPage() {
   const { profile, role } = useAuth();
   const [recentLogs, setRecentLogs] = useState([]);
+  const [stats, setStats] = useState({
+    totalUsers: "-",
+    activeSessions: "-",
+    securityLogs: "-",
+    systemHealth: "99.9%",
+  });
+
   const canViewDashboard = hasPermission(role, "view_dashboard");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    // Fetch audit logs
+    fetchAuditLogPage({ pageSize: 5 })
+      .then((response) => { if (isMounted) setRecentLogs(response.rows); })
+      .catch(() => { if (isMounted) setRecentLogs([]); });
+
+    // Fetch real counts from Firestore
+    async function fetchStats() {
+      try {
+        const [usersSnap, activeSnap, logsSnap] = await Promise.all([
+          getCountFromServer(collection(db, "user")),
+          getCountFromServer(query(collection(db, "roleBasedAccounts"), where("status", "==", "active"))),
+          getCountFromServer(collection(db, "audit_logs")),
+        ]);
+
+        if (!isMounted) return;
+        const logCount = logsSnap.data().count;
+        setStats({
+          totalUsers: usersSnap.data().count,
+          activeSessions: activeSnap.data().count,
+          securityLogs: logCount >= 1000 ? `${(logCount / 1000).toFixed(1)}K` : logCount,
+          systemHealth: "99.9%",
+        });
+      } catch (e) {
+        console.error("Stats fetch error:", e);
+      }
+    }
+
+    fetchStats();
+
+    return () => { isMounted = false; };
+  }, []);
 
   if (!canViewDashboard) {
     return (
       <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-6 text-yellow-800">
         <h2 className="text-lg font-semibold">Access Restricted</h2>
-        <p className="mt-3 text-sm text-yellow-700">
-          Your role does not have permission to view the dashboard.
-        </p>
+        <p className="mt-3 text-sm text-yellow-700">Your role does not have permission to view the dashboard.</p>
       </div>
     );
   }
 
-  useEffect(() => {
-    let isMounted = true;
-
-    fetchAuditLogPage({ pageSize: 5 })
-      .then((response) => {
-        if (isMounted) {
-          setRecentLogs(response.rows);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setRecentLogs([]);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const summaryCards = [
+    { label: "Total Users",     value: stats.totalUsers,    icon: Users,       color: "bg-blue-100",   iconColor: "text-blue-600"   },
+    { label: "Active Sessions", value: stats.activeSessions, icon: Activity,    color: "bg-green-100",  iconColor: "text-green-600"  },
+    { label: "Security Logs",   value: stats.securityLogs,  icon: FileText,    color: "bg-purple-100", iconColor: "text-purple-600" },
+    { label: "System Health",   value: stats.systemHealth,  icon: ShieldCheck, color: "bg-orange-100", iconColor: "text-orange-600" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -102,7 +118,6 @@ export default function DashboardPage() {
               <h3 className="text-xl font-bold text-gray-900 mt-1">Recent privileged activity</h3>
             </div>
           </div>
-
           <div className="overflow-hidden rounded-lg border border-gray-200">
             <table className="min-w-full divide-y divide-gray-200 text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-xs font-medium text-gray-700 uppercase">
@@ -121,9 +136,7 @@ export default function DashboardPage() {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="3" className="px-4 py-8 text-center text-sm text-gray-500">
-                      No audit logs have been loaded yet.
-                    </td>
+                    <td colSpan="3" className="px-4 py-8 text-center text-sm text-gray-500">No audit logs have been loaded yet.</td>
                   </tr>
                 )}
               </tbody>
@@ -139,7 +152,6 @@ export default function DashboardPage() {
               <h3 className="text-xl font-bold text-gray-900 mt-1">Security overview</h3>
             </div>
           </div>
-
           <ul className="space-y-3 text-sm text-gray-600">
             <li className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
               <span className="font-medium text-gray-900">Authentication:</span> All users verified via Firebase Auth
