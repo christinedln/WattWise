@@ -406,15 +406,25 @@ export default function DeviceManagement() {
       {/* ── HEADER ───────────────────────────── */}
       
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
-        <SummaryCard label="Active"     count={counts.active}     colorClass="bg-emerald-50 border-emerald-100 text-emerald-800" />
-        <SummaryCard label="Offline"    count={counts.offline}    colorClass="bg-gray-50 border-gray-200 text-gray-700" />
-      </div>
+       <div className="bg-white rounded-lg border border-gray-200 px-6 py-4 mb-6">
+  {/* STATUS */}
+  <div className="grid grid-cols-2 gap-4">
+    <SummaryCard
+      label="Active"
+      count={counts.active}
+      colorClass="bg-green-50 border-green-100 text-green-700"
+    />
+    <SummaryCard
+      label="Offline"
+      count={counts.offline}
+      colorClass="bg-gray-50 border-gray-200 text-gray-700"
+    />
+  </div>
+</div>
 
-      {/* ── FILTERS ───────────────────────────── */}
-      <div className="flex flex-wrap gap-2 mb-5">
+{/* ── FILTERS ───────────────────────────── */}
+<div className="flex flex-wrap gap-2 mb-5">
   {Object.entries(filterMeta).map(([key, { label, activeClass }]) => {
-
     // SHOW ONLY base + signals here
     const isBase =
       ["all", "active", "offline", "current", "voltage", "power"].includes(key);
@@ -490,39 +500,73 @@ export default function DeviceManagement() {
 )}
 
       {/* ── TABLE ───────────────────────────── */}
-<div className="bg-white border border-gray-200 rounded-xl shadow-sm">
+<div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
   
   {/* enables horizontal scroll on small screens */}
-  <div>
+  <div className="overflow-x-auto">
     <table className="w-full table-fixed">
       
       <thead>
-        <tr className="border-b border-gray-100 bg-gray-50">
-          {["Name", "Location", "Status", "Current", "Voltage", "Power", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
-          <th
-            key={h}
-            className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"
-            style={{ width: h === "Name" || h === "Location" ? "13%" : h === "Last Updated" ? "15%" : h === "% Usage" ? "11%" : h === "Actions" ? "10%" : "8%" }}>
-            {h}
-          </th>
-
+        <tr className="border-b border-green-700 bg-green-700">
+          {[
+            "Name",
+            "Location",
+            "Status",
+            "Current",
+            "Voltage",
+            "Power",
+            "kWh",
+            "% Usage",
+            "Last Updated",
+            "Actions"
+          ].map((h) => (
+            <th
+              key={h}
+              className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap"
+              style={{
+                width:
+                  h === "Name" || h === "Location"
+                    ? "13%"
+                    : h === "Last Updated"
+                    ? "15%"
+                    : h === "% Usage"
+                    ? "11%"
+                    : h === "Actions"
+                    ? "10%"
+                    : "8%"
+              }}
+            >
+              {h}
+            </th>
           ))}
         </tr>
       </thead>
 
-          <tbody>
-            {filteredDevices.map((d) => (
-              <React.Fragment key={d.id}>
-                <DeviceRow
-                  device={d}
-                  pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0} openEdit={openEdit}
-                />
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div> 
+<tbody>
+  {filteredDevices.length === 0 ? (
+    <tr>
+      <td colSpan={10} className="py-10 text-center">
+        <p className="text-sm font-medium text-gray-400">
+          No devices found
+        </p>
+      </td>
+    </tr>
+  ) : (
+    filteredDevices.map((d) => (
+      <React.Fragment key={d.id}>
+        <DeviceRow
+          device={d}
+          pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0}
+          openEdit={openEdit}
+        />
+      </React.Fragment>
+    ))
+  )}
+</tbody>
+      
+    </table>
+  </div>
+</div>
 
      {editing && (
   <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
