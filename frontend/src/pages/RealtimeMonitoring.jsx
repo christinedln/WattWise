@@ -78,9 +78,8 @@ useEffect(() => {
 
   const alerts = device?.alerts || [];
 
-  const hasAlerts =
-    alerts.length > 0 &&
-    !(alerts.length === 1 && alerts[0].severity === "Normal");
+  const activeAlerts = alerts.filter(a => a.severity !== "Normal");
+  const hasActiveAlerts = activeAlerts.length > 0;
 
   return (
     <Layout>
@@ -130,17 +129,25 @@ useEffect(() => {
                       </span>
                     </div>
 
-                  {hasAlerts && (
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5 text-red-500" />
-                      <span className="text-red-600 font-semibold">
-                        {alerts
-                          .filter((a) => a.severity !== "Normal")
-                          .map((a) => `${a.signal}: ${a.message}`)
-                          .join(" | ")}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {hasActiveAlerts ? (
+                      <>
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        <span className="text-red-600 font-semibold">
+                          {activeAlerts
+                            .map((a) => `${a.signal}: ${a.message}`)
+                            .join(" | ")}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                        <span className="text-green-600 font-semibold">
+                          No anomaly detected
+                        </span>
+                      </>
+                    )}
+                  </div>
                   </div>
                 </div>
 

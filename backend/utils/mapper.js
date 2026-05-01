@@ -1,3 +1,4 @@
+// utils/mapper
 const { getDevices, getRealtimeLogs } = require("../services/data_service");
 const { generateCurrentAlerts } = require("./generateCurrentAlerts");
 const { generateVoltageAlerts } = require("./generateVoltageAlerts");

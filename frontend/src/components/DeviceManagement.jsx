@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 // Icons replaced with inline SVGs
 import { apiFetch } from "../api/api";
-import DeviceHealthSummary from "./DeviceHealthSummary";
 
 // ─── Inline SVG Icons ─────────────────────────────
 const PowerIcon = () => (
@@ -83,7 +82,6 @@ function UsageBar({ pct }) {
 function getSeverity(alerts = [], signal) {
   return alerts.find(a => a.signal === signal)?.severity || "Normal";
 }
-
 
 // ─── Row ─────────────────────────────────────
 function DeviceRow({ device, pct, openEdit }) {
