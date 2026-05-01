@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import DashboardHeader from "../components/DashboardHeader";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, Activity } from "lucide-react";
 import Layout from "../components/layout";
 import { apiFetch } from "../api/api";
 import {
@@ -76,12 +76,6 @@ useEffect(() => {
 
   const device = devices.find((d) => d.device_id === selectedDevice);
 
-  const alerts = device?.alerts || [];
-
-  const hasAlerts =
-    alerts.length > 0 &&
-    !(alerts.length === 1 && alerts[0].severity === "Normal");
-
   return (
     <Layout>
       <div className="h-screen w-screen flex overflow-hidden bg-gray-50">
@@ -116,35 +110,46 @@ useEffect(() => {
             {device && (
               <>
                 {/* HEADER */}
-                <div className="mb-6 flex flex-col md:flex-row justify-between">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900">{device.name}</h1>
-                    <p className="text-gray-500">{device.location}</p>
-                  </div>
-
-                  <div className="flex items-center gap-4 mt-4 md:mt-0">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                      <span className="text-green-600 font-semibold">
-                        {device.status}
-                      </span>
-                    </div>
-
-                  {hasAlerts && (
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5 text-red-500" />
-                      <span className="text-red-600 font-semibold">
-                        {alerts
-                          .filter((a) => a.severity !== "Normal")
-                          .map((a) => `${a.signal}: ${a.message}`)
-                          .join(" | ")}
-                      </span>
-                    </div>
-                  )}
-                  </div>
+              <div className="mb-6 flex flex-col md:flex-row justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">{device.name}</h1>
+                  <p className="text-gray-500">{device.location}</p>
                 </div>
 
-                {/* LIVE READINGS */}
+                <div className="flex items-center gap-4 mt-4 md:mt-0">
+                  
+                  {/* Device Status */}
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-green-600 font-semibold">
+                      {device.status}
+                    </span>
+                  </div>
+
+                  {/* Device Message */}
+                  {device.message && device.message !== "No issues detected" && (
+                    <div className="flex items-center gap-2">
+                      {device.message.toLowerCase().includes("stable") ? (
+                        <>
+                          <Activity className="w-5 h-5 text-blue-500" />
+                          <span className="text-blue-600 font-semibold">
+                            {device.message}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-5 h-5 text-red-500" />
+                          <span className="text-red-600 font-semibold">
+                            {device.message}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                </div>
+              </div>
+                              {/* LIVE READINGS */}
                 <div className="bg-green-50/40 border border-green-200 rounded-2xl p-6 shadow-sm mb-6">
 
                   <div className="mb-5">
