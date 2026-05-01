@@ -79,12 +79,6 @@ export default function PredictionsPage() {
 
           <div className="flex-1 overflow-auto p-6">
 
-            {/* Title */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">Energy Predictions</h1>
-              <p className="text-gray-500">Forecast your energy costs and usage patterns</p>
-            </div>
-
             <div className="space-y-6">
 
               {/* Predictions */}

@@ -407,11 +407,6 @@ export default function DeviceManagement() {
 
   return (
     <>
-      {/* ── HEADER ───────────────────────────── */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Devices Management</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Monitor, control, and analyze all connected devices</p>
-      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
         <SummaryCard label="Active"     count={counts.active}     colorClass="bg-emerald-50 border-emerald-100 text-emerald-800" />

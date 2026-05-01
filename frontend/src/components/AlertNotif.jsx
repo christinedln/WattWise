@@ -206,10 +206,7 @@ const stats = {
 
       {/* HEADER */}
       <div className="flex justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Alerts & Notifications</h1>
-            <p className="text-sm text-gray-400">Device issues and anomalies</p>
-          </div>
+         
 
           <div className="flex items-center gap-2">
             <button
