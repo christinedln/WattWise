@@ -21,6 +21,7 @@ function maskEmail(email = "") {
 
 function formatTimestamp(value) {
   if (!value) return "-";
+  if (!value) return "-";
   const date = value.toDate ? value.toDate() : new Date(value);
   return new Intl.DateTimeFormat("en", {
     month: "short",
@@ -67,6 +68,7 @@ export default function PaginatedUsersTable({ organizationId = null }) {
         });
 
         if (!isMounted) return;
+        if (!isMounted) return;
 
         setRows(response.rows);
         setHasMore(response.hasMore);
@@ -77,19 +79,15 @@ export default function PaginatedUsersTable({ organizationId = null }) {
           return next;
         });
       } catch (fetchError) {
-        if (isMounted) {
-          setError(fetchError.message || "Unable to load users.");
-        }
+        if (isMounted) setError(fetchError.message || "Unable to load users.");
       } finally {
+        if (isMounted) setLoading(false);
         if (isMounted) setLoading(false);
       }
     }
 
     loadPage();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [currentCursor, organizationId, pageIndex]);
 
   const canGoPrevious = pageIndex > 0;

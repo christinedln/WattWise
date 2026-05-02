@@ -5,12 +5,50 @@ import { useAuth } from "../context/AuthContext";
 import Header from "../../components/Header";
 import Layout from "../../components/layout";
 
-// Admin features data
 const adminFeatures = [
-  { icon: "🛡️", title: "Role-Aware Access", description: "Control permissions" },
-  { icon: "📋", title: "Audit Trails", description: "Every admin action logged" },
-  { icon: "⏱️", title: "Session Timeout", description: "Security for idle users" },
-  { icon: "🔒", title: "Data Protection", description: "Masked sensitive fields" },
+  {
+    icon: (
+      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-9 h-9">
+        <path d="M18 4L6 9V17C6 24 11.16 30.48 18 32C24.84 30.48 30 24 30 17V9L18 4Z" stroke="#1a7a45" strokeWidth="2" strokeLinejoin="round" fill="none"/>
+        <polyline points="12,18 16,22 24,14" stroke="#1a7a45" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    title: "Role-Aware Access",
+    description: "Control permissions",
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-9 h-9">
+        <rect x="8" y="4" width="20" height="28" rx="3" stroke="#1a7a45" strokeWidth="2"/>
+        <line x1="13" y1="13" x2="23" y2="13" stroke="#1a7a45" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="13" y1="18" x2="23" y2="18" stroke="#1a7a45" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="13" y1="23" x2="19" y2="23" stroke="#1a7a45" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
+    title: "Audit Trails",
+    description: "Every admin action logged",
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-9 h-9">
+        <circle cx="18" cy="18" r="13" stroke="#1a7a45" strokeWidth="2"/>
+        <polyline points="18,10 18,18 24,22" stroke="#1a7a45" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    title: "Session Timeout",
+    description: "Security for idle users",
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-9 h-9">
+        <rect x="10" y="16" width="16" height="14" rx="2" stroke="#1a7a45" strokeWidth="2"/>
+        <path d="M14 16V12C14 9.79 15.79 8 18 8C20.21 8 22 9.79 22 12V16" stroke="#1a7a45" strokeWidth="2" strokeLinecap="round" fill="none"/>
+        <circle cx="18" cy="23" r="2" fill="#1a7a45"/>
+      </svg>
+    ),
+    title: "Data Protection",
+    description: "Masked sensitive fields",
+  },
 ];
 
 export default function SuperAdminLoginPage() {
@@ -51,7 +89,7 @@ export default function SuperAdminLoginPage() {
 
   return (
     <Layout>
-      {/* 🔥 FORCED APPLE FONT SYSTEM HERE */}
+
       <div
         className="h-screen w-screen flex overflow-hidden"
         style={{
@@ -59,9 +97,16 @@ export default function SuperAdminLoginPage() {
             "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif",
         }}
       >
-        {/* LEFT PANEL */}
-        <div className="hidden md:flex flex-col flex-1 p-8 overflow-hidden bg-card text-card-foreground">
-          <Header />
+        {/* ── LEFT PANEL ── */}
+          <div className="hidden md:flex flex-col flex-1 p-8 overflow-hidden bg-card text-card-foreground">
+            <div className="flex items-center gap-3 mb-7">
+              <div className="w-14 h-14 bg-[#1a7a45] rounded-[14px] flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8">
+                  <path d="M13 2L4.5 13.5H11L10 22L20.5 10.5H14L13 2Z" fill="white" stroke="white" strokeWidth="1.2" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <span className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">WattWise</span>
+            </div>
 
           <div className="mt-2 flex flex-col justify-between h-full">
             <div>
@@ -78,9 +123,9 @@ export default function SuperAdminLoginPage() {
               {adminFeatures.map((f, i) => (
                 <div
                   key={i}
-                  className="bg-blue-50 border border-blue-200 rounded-lg p-4 md:p-6 flex flex-col items-start"
+                  className="bg-[#e8f5ee] border border-[#b2d8c0] rounded-lg p-4 md:p-6 flex flex-col items-start"
                 >
-                  <div className="text-3xl md:text-4xl mb-2">{f.icon}</div>
+                  <div className="mb-2">{f.icon}</div>
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
                     {f.title}
                   </h3>
@@ -93,7 +138,7 @@ export default function SuperAdminLoginPage() {
           </div>
         </div>
 
-        {/* RIGHT PANEL */}
+        {/* ── RIGHT PANEL ── */}
         <div className="flex flex-1 justify-center items-center bg-card text-card-foreground">
           <div className="w-full max-w-md px-6 md:px-8 py-6 md:py-8 overflow-hidden">
 
@@ -105,7 +150,6 @@ export default function SuperAdminLoginPage() {
               Sign in to access your admin dashboard
             </p>
 
-            {/* FORM */}
             <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
 
               {/* EMAIL */}
@@ -144,12 +188,9 @@ export default function SuperAdminLoginPage() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    style={{ background: "none", border: "none", outline: "none", boxShadow: "none" }}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
               </div>
@@ -189,3 +230,4 @@ export default function SuperAdminLoginPage() {
     </Layout>
   );
 }
+
