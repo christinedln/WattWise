@@ -62,7 +62,57 @@ router.get("/", authRequired, async (req, res) => {
     res.json(alerts);
 
   } catch (error) {
-    console.error("❌ Alerts error:", error);
+    console.error("Alerts error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.patch("/:id/resolve", authRequired, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const alertId = req.params.id;
+    const { resolved } = req.body;
+
+    const dbModule = await import("../firebase_config.js");
+    const db = dbModule.db;
+
+    const devicesSnap = await db
+      .collection("user")
+      .doc(userId)
+      .collection("devices")
+      .get();
+
+    let found = false;
+
+    for (const deviceDoc of devicesSnap.docs) {
+      const ref = db
+        .collection("user")
+        .doc(userId)
+        .collection("devices")
+        .doc(deviceDoc.id)
+        .collection("anomalies")
+        .doc(alertId);
+
+      const doc = await ref.get();
+
+      if (doc.exists) {
+        await ref.update({
+          resolved: resolved ?? true,
+        });
+
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      return res.status(404).json({ error: "Alert not found" });
+    }
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("Resolve toggle error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

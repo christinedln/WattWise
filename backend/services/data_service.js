@@ -7,7 +7,13 @@ const DEFAULT_SETTINGS = {
   log_window: 10,
   current_warning_threshold:2.0,
   current_suspicious_threshold:2.5,
-  current_critical_threshold:3.5
+  current_critical_threshold:3.2,
+  voltage_warning_threshold:1.5,
+  voltage_suspicious_threshold:2.0,
+  voltage_critical_threshold:2.6,
+  power_warning_threshold:2.0,
+  power_suspicious_threshold:2.5,
+  power_critical_threshold:3.1,
 };
 
 // Get Devices (with latest + settings)

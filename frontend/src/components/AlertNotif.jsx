@@ -94,17 +94,24 @@ const Badge = ({ type }) => {
 };
 
 
-
-function capitalize(str) {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
 function formatTime(ts) {
   if (!ts) return "Unknown";
   const date = new Date(ts.trim());
   return date.toLocaleString();
 }
+
+function normalizeSeverity(sev) {
+  if (!sev) return "Warning";
+
+  const s = sev.toLowerCase();
+
+  if (s === "critical") return "Critical";
+  if (s === "warning") return "Warning";
+  if (s === "suspicious") return "Suspicious";
+
+  return "Warning";
+}
+
 // ─── Summary Card ─────────────────────────────────────
 function SummaryCard({ label, value, sub, colorClass }) {
   return (
@@ -187,7 +194,7 @@ export default function AlertNotif() {
 const activeAlerts = alerts.filter(
   (a) =>
     !a.resolved &&
-    ["Critical", "Warning", "Suspicious"].includes(a.severity)
+    ["critical", "warning", "suspicious"].includes(a.severity.toLowerCase())
 );
 
 const stats = {
@@ -197,23 +204,28 @@ const stats = {
   total: activeAlerts.length,
 };
 
-  const toggleSelect = (id) =>
-    setSelected((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
-
   const selectAll = () =>
     setSelected(selected.length === filtered.length ? [] : filtered.map((a) => a.id));
 
-  const deleteAlert = async (id) => {
-    try {
-      await apiFetch(`/alerts/${id}`, { method: "DELETE" });
+const toggleResolveAlert = async (id, currentResolved) => {
+  try {
+    await apiFetch(`/alerts/${id}/resolve`, {
+      method: "PATCH",
+      body: JSON.stringify({ resolved: !currentResolved }),
+    });
 
-      setAlerts((p) => p.filter((a) => a.id !== id));
-      showToast("Alert dismissed");
+    setAlerts((prev) =>
+      prev.map((a) =>
+        a.id === id ? { ...a, resolved: !currentResolved } : a
+      )
+    );
 
-    } catch (err) {
-      console.error("Delete failed:", err);
-    }
-  };
+    showToast(currentResolved ? "Marked as unresolved" : "Alert resolved");
+
+  } catch (err) {
+    console.error("Toggle resolve failed:", err);
+  }
+};
 
   const resolveSelected = async () => {
     try {
@@ -350,8 +362,15 @@ const stats = {
               <p className="text-xs text-gray-400 mt-1">{alert.time}</p>
             </div>
 
-            <button onClick={() => deleteAlert(alert.id)}>
-              <TrashIcon />
+            <button
+              onClick={() => toggleResolveAlert(alert.id, alert.resolved)}
+              className={`text-xs px-1.5 py-0.5 font-medium transition ${
+                alert.resolved
+                  ? "text-gray-500 hover:text-gray-700"
+                  : "text-green-600 hover:text-green-800"
+              }`}
+            >
+              {alert.resolved ? "↩" : "✓"}
             </button>
           </div>
         ))}

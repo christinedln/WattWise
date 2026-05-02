@@ -127,20 +127,20 @@ function DeviceRow({ device, pct, openEdit }) {
           <button
             title="Toggle power"
             onClick={async () => {
-    try {
-      await apiFetch("/relay/toggle", {
-        method: "POST",
-        body: JSON.stringify({
-          device_id: device.device_id
-        })
-      });
+              try {
+                await apiFetch("/relay/toggle", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    device_id: device.device_id
+                  })
+                });
 
-      console.log("Relay toggled from device UI");
+                console.log("Relay toggled from device UI");
 
-    } catch (err) {
-      console.error("Toggle failed", err);
-    }
-  }}
+              } catch (err) {
+                console.error("Toggle failed", err);
+              }
+            }}
             style={{
               display: "inline-flex",
               alignItems: "center",

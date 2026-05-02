@@ -13,8 +13,6 @@ router.get("/summary", authRequired, async (req, res) => {
 
         const enrichedDevices = await mergeDeviceData(userId) || [];
 
-        const devices = await getDevices(userId) || [];
-
         const activeCount = enrichedDevices.filter(
             d => d.status === "active"
         ).length;
@@ -59,7 +57,7 @@ router.get("/summary", authRequired, async (req, res) => {
         );
 
 
-        if (!enrichedDevices.length || !devices.length) {
+        if (!enrichedDevices.length) {
             return res.json({
                 active_devices: 0,
                 total_devices: 0,
@@ -75,7 +73,7 @@ router.get("/summary", authRequired, async (req, res) => {
         }
 
         const totalRuntimeHours = Math.max(
-            devices.reduce(
+            enrichedDevices.reduce(
                 (sum, d) => sum + (d.runtime || 0),
                 0
             ) / 3600,
@@ -94,7 +92,7 @@ router.get("/summary", authRequired, async (req, res) => {
         // RESPONSE
         res.json({
             active_devices: activeCount,
-            total_devices: devices.length,
+            total_devices: enrichedDevices.length,
 
             live_readings: enrichedDevices,
             device_consumption: deviceConsumption,

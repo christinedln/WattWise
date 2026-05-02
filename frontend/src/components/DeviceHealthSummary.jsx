@@ -50,25 +50,25 @@ export default function DeviceHealthSummary({ readings = [] }) {
 
         <Box
           label="Critical"
-          value={count(currentAlerts, "Critical")}
+          value={count(currentAlerts, "critical")}
           color="bg-red-50 border-red-100 text-red-700"
         />
 
         <Box
           label="Warning"
-          value={count(currentAlerts, "Warning")}
+          value={count(currentAlerts, "warning")}
           color="bg-yellow-50 border-yellow-100 text-yellow-700"
         />
 
         <Box
           label="Suspicious"
-          value={count(currentAlerts, "Suspicious")}
+          value={count(currentAlerts, "suspicious")}
           color="bg-purple-50 border-purple-100 text-purple-700"
         />
 
         <Box
           label="Normal"
-          value={count(currentAlerts, "Normal")}
+          value={count(currentAlerts, "normal")}
           color="bg-green-50 border-green-100 text-green-700"
         />
 
@@ -80,25 +80,25 @@ export default function DeviceHealthSummary({ readings = [] }) {
 
         <Box
           label="Critical"
-          value={count(voltageAlerts, "Critical")}
+          value={count(voltageAlerts, "critical")}
           color="bg-red-50 border-red-100 text-red-700"
         />
 
         <Box
           label="Warning"
-          value={count(voltageAlerts, "Warning")}
+          value={count(voltageAlerts, "warning")}
           color="bg-yellow-50 border-yellow-100 text-yellow-700"
         />
 
         <Box
           label="Suspicious"
-          value={count(voltageAlerts, "Suspicious")}
+          value={count(voltageAlerts, "suspicious")}
           color="bg-purple-50 border-purple-100 text-purple-700"
         />
 
         <Box
           label="Normal"
-          value={count(voltageAlerts, "Normal")}
+          value={count(voltageAlerts, "normal")}
           color="bg-green-50 border-green-100 text-green-700"
         />
 
@@ -110,25 +110,25 @@ export default function DeviceHealthSummary({ readings = [] }) {
 
         <Box
           label="Critical"
-          value={count(powerAlerts, "Critical")}
+          value={count(powerAlerts, "critical")}
           color="bg-red-50 border-red-100 text-red-700"
         />
 
         <Box
           label="Warning"
-          value={count(powerAlerts, "Warning")}
+          value={count(powerAlerts, "warning")}
           color="bg-yellow-50 border-yellow-100 text-yellow-700"
         />
 
         <Box
           label="Suspicious"
-          value={count(powerAlerts, "Suspicious")}
+          value={count(powerAlerts, "suspicious")}
           color="bg-purple-50 border-purple-100 text-purple-700"
         />
 
         <Box
           label="Normal"
-          value={count(powerAlerts, "Normal")}
+          value={count(powerAlerts, "normal")}
           color="bg-green-50 border-green-100 text-green-700"
         />
 

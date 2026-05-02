@@ -1,7 +1,7 @@
 import { db } from "./firebase_config.js";
 
-const userId = "dNJypjj5iRaN77MUR3dLwE1YRS42";
-const deviceId = "7D4F00CD61C3";
+const userId = "T6kSTXn5Z3diE0AUDG6xoMevVf83";
+const deviceId = "8C4F00AB61C4";
 
 async function insertMockLogs() {
   const logsRef = db

@@ -32,15 +32,15 @@ const PencilIcon = () => (
 
 // ─── Status Badge ─────────────────────────────────
 function StatusBadge({ severity }) {
-  if (severity === "Critical") {
+  if (severity === "critical") {
     return <span className="badge red">Critical</span>;
   }
 
-  if (severity === "Warning") {
+  if (severity === "warning") {
     return <span className="badge amber">Warning</span>;
   }
 
-  if (severity === "Suspicious") {
+  if (severity === "suspicious") {
     return <span className="badge purple">Suspicious</span>;
   }
 
@@ -80,7 +80,7 @@ function UsageBar({ pct }) {
 }
 
 function getSeverity(alerts = [], signal) {
-  return alerts.find(a => a.signal === signal)?.severity || "Normal";
+  return alerts.find(a => a.signal === signal)?.severity || "normal";
 }
 
 // ─── Row ─────────────────────────────────────
@@ -389,7 +389,7 @@ export default function DeviceManagement() {
     if (filter === "offline" && d.status !== "offline") return false;
     if (signalFilter && severityFilter) {
       const severity = getSeverity(d.alerts, signalFilter);
-      return severity === severityFilter;
+      return severity === severityFilter.toLowerCase();
     }
 
     return true;

@@ -61,7 +61,9 @@ async function mergeDeviceData(userId) {
         const alerts = alertsArray.map(a => ({
             signal: a.signal || "unknown",
             severity: a.severity || "normal",
-            message: a.message || `${a.severity || "normal"} anomaly detected`
+            message: a.message || `${a.severity || "normal"} anomaly detected`,
+            timestamp: a.timestamp,
+            resolved: a.resolved ?? false
         }));
 
         merged.push({
