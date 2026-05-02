@@ -11,7 +11,7 @@ router.get("/", authRequired, async (req, res) => {
     const db = dbModule.db;
 
     const snapshot = await db
-      .collection("users")
+      .collection("user")
       .doc(userId)
       .collection("devices")
       .get();
@@ -23,7 +23,7 @@ router.get("/", authRequired, async (req, res) => {
       const deviceData = deviceDoc.data();
 
       const anomaliesSnap = await db
-        .collection("users")
+        .collection("user")
         .doc(userId)
         .collection("devices")
         .doc(deviceId)
