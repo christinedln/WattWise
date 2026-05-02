@@ -84,7 +84,7 @@ async function mergeDeviceData(userId) {
 
             alerts,
 
-            consumption: calcKwh(d.power, d.runtime || 0),
+            consumption: Number(d.consumption) || 0,
 
             lastUpdated: nowTime(),
 

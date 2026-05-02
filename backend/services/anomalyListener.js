@@ -57,6 +57,24 @@ function startAnomalyListener() {
           const userId = pathParts[1];
           const deviceId = pathParts[3];
 
+          let deviceName = deviceId; //fallback
+
+          try {
+            const deviceDoc = await db
+              .collection("user")
+              .doc(userId)
+              .collection("devices")
+              .doc(deviceId)
+              .get();
+
+            if (deviceDoc.exists) {
+              const deviceData = deviceDoc.data();
+              deviceName = deviceData?.name || deviceId;
+            }
+          } catch (err) {
+            console.log("Error fetching device name:", err);
+          }
+
           const settingsDoc = await db
             .collection("user")
             .doc(userId)
@@ -112,6 +130,7 @@ function startAnomalyListener() {
             `
               <h3>⚠️ Anomaly Detected</h3>
               <b>Device ID:</b> ${deviceId}<br/>
+              <b>Device Name:</b> ${deviceName}<br/>
               <b>Severity:</b> ${severity}<br/>
               <b>Signal:</b> ${data.signal}<br/><br/>
 
