@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import EmailModal from "./EmailModal";
-import SoundModal from "./SoundModal";
 import { apiFetch } from "../api/api";
 
 // ─── Inline SVG Icons ─────────────────────────────────
@@ -57,15 +56,15 @@ const filterMeta = {
     activeClass:
       "!bg-red-100 !text-red-900 !border-red-300 shadow-[0_0_6px_rgba(239,68,68,0.35)] !rounded-full",
   },
+  Suspicious: {
+    label: "Suspicious",
+    activeClass:
+      "!bg-purple-100 !text-purple-900 !border-purple-300 shadow-[0_0_6px_rgba(168,85,247,0.35)] !rounded-full",
+  },
   Warning: {
     label: "Warning",
     activeClass:
       "!bg-amber-100 !text-amber-900 !border-amber-300 shadow-[0_0_6px_rgba(245,158,11,0.35)] !rounded-full",
-  },
-  Info: {
-    label: "Info",
-    activeClass:
-      "!bg-blue-100 !text-blue-900 !border-blue-300 shadow-[0_0_6px_rgba(59,130,246,0.35)] !rounded-full",
   },
 };
 
@@ -75,17 +74,13 @@ const TYPE = {
     badge: "bg-red-100 text-red-800 border-red-300",
     dot: "bg-red-500",
   },
-  Warning: {
-    badge: "bg-amber-100 text-amber-800 border-amber-300",
-    dot: "bg-amber-500",
-  },
-  Info: {
-    badge: "bg-blue-100 text-blue-800 border-blue-300",
-    dot: "bg-blue-500",
-  },
   Suspicious: {
     badge: "bg-purple-100 text-purple-800 border-purple-300",
     dot: "bg-purple-500",
+  },
+  Warning: {
+    badge: "bg-amber-100 text-amber-800 border-amber-300",
+    dot: "bg-amber-500",
   },
 };
 
@@ -98,6 +93,18 @@ const Badge = ({ type }) => {
   );
 };
 
+
+
+function capitalize(str) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function formatTime(ts) {
+  if (!ts) return "Unknown";
+  const date = new Date(ts.trim());
+  return date.toLocaleString();
+}
 // ─── Summary Card ─────────────────────────────────────
 function SummaryCard({ label, value, sub, colorClass }) {
   return (
@@ -132,13 +139,23 @@ export default function AlertNotif() {
       try {
         const data = await apiFetch("/alerts");
 
-        const transformed = data.map((alert, index) => ({
-          id: `${alert.device_id}-${index}`,
-          severity: alert.severity,
+        const transformed = data.map((alert) => ({
+          id: alert.id,
+
+          severity: normalizeSeverity(alert.severity),
+
           title: alert.device_name,
-          description: alert.message,
-          time: "Just now",
-          resolved: false,
+
+          description: `
+            ${alert.signal?.toUpperCase()} anomaly
+            | ${alert.power ?? "-"} W
+            | ${alert.voltage ?? "-"} V
+            | ${alert.current ?? "-"} A
+          `,
+
+          time: formatTime(alert.timestamp),
+
+          resolved: alert.resolved,
         }));
 
         setAlerts(transformed);
@@ -154,7 +171,6 @@ export default function AlertNotif() {
   const [showResolved, setShowResolved] = useState(false);
   const [selected, setSelected] = useState([]);
   const [showEmail, setShowEmail] = useState(false);
-  const [showSound, setShowSound] = useState(false);
   const [toast, setToast] = useState(null);
 
   const showToast = (msg) => {
@@ -165,7 +181,7 @@ export default function AlertNotif() {
   const filtered = alerts.filter(
     (a) =>
       (showResolved || !a.resolved) &&
-      (filter === "All" || a.severity === filter)
+      (filter === "All" || a.severity.toLowerCase() === filter.toLowerCase())
   );
 
 const activeAlerts = alerts.filter(
@@ -187,17 +203,38 @@ const stats = {
   const selectAll = () =>
     setSelected(selected.length === filtered.length ? [] : filtered.map((a) => a.id));
 
-  const deleteAlert = (id) => {
-    setAlerts((p) => p.filter((a) => a.id !== id));
-    showToast("Alert dismissed");
+  const deleteAlert = async (id) => {
+    try {
+      await apiFetch(`/alerts/${id}`, { method: "DELETE" });
+
+      setAlerts((p) => p.filter((a) => a.id !== id));
+      showToast("Alert dismissed");
+
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
   };
 
-  const resolveSelected = () => {
-    setAlerts((p) =>
-      p.map((a) => (selected.includes(a.id) ? { ...a, resolved: true } : a))
-    );
-    setSelected([]);
-    showToast("Marked as resolved");
+  const resolveSelected = async () => {
+    try {
+      await Promise.all(
+        selected.map((id) =>
+          apiFetch(`/alerts/${id}/resolve`, { method: "PATCH" })
+        )
+      );
+
+      setAlerts((p) =>
+        p.map((a) =>
+          selected.includes(a.id) ? { ...a, resolved: true } : a
+        )
+      );
+
+      setSelected([]);
+      showToast("Marked as resolved");
+
+    } catch (err) {
+      console.error("Resolve failed:", err);
+    }
   };
 
   return (
@@ -224,14 +261,7 @@ const stats = {
             >
           <MailIcon /> Email Alerts
             </button>
-            <button
-              onClick={() => setShowSound(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150"
-              style={{ backgroundColor: "#F0F8F5", color: "black", border: "1px solid #86efac" }}
-
-            >
-              <VolumeIcon /> Sound
-            </button>
+            
           </div>
         </div>
 
@@ -317,6 +347,7 @@ const stats = {
               <Badge type={alert.severity} />
               <p className="font-bold">{alert.title}</p>
               <p className="text-sm text-gray-500">{alert.description}</p>
+              <p className="text-xs text-gray-400 mt-1">{alert.time}</p>
             </div>
 
             <button onClick={() => deleteAlert(alert.id)}>
@@ -327,8 +358,16 @@ const stats = {
       </div>
 
       {/* MODALS */}
-        {showEmail && <EmailModal onClose={() => setShowEmail(false)} onSave={() => { setShowEmail(false); showToast("Email preferences saved!"); }} />}
-        {showSound && <SoundModal onClose={() => setShowSound(false)} onSave={() => { setShowSound(false); showToast("Sound settings saved!"); }} />}
+        {showEmail && (
+          <EmailModal
+            isOpen={showEmail} 
+            onClose={() => setShowEmail(false)}
+            onSave={() => {
+              setShowEmail(false);
+              showToast("Email preferences saved!");
+            }}
+          />
+        )}
             </div>
   );
 }
