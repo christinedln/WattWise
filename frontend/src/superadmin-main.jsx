@@ -5,7 +5,7 @@ import "./index.css";
 import "./superadmin.css";
 import { AuthProvider } from "./superadmin/context/AuthContext";
 import ProtectedRoute from "./superadmin/components/ProtectedRoute";
-import SuperAdminLayout from "./superadmin/components/SuperAdminLayout";
+import SuperAdminSidebar from "./superadmin/components/SuperAdminSidebar";
 import SuperAdminLoginPage from "./superadmin/pages/LoginPage";
 import SuperAdminDashboardPage from "./superadmin/pages/DashboardPage";
 import SuperAdminUsersPage from "./superadmin/pages/UsersPage";
@@ -27,7 +27,7 @@ createRoot(document.getElementById("root")).render(
           path="/super-admin"
           element={<ProtectedRoute />}
         >
-          <Route element={<SuperAdminLayout />}>
+          <Route element={<SuperAdminSidebar />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<SuperAdminDashboardPage />} />
             <Route path="users" element={<SuperAdminUsersPage />} />
