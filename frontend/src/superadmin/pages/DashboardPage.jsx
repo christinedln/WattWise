@@ -45,7 +45,9 @@ export default function DashboardPage() {
       try {
         const [usersSnap, activeSnap, logsSnap] = await Promise.all([
           getCountFromServer(collection(db, "user")),
-          getCountFromServer(query(collection(db, "roleBasedAccounts"), where("status", "==", "active"))),
+          getCountFromServer(
+            query(collection(db, "roleBasedAccounts"), where("status", "==", "active"))
+          ),
           getCountFromServer(collection(db, "audit_logs")),
         ]);
 
@@ -56,7 +58,8 @@ export default function DashboardPage() {
         setStats({
           totalUsers: usersSnap.data().count,
           activeSessions: activeSnap.data().count,
-          securityLogs: logCount >= 1000 ? `${(logCount / 1000).toFixed(1)}K` : logCount,
+          securityLogs:
+            logCount >= 1000 ? `${(logCount / 1000).toFixed(1)}K` : logCount,
           systemHealth: "99.9%",
         });
       } catch (e) {
@@ -83,10 +86,10 @@ export default function DashboardPage() {
   }
 
   const summaryCards = [
-    { label: "Total Users", value: stats.totalUsers, icon: Users, color: "bg-blue-100", iconColor: "text-blue-600" },
-    { label: "Active Sessions", value: stats.activeSessions, icon: Activity, color: "bg-green-100", iconColor: "text-green-600" },
-    { label: "Security Logs", value: stats.securityLogs, icon: FileText, color: "bg-purple-100", iconColor: "text-purple-600" },
-    { label: "System Health", value: stats.systemHealth, icon: ShieldCheck, color: "bg-orange-100", iconColor: "text-orange-600" },
+    { label: "Total Users", value: stats.totalUsers, icon: Users },
+    { label: "Active Sessions", value: stats.activeSessions, icon: Activity },
+    { label: "Security Logs", value: stats.securityLogs, icon: FileText },
+    { label: "System Health", value: stats.systemHealth, icon: ShieldCheck },
   ];
 
   return (
@@ -98,7 +101,8 @@ export default function DashboardPage() {
 
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, {profile?.displayName || profile?.email || "Super Admin"}
+              Welcome back,{" "}
+              {profile?.displayName || profile?.email || "Super Admin"}
             </h1>
             <p className="text-gray-500 mt-2">
               Manage users, devices, and system security
@@ -107,40 +111,48 @@ export default function DashboardPage() {
 
           <Link
             to="/super-admin/security-logs"
-           className="inline-flex items-center gap-2 bg-green-600 !text-white px-5 py-3 rounded-lg font-medium shadow-sm hover:bg-green-700 hover:shadow-md transition-all duration-200 active:scale-95"
+            className="inline-flex items-center gap-2 bg-green-600 !text-white px-5 py-3 rounded-lg font-medium shadow-sm hover:bg-green-700 hover:shadow-md transition-all duration-200 active:scale-95"
           >
             View Security Logs
           </Link>
-
         </div>
       </section>
 
-      {/* SUMMARY CARDS */}
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {summaryCards.map((card) => {
-          const Icon = card.icon;
+      {/* SUMMARY CARDS (LIVE READINGS STYLE GREEN BOX) */}
+      <section className="bg-green-50/40 border border-green-200 rounded-2xl p-6 shadow-sm">
 
-          return (
-            <div
-              key={card.label}
-              className="group relative rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className={`mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg ${card.color} group-hover:scale-105 transition`}>
-                <Icon className={`h-5 w-5 ${card.iconColor}`} />
+        <div className="mb-5">
+          <h3 className="font-semibold text-lg text-gray-900">
+            System Summary
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+          {summaryCards.map((card, idx) => {
+            const Icon = card.icon;
+
+            return (
+              <div
+                key={idx}
+                className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+              >
+                {/* FORCED GREEN ICON BACKGROUND */}
+                <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-green-600" />
+                </div>
+
+                {/* TEXT */}
+                <div>
+                  <p className="text-xs text-gray-500">{card.label}</p>
+                  <p className="text-xl font-bold text-gray-900">
+                    {card.value}
+                  </p>
+                </div>
               </div>
-
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                {card.label}
-              </p>
-
-              <p className="mt-2 text-2xl font-bold text-gray-900">
-                {card.value}
-              </p>
-
-              <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition shadow-[0_0_30px_rgba(16,185,129,0.08)] pointer-events-none" />
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </section>
 
       {/* CONTENT GRID */}
@@ -148,8 +160,11 @@ export default function DashboardPage() {
 
         {/* ACTIVITY */}
         <div className="rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition">
+
           <div className="p-6 border-b border-gray-100">
-            <p className="text-xs font-semibold uppercase text-gray-500">Activity</p>
+            <p className="text-xs font-semibold uppercase text-gray-500">
+              Activity
+            </p>
             <h3 className="text-xl font-bold text-gray-900 mt-1">
               Recent privileged activity
             </h3>
@@ -166,15 +181,29 @@ export default function DashboardPage() {
               </thead>
 
               <tbody>
-                {recentLogs.length ? recentLogs.map((log) => (
-                  <tr key={log.id} className="border-t border-gray-100 hover:bg-gray-50/70 transition">
-                    <td className="px-4 py-3 font-medium text-gray-900">{log.action}</td>
-                    <td className="px-4 py-3 text-gray-600">{log.targetId || "-"}</td>
-                    <td className="px-4 py-3 text-gray-600">{formatTimestamp(log.timestamp)}</td>
-                  </tr>
-                )) : (
+                {recentLogs.length ? (
+                  recentLogs.map((log) => (
+                    <tr
+                      key={log.id}
+                      className="border-t border-gray-100 hover:bg-gray-50/70 transition"
+                    >
+                      <td className="px-4 py-3 font-medium text-gray-900">
+                        {log.action}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {log.targetId || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {formatTimestamp(log.timestamp)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
                   <tr>
-                    <td colSpan="3" className="text-center py-10 text-gray-400">
+                    <td
+                      colSpan="3"
+                      className="text-center py-10 text-gray-400"
+                    >
                       No audit logs available
                     </td>
                   </tr>
@@ -201,15 +230,24 @@ export default function DashboardPage() {
 
           <ul className="space-y-3 text-sm text-gray-600">
             <li className="rounded-lg border border-gray-100 bg-gray-50/60 px-4 py-3 hover:bg-gray-100 transition">
-              <span className="font-medium text-gray-900">Authentication:</span> Firebase secured
+              <span className="font-medium text-gray-900">
+                Authentication:
+              </span>{" "}
+              Firebase secured
             </li>
 
             <li className="rounded-lg border border-gray-100 bg-gray-50/60 px-4 py-3 hover:bg-gray-100 transition">
-              <span className="font-medium text-gray-900">Authorization:</span> Role-based access control
+              <span className="font-medium text-gray-900">
+                Authorization:
+              </span>{" "}
+              Role-based access control
             </li>
 
             <li className="rounded-lg border border-gray-100 bg-gray-50/60 px-4 py-3 hover:bg-gray-100 transition">
-              <span className="font-medium text-gray-900">Audit Logs:</span> Fully monitored system
+              <span className="font-medium text-gray-900">
+                Audit Logs:
+              </span>{" "}
+              Fully monitored system
             </li>
           </ul>
 

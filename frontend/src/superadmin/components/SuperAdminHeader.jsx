@@ -25,23 +25,34 @@ export default function DashboardHeader({
   const [title, subtitle] = titleMap[pathname] || ["Dashboard", ""];
 
   return (
-    <div className="bg-white border-b shadow-sm px-4 sm:px-6 py-3">
-
+    <div
+      className="bg-white border-b border-gray-100 shadow-sm px-4 sm:px-6 py-3"
+      style={{
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif",
+      }}
+    >
       <div className="flex items-center justify-between">
 
         {/* LEFT */}
         <div className="flex items-center gap-3 sm:gap-4">
 
+          {/* MENU BUTTON */}
           <div className="lg:hidden">
-            <Menu className="w-6 h-6 cursor-pointer" onClick={onMenuClick} />
+            <Menu
+              className="w-6 h-6 cursor-pointer text-gray-700 hover:text-gray-900 transition"
+              onClick={onMenuClick}
+            />
           </div>
 
+          {/* TITLE SECTION */}
           <div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 tracking-tight">
               {title}
             </h2>
+
             {subtitle && (
-              <p className="text-xs sm:text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
                 {subtitle}
               </p>
             )}
@@ -52,19 +63,20 @@ export default function DashboardHeader({
         {/* RIGHT */}
         <div className="flex items-center gap-2 sm:gap-3">
 
-  {/* NOTIFICATION BELL (FIXED) */}
-  <div className="relative cursor-pointer">
-    <Bell className="w-6 h-6 text-gray-700" />
+          {/* NOTIFICATION BELL */}
+          <div className="relative cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition">
+            <Bell className="w-5 h-5 text-gray-700" />
 
-    {criticalAlerts > 0 && (
-      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-4 h-4 px-1 flex items-center justify-center rounded-full">
-        {criticalAlerts > 9 ? "9+" : criticalAlerts}
-      </span>
-    )}
-  </div>
+            {criticalAlerts > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-4 h-4 px-1 flex items-center justify-center rounded-full">
+                {criticalAlerts > 9 ? "9+" : criticalAlerts}
+              </span>
+            )}
+          </div>
 
-</div>
-</div>
+        </div>
+
+      </div>
     </div>
   );
 }
