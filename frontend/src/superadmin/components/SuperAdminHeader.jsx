@@ -19,7 +19,7 @@ export default function DashboardHeader({
     "/super-admin/reports": ["Reports & Analytics", "System reports and analytics"],
     "/super-admin/security-logs": ["Security Logs", "Track security activity"],
     "/super-admin/settings": ["Settings", "Configure system settings"],
-    "/super-admin/mfa-setup": ["MFA Setup", "Set up multi-factor authentication"],
+    // "/super-admin/mfa-setup": ["MFA Setup", "Set up multi-factor authentication"],
   };
 
   const [title, subtitle] = titleMap[pathname] || ["Dashboard", ""];

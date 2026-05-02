@@ -174,9 +174,7 @@ return (
                   <option value="security">Security</option>
                   <option value="support">Support</option>
                   <option value="analyst">Analyst</option>
-                  <option value="operator">Operator</option>
-                  <option value="user">User</option>
-                  <option value="superadmin">Super Admin (restricted)</option>
+                  <option value="superadmin">Super Admin</option>
                 </select>
                 <span className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
                   <svg className="h-4 w-4 text-[#1a7a45]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">

@@ -29,7 +29,7 @@ const navigationItems = [
   { to: "/super-admin/reports", label: "Reports", icon: FileText },
   { to: "/super-admin/security-logs", label: "Logs", icon: ClipboardList },
   { to: "/super-admin/settings", label: "Settings", icon: Settings },
-  { to: "/super-admin/mfa-setup", label: "MFA Setup", icon: ShieldCheck },
+  // { to: "/super-admin/mfa-setup", label: "MFA Setup", icon: ShieldCheck },
 ];
 
 export default function SuperAdminLayout() {
@@ -125,12 +125,10 @@ export default function SuperAdminLayout() {
           <div className="border-t pt-4 mt-4">
 
             <p className="font-semibold text-sm text-gray-800">
-              {profile?.displayName || "Loading..."}
+              {profile?.displayName || profile?.email || "Super Admin"}
             </p>
 
-            <p className="text-xs text-gray-600 truncate">
-              {profile?.email || ""}
-            </p>
+            <p className="font-italic text-sm text-gray-500">{profile?.role || ""}</p>
 
             <button
               onClick={signOutUser}
