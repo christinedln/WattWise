@@ -86,7 +86,6 @@ export default function LoginPage() {
     }
   };
 
-
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
 
@@ -99,7 +98,6 @@ export default function LoginPage() {
 
       navigate("/dashboard");
     } catch (error) {
-      
       alert(error.message);
     }
   };

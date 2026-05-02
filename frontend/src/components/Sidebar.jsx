@@ -1,84 +1,189 @@
-// src/components/Sidebar.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { 
-  Home, 
-  Zap, 
-  Lock, 
-  TrendingUp, 
-  Smartphone, 
-  Bell, 
+import {
+  Home,
+  Zap,
+  TrendingUp,
+  Smartphone,
+  Bell,
   Settings,
-  LogOut
+  LogOut,
+  Menu,
+  X,
 } from "lucide-react";
+import { getAuth, signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 export default function Sidebar() {
+  const auth = getAuth();
+  const navigate = useNavigate();
   const location = useLocation();
+  const [userData, setUserData] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
-    { name: "Dashboard", to: "/dashboard", icon: <Home size={20} /> },
-    { name: "Real-Time Monitor", to: "/realtime", icon: <Zap size={20} /> },
-    { name: "Predictions", to: "/predictions", icon: <TrendingUp size={20} /> },
-    { name: "Devices", to: "/devices", icon: <Smartphone size={20} /> },
-    { name: "Alerts", to: "/alerts", icon: <Bell size={20} /> },
-    { name: "Settings", to: "/settings", icon: <Settings size={20} /> },
+    { name: "Dashboard", to: "/dashboard", icon: Home },
+    { name: "Real-Time Monitor", to: "/realtime", icon: Zap },
+    { name: "Predictions", to: "/predictions", icon: TrendingUp },
+    { name: "Devices", to: "/devices", icon: Smartphone },
+    { name: "Alerts", to: "/alerts", icon: Bell },
+    { name: "Settings", to: "/settings", icon: Settings },
   ];
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const auth = getAuth();
+      const db = getFirestore();
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+
+      const docRef = doc(db, "user", uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) setUserData(docSnap.data());
+    };
+
+    fetchUser();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth();
+
+      //firebase logout
+      await signOut(auth);
+
+      // remove manualtoken
+      localStorage.removeItem("token");
+
+      // clear all cached auth-related data
+      localStorage.removeItem("user");
+
+      // redirect to login
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   return (
-    <div className="w-64 h-screen bg-white shadow-md flex flex-col p-4">
+    <>
+      {/* Mobile Toggle */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-50 rounded-lg hover:bg-gray-100"
+      >
+        <Menu className="w-6 h-6 text-gray-800" />
+      </button>
 
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-green-600 rounded-md flex items-center justify-center">
-          <span className="text-white text-xl font-bold">⚡</span>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900">WattWise</h2>
-      </div>
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+        />
+      )}
 
-      {/* Menu */}
-      <nav className="flex flex-col gap-2 flex-grow">
-        {menuItems.map((item) => {
-          const isActive = location.pathname === item.to;
-          return (
-            <Link
-              key={item.name}
-              to={item.to}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 ${
-                isActive
-                  ? "bg-green-100 text-green-700"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
+      {/* Sidebar */}
+      <div
+        className={`fixed md:static top-0 left-0 h-full w-64 bg-white shadow-xl z-50
+        transform transition-transform duration-300
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+        md:translate-x-0`}
+      >
+        <div className="flex flex-col p-4 h-full">
+
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-md overflow-hidden">
+                <img
+                  src="/icon.png"
+                  alt="WattWise Icon"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <h2 className="text-xl font-bold text-gray-800">
+                WattWise
+              </h2>
+            </div>
+
+            <button onClick={() => setIsOpen(false)} className="md:hidden">
+              <X size={22} className="text-gray-800" />
+            </button>
+          </div>
+
+          {/* ⭐ Divider Line ⭐ */}
+          <div className="border-b border-gray-300 mb-4"></div>
+
+          {/* Menu */}
+          <nav className="flex flex-col gap-2 flex-grow">
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.to;
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.to}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl transition"
+                >
+                  {/* ICON */}
+                  <Icon
+                    className={`w-5 h-5 transition ${isActive
+                        ? "text-green-600 stroke-green-600"
+                        : "text-gray-800"
+                      }`}
+                  />
+
+                  {/* TEXT */}
+                  <span
+                    className={`transition ${isActive
+                        ? "text-green-600 font-medium"
+                        : "text-gray-800"
+                      }`}
+                  >
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Bottom Section */}
+          <div className="border-t pt-4 mt-4">
+
+            {/* USER INFO */}
+            <div className="flex flex-col gap-1 px-2">
+              <p className="font-semibold text-sm text-gray-800">
+                {userData?.fullName || "Loading..."}
+              </p>
+
+              <p className="text-xs text-gray-600 truncate">
+                {userData?.email || ""}
+              </p>
+            </div>
+
+            {/* LOGOUT BUTTON */}
+            <button
+              onClick={handleLogout}
+              className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl
+             !bg-green-600 !text-white !border-green-600
+             shadow-sm transition-all duration-200 ease-in-out
+             hover:!bg-green-700 hover:shadow-md hover:-translate-y-0.5
+             active:translate-y-0 active:shadow-sm
+             focus:outline-none"
             >
-              {item.icon}
-              <span className="font-medium">{item.name}</span>
-            </Link>
-          );
-        })}
-      </nav>
+              <LogOut size={18} className="text-white" />
+              Logout
+            </button>
 
-      {/* Profile Section */}
-      <div className="border-t pt-4 mt-4">
-        <div className="flex items-center gap-3 mb-3">
-          
-          {/* Avatar (Initials) */}
-          <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-            JD
-          </div>
-
-          {/* User Info */}
-          <div>
-            <p className="font-semibold text-gray-900">John Doe</p>
-            <p className="text-sm text-gray-500">john.doe@email.com</p>
           </div>
         </div>
-
-        {/* Logout Button */}
-        <button className="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-red-100 text-gray-700 hover:text-red-600 py-2 rounded-lg transition-colors">
-          <LogOut size={18} />
-          Logout
-        </button>
       </div>
-
-    </div>
+    </>
   );
-}
+} 

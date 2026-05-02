@@ -6,6 +6,7 @@ import DeviceHealthSummary from "../components/DeviceHealthSummary";
 import DeviceConsumption from "../components/DeviceConsumption";
 import CostPredictions from "../components/CostPredictions";
 import Layout from "../components/layout";
+import { apiFetch } from "../api/api";
 
 export default function DashboardPage() {
   const [data, setData]       = useState(null);
@@ -13,16 +14,29 @@ export default function DashboardPage() {
   const [error, setError]     = useState(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/dashboard/summary")
-      .then((res) => res.json())
-      .then((json) => {
-        setData(json);
+    const fetchData = async () => {
+      try {
+        // ✅ FETCH BOTH APIs
+        const dashboardData = await apiFetch("/dashboard/summary");
+        const predictionData = await apiFetch("/predictions/summary");
+
+        // ✅ MERGE THEM
+        const mergedData = {
+          ...dashboardData,
+          ...predictionData, // prediction values overwrite dashboard ones
+        };
+
+        setData(mergedData);
         setLoading(false);
-      })
-      .catch((err) => {
+
+      } catch (err) {
+        console.error(err);
         setError(err.message);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, []);
 
   if (loading) return (
@@ -53,38 +67,35 @@ export default function DashboardPage() {
 
           <div className="flex-1 overflow-auto p-6">
 
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">
-                WattWise Dashboard
-              </h1>
-              <p className="text-gray-500">
-                Real-time monitoring and predictions
-              </p>
-            </div>
-
-            {/* ── CONTENT ───────────────────────── */}
             <div className="space-y-6">
 
-              {/* LIVE READINGS */}
               <LiveReadings readings={data.live_readings} />
 
-              {/* NEW: HEALTH SUMMARY (ADDED UNDER LIVE READINGS) */}
               <DeviceHealthSummary readings={data.live_readings} />
 
-              {/* DEVICE CONSUMPTION */}
               <DeviceConsumption
                 devices={data.device_consumption}
                 totalEnergyKwh={data.total_energy_kwh}
               />
 
-              {/* COST PREDICTIONS */}
               <CostPredictions
                 weeklyCost={data.weekly_predicted_cost}
                 weeklyKwh={data.weekly_predicted_kwh}
                 monthlyCost={data.monthly_predicted_cost}
                 monthlyKwh={data.monthly_predicted_kwh}
+
+                actualVsPredicted={data.actual_vs_predicted}
+                dailyForecast={data.daily_forecast}
+                perDevice={data.per_device}
               />
 
+            </div>
+
+            <div className="mt-8 text-center text-xs text-gray-500">
+              Last updated{" "}
+              {data?.live_readings?.[0]?.lastUpdated
+                ? new Date(data.live_readings[0].lastUpdated).toLocaleTimeString()
+                : "—"}
             </div>
 
           </div>

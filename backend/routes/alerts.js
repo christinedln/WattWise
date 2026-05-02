@@ -1,37 +1,120 @@
-//routes/alerts
 const express = require("express");
 const router = express.Router();
 
-const { mergeDeviceData } = require("../utils/mapper");
-
-// Auth
 const authRequired = require("../utils/auth");
 
-// GET ALERTS
+// GET ALERTS (from anomalies collection)
 router.get("/", authRequired, async (req, res) => {
-    try {
-        const userId = req.user_id;
+  try {
+    const userId = req.user_id;
+    const dbModule = await import("../firebase_config.js");
+    const db = dbModule.db;
 
-        const devices = await mergeDeviceData(userId);
+    const snapshot = await db
+      .collection("user")
+      .doc(userId)
+      .collection("devices")
+      .get();
 
-        // extract only alerts
-        const alerts = [];
+    const alerts = [];
 
-        for (const d of devices) {
-            alerts.push({
-                device_id: d.device_id,
-                device_name: d.name,
-                severity: d.severity,
-                message: d.alert_message
-            });
-        }
+    for (const deviceDoc of snapshot.docs) {
+      const deviceId = deviceDoc.id;
+      const deviceData = deviceDoc.data();
 
-        res.json(alerts);
+      const anomaliesSnap = await db
+        .collection("user")
+        .doc(userId)
+        .collection("devices")
+        .doc(deviceId)
+        .collection("anomalies")
+        .orderBy("timestamp", "desc")
+        .limit(20)
+        .get();
 
-    } catch (error) {
-        console.error("Alerts error:", error);
-        res.status(500).json({ error: "Server error" });
+      anomaliesSnap.forEach((doc) => {
+        const data = doc.data();
+
+        //get latest context log safely
+        const logs = data.context_logs || [];
+        const latest = logs.length > 0 ? logs[logs.length - 1] : {};
+
+        alerts.push({
+          id: doc.id,
+          device_id: deviceId,
+          device_name: deviceData.name || "Unknown Device",
+          signal: data.signal,
+          severity: data.severity,
+          resolved: data.resolved,
+          emailSent: data.emailSent,
+          timestamp: data.timestamp,
+
+          voltage: latest.voltage ?? null,
+          current: latest.current ?? null,
+          power: latest.power ?? null,
+        });
+      });
     }
+
+    // sort latest first
+    alerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    res.json(alerts);
+
+  } catch (error) {
+    console.error("Alerts error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.patch("/:id/resolve", authRequired, async (req, res) => {
+  try {
+    const userId = req.user_id;
+    const alertId = req.params.id;
+    const { resolved } = req.body;
+
+    const dbModule = await import("../firebase_config.js");
+    const db = dbModule.db;
+
+    const devicesSnap = await db
+      .collection("user")
+      .doc(userId)
+      .collection("devices")
+      .get();
+
+    let found = false;
+
+    for (const deviceDoc of devicesSnap.docs) {
+      const ref = db
+        .collection("user")
+        .doc(userId)
+        .collection("devices")
+        .doc(deviceDoc.id)
+        .collection("anomalies")
+        .doc(alertId);
+
+      const doc = await ref.get();
+
+      if (doc.exists) {
+        await ref.update({
+          resolved: resolved ?? true,
+        });
+
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      return res.status(404).json({ error: "Alert not found" });
+    }
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("Resolve toggle error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 module.exports = router;

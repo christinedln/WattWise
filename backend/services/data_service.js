@@ -4,9 +4,16 @@ const { db } = require("../firebase_config");
 // DEFAULT SETTINGS (fallback for all devices)
 const DEFAULT_SETTINGS = {
   electricity_rate: 12.5,
-  polling_interval: 5,
-  energy_alert_threshold: 5000,
-  security_alert_level: 3
+  log_window: 10,
+  current_warning_threshold:2.0,
+  current_suspicious_threshold:2.5,
+  current_critical_threshold:3.2,
+  voltage_warning_threshold:1.5,
+  voltage_suspicious_threshold:2.0,
+  voltage_critical_threshold:2.6,
+  power_warning_threshold:2.0,
+  power_suspicious_threshold:2.5,
+  power_critical_threshold:3.1,
 };
 
 // Get Devices (with latest + settings)
@@ -49,13 +56,13 @@ async function getDevices(userId) {
       // MERGE DEFAULT + DEVICE SETTINGS (ONLY HERE)
       const finalSettings = {
         ...DEFAULT_SETTINGS,
-        ...settingsData
+        ...(settingsData || {})
       };
 
       devices.push({
         device_id: doc.id,
-        name: data.name,
-        location: data.location,
+        name: data.name || "Unnamed Device",
+        location: data.location || "Unknown",
         enabled,
         status: data.status,
 
@@ -75,8 +82,14 @@ async function getDevices(userId) {
   }
 }
 
-async function getRealtimeLogs(userId, deviceId, limit = 10) {
+async function getRealtimeLogs(userId, deviceId, logWindow) {
   try {
+
+    if (!userId || !deviceId) {
+      console.warn("Invalid params:", { userId, deviceId });
+      return [];
+    }
+
     const logsRef = db
       .collection("user")
       .doc(userId)
@@ -85,13 +98,12 @@ async function getRealtimeLogs(userId, deviceId, limit = 10) {
       .collection("realtime_logs");
 
     const snapshot = await logsRef
-      .orderBy("Timestamp", "desc")
-      .limit(limit)
+      .orderBy("timestamp", "desc")
+      .limit(logWindow)
       .get();
 
-    const logs = snapshot.docs.map(doc => doc.data());
+    const logs = (snapshot.docs || []).map(doc => doc.data());
 
-    // return in chronological order (important for EWMA)
     return logs.reverse();
 
   } catch (error) {
@@ -100,11 +112,39 @@ async function getRealtimeLogs(userId, deviceId, limit = 10) {
   }
 }
 
-// Get electricity rate per device (FIXED: uses mapper now)
+async function getAlerts(userId, deviceId) {
+  try {
+    if (!userId || !deviceId) return [];
+
+    const alertsRef = db
+      .collection("user")
+      .doc(userId)
+      .collection("devices")
+      .doc(deviceId)
+      .collection("anomalies");
+
+    const snapshot = await alertsRef
+      .orderBy("timestamp", "desc")
+      .get();
+
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+  } catch (error) {
+    console.error("Alerts fetch error:", error);
+    return [];
+  }
+}
+
+// Get electricity rate per device 
 async function getRate(userId, deviceId) {
   try {
     const devices = await getDevices(userId);
-    const device = devices.find(d => d.device_id === deviceId);
+    const device = (devices || []).find(
+      d => d.device_id === (deviceId || "").trim()
+    );
 
     const rate = device?.settings?.electricity_rate;
 
@@ -119,5 +159,6 @@ async function getRate(userId, deviceId) {
 module.exports = {
   getDevices,
   getRate,
+  getAlerts,
   getRealtimeLogs
 };

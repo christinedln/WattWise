@@ -17,12 +17,17 @@ export const appMetadata = {
   },
 };
 
-// React-compatible Layout component
+
 export default function Layout({ children }) {
   return (
-    <div className="font-sans antialiased min-h-screen bg-gray-50">
+    <div
+      className="antialiased min-h-screen bg-gray-50"
+      style={{
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif",
+      }}
+    >
       {children}
-      {/* Optional: Add analytics scripts here */}
     </div>
   );
 }

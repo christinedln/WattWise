@@ -1,4 +1,4 @@
-function generateCurrentAlerts(devices) {
+function generateVoltageAlerts(devices) {
     if (!Array.isArray(devices)) return [];
 
     const severityRank = {
@@ -18,9 +18,9 @@ function generateCurrentAlerts(devices) {
 
         const TRAINING_SIZE = settings.log_window ?? 10;
 
-        const warning = settings.current_warning_threshold ?? 2.0;
-        const suspicious = settings.current_suspicious_threshold ?? 2.5;
-        const critical = settings.current_critical_threshold ?? 3.2;
+        const warning = settings.voltage_warning_threshold ?? 1.5;
+        const suspicious = settings.voltage_suspicious_threshold ?? 2.0;
+        const critical = settings.voltage_critical_threshold ?? 2.6;
 
         grouped[deviceId] = {
             device_id: deviceId,
@@ -91,5 +91,5 @@ function generateCurrentAlerts(devices) {
 }
 
 module.exports = {
-    generateCurrentAlerts
+    generateVoltageAlerts
 };
