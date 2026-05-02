@@ -38,9 +38,12 @@ const EyeOffIcon = () => (
 );
 
 const TrashIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6l-1 14H6L5 6" />
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
+    <path d="M9 6V4h6v2" />
   </svg>
 );
 
@@ -113,21 +116,13 @@ function normalizeSeverity(sev) {
 }
 
 // ─── Summary Card ─────────────────────────────────────
-function SummaryCard({ label, value, sub, colorClass }) {
+function SummaryCard({ label, value, sub, colorClass, textClass }) {
   return (
-    <div
-      className={`
-        rounded-2xl border p-4 
-        shadow-sm hover:shadow-md 
-        transition-all duration-200
-        ${colorClass}
-      `}
-    >
-      <p className="text-xs font-semibold uppercase tracking-wider mb-1 opacity-70">
+    <div className={`rounded-2xl border p-4 shadow-sm hover:shadow-md transition-all duration-200 ${colorClass}`}>
+      <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${textClass}`}>
         {label}
       </p>
-
-      <p className="text-2xl font-bold">
+      <p className={`text-2xl font-bold ${textClass}`}>
         {value}
       </p>
 
@@ -137,6 +132,9 @@ function SummaryCard({ label, value, sub, colorClass }) {
     </div>
   );
 }
+
+const capitalize = (str) =>
+  str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
 
 export default function AlertNotif() {
   const [alerts, setAlerts] = useState([]);
@@ -278,11 +276,13 @@ const toggleResolveAlert = async (id, currentResolved) => {
         </div>
 
       {/* STATS */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
-        <SummaryCard label="Critical" value={stats.critical} sub="Needs attention" colorClass="bg-red-50" />
-        <SummaryCard label="Warning" value={stats.warnings} sub="Monitor" colorClass="bg-amber-50" />
-        <SummaryCard label="Suspicious" value={stats.suspicious} sub="Unusual behavior" colorClass="bg-purple-50" />
-        <SummaryCard label="Total" value={stats.total} sub="All alerts" colorClass="bg-blue-50" />
+      <div className="bg-white rounded-lg border border-gray-200 px-6 py-4 mb-6">
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          <SummaryCard label="Critical" value={stats.critical} sub="Needs attention" colorClass="bg-red-50" textClass="text-red-700" />
+          <SummaryCard label="Suspicious" value={stats.suspicious} sub="Unusual behavior" colorClass="bg-purple-50" textClass="text-purple-700" />
+          <SummaryCard label="Warning" value={stats.warnings} sub="Monitor" colorClass="bg-amber-50" textClass="text-amber-700" />
+          <SummaryCard label="Total" value={stats.total} sub="All alerts" colorClass="bg-blue-50" textClass="text-blue-700" />
+        </div>
       </div>
 
       {/* Controls */}
@@ -311,23 +311,39 @@ const toggleResolveAlert = async (id, currentResolved) => {
         </button>
 
         {/* Filter Buttons */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm text-gray-500 font-medium">Filter:</span>
+        <div className="flex items-center gap-2 flex-wrap">
 
-              {Object.entries(filterMeta).map(([key, { label, activeClass }]) => (
+          <span className="text-sm text-gray-500 font-medium">Filter:</span>
+
+          <div className="flex items-center bg-gray-100 p-1 rounded-full w-fit flex-wrap gap-1">
+
+            {Object.entries(filterMeta).map(([key, { label, activeClass }]) => {
+              const isActive = filter === key;
+
+              const isAll = key === "All";
+
+              return (
                 <button
                   key={key}
                   onClick={() => setFilter(key)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-150 ${
-                    filter === key
-                      ? activeClass
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
-                  }`}
+                  className={`
+            px-5 py-2 text-sm font-medium transition-all duration-200 z-10
+            ${isActive
+                      ? (isAll
+                        ? "!bg-green-600 !text-white shadow-md shadow-green-300 !rounded-full"
+                        : activeClass)
+                      : "!bg-transparent !text-gray-600 hover:!bg-gray-200"
+                    }
+          `}
+                  style={{ borderRadius: "9999px" }}
                 >
                   {label}
                 </button>
-              ))}
-            </div>
+              );
+            })}
+
+          </div>
+        </div>
 
         {selected.length > 0 && (
           <button

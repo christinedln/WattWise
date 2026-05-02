@@ -67,12 +67,6 @@ export default function DashboardPage() {
 
           <div className="flex-1 overflow-auto p-6">
 
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Energy Dashboard
-              </h1>
-            </div>
-
             <div className="space-y-6">
 
               <LiveReadings readings={data.live_readings} />

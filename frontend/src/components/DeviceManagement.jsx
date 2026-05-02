@@ -23,7 +23,7 @@ const TrashIcon = () => (
 
 // NEW: Pencil Icon
 const PencilIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", flexShrink: 0 }}>
     <path d="M12 20h9" />
     <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
   </svg>
@@ -33,15 +33,30 @@ const PencilIcon = () => (
 // ─── Status Badge ─────────────────────────────────
 function StatusBadge({ severity }) {
   if (severity === "critical") {
-    return <span className="badge red">Critical</span>;
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-red-50 text-red-700 border border-red-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+        Critical
+      </span>
+    );
   }
 
   if (severity === "warning") {
-    return <span className="badge amber">Warning</span>;
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+        Warning
+      </span>
+    );
   }
 
   if (severity === "suspicious") {
-    return <span className="badge purple">Suspicious</span>;
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block" />
+        Suspicious
+      </span>
+    );
   }
 
   return (
@@ -88,23 +103,25 @@ function DeviceRow({ device, pct, openEdit }) {
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50">
       <td className="px-4 py-3 font-semibold whitespace-nowrap">
-  <div className="flex items-center gap-2">
-    {device.name}
-    <button onClick={() => openEdit(device, "name")} className="p-1">
-      <PencilIcon />
-    </button>
-  </div>
-</td>
+        <div className="flex items-center justify-between gap-2">
+          <span>{device.name}</span>
+          <button onClick={() => openEdit(device, "name")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", color: "#9ca3af" }}>
+            <PencilIcon />
+          </button>
+        </div>
+      </td>
+
       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-  <div className="flex items-center gap-2">
-    {device.location}
-    <button onClick={() => openEdit(device, "location")} className="p-1">
-      <PencilIcon />
-    </button>
-  </div>
-</td>
+        <div className="flex items-center justify-between gap-2">
+          <span>{device.location}</span>
+          <button onClick={() => openEdit(device, "location")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", color: "#9ca3af" }}>
+            <PencilIcon />
+          </button>
+        </div>
+      </td>
+
       <td className="px-4 py-3">
-      <DeviceStatusBadge status={device.status} />
+        <DeviceStatusBadge status={device.status} />
       </td>
 
       <td className="px-4 py-3">
@@ -138,16 +155,13 @@ function DeviceRow({ device, pct, openEdit }) {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 5,
-              padding: "5px 10px",
-              borderRadius: 6,
+              justifyContent: "center",
+              padding: "8px",
+              borderRadius: 8,
               border: "1px solid #d1d5db",
               background: "transparent",
               color: "#374151",
-              fontSize: 11,
-              fontWeight: 500,
               cursor: "pointer",
-              whiteSpace: "nowrap",
               transition: "background 0.15s, border-color 0.15s, color 0.15s",
             }}
             onMouseEnter={e => {
@@ -162,29 +176,28 @@ function DeviceRow({ device, pct, openEdit }) {
             }}
           >
             <PowerIcon />
-            Power
           </button>
 
           {/* ── Remove Device ── */}
-            <button
-              title="Remove device"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "8px",
-                borderRadius: 8,
-                border: "none",
-                background: "#F0F0F0",
-                color: "#1e1e1e",
-                cursor: "pointer",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = "#E0E0E0"}
-              onMouseLeave={e => e.currentTarget.style.background = "#F0F0F0"}
-            >
-              <TrashIcon size={14} />
-            </button>
+          <button
+            title="Remove device"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "8px",
+              borderRadius: 8,
+              border: "none",
+              background: "#F0F0F0",
+              color: "#1e1e1e",
+              cursor: "pointer",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "#E0E0E0"}
+            onMouseLeave={e => e.currentTarget.style.background = "#F0F0F0"}
+          >
+            <TrashIcon size={14} />
+          </button>
         </div>
       </td>
     </tr>
@@ -303,12 +316,12 @@ function SummaryCard({ label, count, colorClass }) {
 
 // ─── Main ─────────────────────────────────────
 export default function DeviceManagement() {
-  
+
   const [devices, setDevices] = useState([]);
   const [filter, setFilter] = useState("all");
   const [editing, setEditing] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
-  const [signalFilter, setSignalFilter] = useState(null); 
+  const [signalFilter, setSignalFilter] = useState(null);
   const [severityFilter, setSeverityFilter] = useState(null);
 
 
@@ -323,7 +336,7 @@ export default function DeviceManagement() {
         location: d.location,
         status: d.status,
         kwh: d.kwh ?? d.consumption ?? 0,
-        alerts: d.alerts || [],   
+        alerts: d.alerts || [],
         lastUpdated: d.lastUpdated,
       }));
 
@@ -340,7 +353,7 @@ export default function DeviceManagement() {
       device_id: device.device_id,
       field,
       value: device[field],
-    }); 
+    });
   };
 
   const closeEdit = () => {
@@ -348,39 +361,39 @@ export default function DeviceManagement() {
   };
 
   const saveEdit = async () => {
-  try {
+    try {
 
-    const payload = {
-      [editing.field]:
-        editing.field === "enabled"
-          ? Boolean(editing.value)
-          : editing.value.trim(),
-    };
+      const payload = {
+        [editing.field]:
+          editing.field === "enabled"
+            ? Boolean(editing.value)
+            : editing.value.trim(),
+      };
 
-    await apiFetch(`/devices/${editing.device_id}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    });
+      await apiFetch(`/devices/${editing.device_id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
 
-    setDevices((prev) =>
-      prev.map((d) =>
-        d.device_id === editing.device_id
-          ? { ...d, [editing.field]: editing.value }
-          : d
-      )
-    );
+      setDevices((prev) =>
+        prev.map((d) =>
+          d.device_id === editing.device_id
+            ? { ...d, [editing.field]: editing.value }
+            : d
+        )
+      );
 
-    closeEdit();
-  } catch (err) {
-    console.error("Update failed", err);
+      closeEdit();
+    } catch (err) {
+      console.error("Update failed", err);
 
-    const message =
-      err?.message ||
-      "Changes cannot be empty.";
+      const message =
+        err?.message ||
+        "Changes cannot be empty.";
 
-    setErrorMsg(message);
-  }
-};
+      setErrorMsg(message);
+    }
+  };
 
 
   // ─── FILTER LOGIC ─────────────────────────────
@@ -399,158 +412,234 @@ export default function DeviceManagement() {
 
   // ─── COUNTS ─────────────────────────────
   const counts = {
-    active:     devices.filter(d => d.status === "active").length,
-    offline:    devices.filter(d => d.status === "offline").length,
+    active: devices.filter(d => d.status === "active").length,
+    offline: devices.filter(d => d.status === "offline").length,
   };
 
   return (
     <>
       {/* ── HEADER ───────────────────────────── */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Devices Management</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Monitor, control, and analyze all connected devices</p>
-      </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
-        <SummaryCard label="Active"     count={counts.active}     colorClass="bg-emerald-50 border-emerald-100 text-emerald-800" />
-        <SummaryCard label="Offline"    count={counts.offline}    colorClass="bg-gray-50 border-gray-200 text-gray-700" />
+
+      <div className="bg-white rounded-lg border border-gray-200 px-6 py-4 mb-6">
+        {/* STATUS */}
+        <div className="grid grid-cols-2 gap-4">
+          <SummaryCard
+            label="Active"
+            count={counts.active}
+            colorClass="bg-green-50 border-green-100 text-green-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+          />
+          <SummaryCard
+            label="Offline"
+            count={counts.offline}
+            colorClass="bg-gray-50 border-gray-200 text-gray-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+          />
+        </div>
       </div>
 
       {/* ── FILTERS ───────────────────────────── */}
       <div className="flex flex-wrap gap-2 mb-5">
-  {Object.entries(filterMeta).map(([key, { label, activeClass }]) => {
 
-    // SHOW ONLY base + signals here
-    const isBase =
-      ["all", "active", "offline", "current", "voltage", "power"].includes(key);
+        <div className="flex items-center bg-gray-100 p-1 rounded-full w-fit flex-wrap gap-1">
 
-    if (!isBase) return null;
+          {Object.entries(filterMeta).map(([key, { label, activeClass }]) => {
+            const isBase =
+              ["all", "active", "offline", "current", "voltage", "power"].includes(key);
 
-    const isActive =
-      filter === key || signalFilter === key;
+            if (!isBase) return null;
 
-    return (
-      <button
-        key={key}
-        onClick={() => {
-          if (["current", "voltage", "power"].includes(key)) {
-            setSignalFilter(key);
-            setSeverityFilter(null);
-          } else {
-            setFilter(key);
-            setSignalFilter(null);
-            setSeverityFilter(null);
-          }
-        }}
-        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-          isActive
-            ? activeClass
-            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-        }`}
-      >
-        {label}
-      </button>
-    );
-  })}
-</div>
+            const isActive =
+              filter === key || signalFilter === key;
 
-{signalFilter && (
-  <div className="flex gap-2 mb-4">
-    {["Critical", "Warning", "Suspicious", "Normal"].map((key) => {
-      const { label, activeClass } = filterMeta[key];
+            return (
+              <button
+                key={key}
+                onClick={() => {
+                  if (["current", "voltage", "power"].includes(key)) {
+                    setSignalFilter(key);
+                    setSeverityFilter(null);
+                  } else {
+                    setFilter(key);
+                    setSignalFilter(null);
+                    setSeverityFilter(null);
+                  }
+                }}
+                className={`
+            px-5 py-2 text-sm font-medium transition-all duration-200 z-10
+            ${isActive
+                    ? (key === "all"
+                      ? "!bg-green-600 !text-white"
+                      : activeClass)
+                    : "!bg-transparent !text-gray-600 hover:!bg-gray-200"
+                  }
+          `}
+                style={{ borderRadius: "9999px" }}
+              >
+                {label}
+              </button>
+            );
+          })}
 
-      return (
-        <button
-          key={key}
-          onClick={() => setSeverityFilter(key)}
-          className={`px-3 py-1.5 text-xs rounded-lg border ${
-            severityFilter === key
-              ? activeClass
-              : "bg-white text-gray-600 border-gray-200"
-          }`}
-        >
-          {label}
-        </button>
-      );
-    })}
-  </div>
-)}
-
-      {/* ── TABLE ───────────────────────────── */}
-<div className="bg-white border border-gray-200 rounded-xl shadow-sm">
-  
-  {/* enables horizontal scroll on small screens */}
-  <div className="overflow-x-auto">
-    <table className="min-w-[900px] w-full">
-      
-      <thead>
-        <tr className="border-b border-gray-100 bg-gray-50">
-          {["Name", "Location", "Status", "Current", "Voltage", "Power", "kWh", "% Usage", "Last Updated", "Actions"].map((h) => (
-            <th
-              key={h}
-              className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"
-            >
-              {h}
-            </th>
-          ))}
-        </tr>
-      </thead>
-
-          <tbody>
-            {filteredDevices.map((d) => (
-              <React.Fragment key={d.id}>
-                <DeviceRow
-                  device={d}
-                  pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0} openEdit={openEdit}
-                />
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+        </div>
       </div>
-    </div> 
 
-     {editing && (
-  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
 
-    <div className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-6 rounded-2xl w-80 shadow-xl">
+      {/* ── SEVERITY FILTERS ───────────────────────────── */}
+      {signalFilter && (
+        <div className="flex items-center bg-gray-100 p-1 rounded-full w-fit mb-4 flex-wrap gap-1">
 
-      {/* Title */}
-      <h2 className="text-lg font-semibold mb-4 text-center">
-        Edit {editing.field}
-      </h2>
+          {["All", "Critical", "Warning", "Suspicious", "Normal"].map((key) => {
+            const isAll = key === "All";
 
-      {/* Input */}
-      <input
-        type="text"
-        value={editing.value}
-        onChange={(e) =>
-          setEditing({ ...editing, value: e.target.value })
-        }
-        className="w-full border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-lg mb-5 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-      />
+            const isActive =
+              (isAll && severityFilter === null) ||
+              severityFilter === key;
 
-      {errorMsg && (
-        <p className="text-red-500 text-xs mt-2 mb-3">
-          {errorMsg}
-        </p>
+            const meta = isAll
+              ? {
+                label: "All",
+                activeClass:
+                  "!bg-green-600 !text-white shadow-md shadow-green-300",
+              }
+              : filterMeta[key];
+
+            return (
+              <button
+                key={key}
+                onClick={() => {
+                  if (isAll) {
+                    setSeverityFilter(null);
+                  } else {
+                    setSeverityFilter(key);
+                  }
+                }}
+                className={`
+            px-5 py-2 text-sm font-medium transition-all duration-200 z-10
+            ${isActive
+                    ? meta.activeClass
+                    : "!bg-transparent !text-gray-600 hover:!bg-gray-200"
+                  }
+          `}
+                style={{ borderRadius: "9999px" }}
+              >
+                {meta.label}
+              </button>
+            );
+          })}
+
+        </div>
       )}
 
-      {/* Buttons */}
-      <div className="flex justify-center items-center gap-3 mt-2">
+      {/* ── TABLE ───────────────────────────── */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
 
-        {/* Cancel */}
-        <button
-          onClick={closeEdit}
-          className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-        >
-          Cancel
-        </button>
+        {/* enables horizontal scroll on small screens */}
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed">
 
-        {/* Save */}
-        <button
-          onClick={saveEdit}
-          className="
+            <thead>
+              <tr className="border-b border-green-700 bg-green-700">
+                {[
+                  "Name",
+                  "Location",
+                  "Status",
+                  "Current",
+                  "Voltage",
+                  "Power",
+                  "kWh",
+                  "% Usage",
+                  "Last Updated",
+                  "Actions"
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap"
+                    style={{
+                      width:
+                        h === "Name" || h === "Location"
+                          ? "13%"
+                          : h === "Last Updated"
+                            ? "15%"
+                            : h === "% Usage"
+                              ? "11%"
+                              : h === "Actions"
+                                ? "10%"
+                                : "8%"
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredDevices.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="py-10 text-center">
+                    <p className="text-sm font-medium text-gray-400">
+                      No devices found
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredDevices.map((d) => (
+                  <React.Fragment key={d.id}>
+                    <DeviceRow
+                      device={d}
+                      pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0}
+                      openEdit={openEdit}
+                    />
+                  </React.Fragment>
+                ))
+              )}
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+
+      {editing && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+
+          <div className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-6 rounded-2xl w-80 shadow-xl">
+
+            {/* Title */}
+            <h2 className="text-lg font-semibold mb-4 text-center">
+              Edit {editing.field}
+            </h2>
+
+            {/* Input */}
+            <input
+              type="text"
+              value={editing.value}
+              onChange={(e) =>
+                setEditing({ ...editing, value: e.target.value })
+              }
+              className="w-full border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-lg mb-5 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+
+            {errorMsg && (
+              <p className="text-red-500 text-xs mt-2 mb-3">
+                {errorMsg}
+              </p>
+            )}
+
+            {/* Buttons */}
+            <div className="flex justify-center items-center gap-3 mt-2">
+
+              {/* Cancel */}
+              <button
+                onClick={closeEdit}
+                className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              >
+                Cancel
+              </button>
+
+              {/* Save */}
+              <button
+                onClick={saveEdit}
+                className="
             px-4 py-1.5 rounded-md
             !bg-emerald-500 !text-white
             hover:!bg-emerald-600
@@ -559,15 +648,15 @@ export default function DeviceManagement() {
             shadow-sm
             focus:outline-none focus:ring-2 focus:ring-emerald-400
           "
-        >
-          Save Changes
-        </button>
+              >
+                Save Changes
+              </button>
 
-      </div>
+            </div>
 
-    </div>
-  </div>
-)}
+          </div>
+        </div>
+      )}
     </>
   );
 } 

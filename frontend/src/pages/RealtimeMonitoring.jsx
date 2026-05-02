@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import DashboardHeader from "../components/DashboardHeader";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, Activity, MapPin } from "lucide-react";
 import Layout from "../components/layout";
 import { apiFetch } from "../api/api";
 import {
@@ -42,37 +42,37 @@ export default function RealtimeMonitoringPage() {
   }, [selectedDevice]);
 
   // FETCH TREND
-useEffect(() => {
-  if (!selectedDevice) return;
+  useEffect(() => {
+    if (!selectedDevice) return;
 
-  const fetchAllTrends = async () => {
-    try {
-      const [power, current, voltage] = await Promise.all([
-        apiFetch(`/realtime/power-trend/${selectedDevice}`),
-        apiFetch(`/realtime/current-trend/${selectedDevice}`),
-        apiFetch(`/realtime/voltage-trend/${selectedDevice}`)
-      ]);
+    const fetchAllTrends = async () => {
+      try {
+        const [power, current, voltage] = await Promise.all([
+          apiFetch(`/realtime/power-trend/${selectedDevice}`),
+          apiFetch(`/realtime/current-trend/${selectedDevice}`),
+          apiFetch(`/realtime/voltage-trend/${selectedDevice}`)
+        ]);
 
-      const format = (data) =>
-        data.map(p => ({
-          ...p,
-          time: new Date(p.time).toLocaleTimeString()
-        }));
+        const format = (data) =>
+          data.map(p => ({
+            ...p,
+            time: new Date(p.time).toLocaleTimeString()
+          }));
 
-      setChartData(format(power));
-      setCurrentData(format(current));
-      setVoltageData(format(voltage));
+        setChartData(format(power));
+        setCurrentData(format(current));
+        setVoltageData(format(voltage));
 
-    } catch (err) {
-      console.error("Trend fetch error:", err);
-    }
-  };
+      } catch (err) {
+        console.error("Trend fetch error:", err);
+      }
+    };
 
-  fetchAllTrends();
-  // const interval = setInterval(fetchAllTrends, 5000);
+    fetchAllTrends();
+    // const interval = setInterval(fetchAllTrends, 5000);
 
-  // return () => clearInterval(interval);
-}, [selectedDevice]);
+    // return () => clearInterval(interval);
+  }, [selectedDevice]);
 
   const device = devices.find((d) => d.device_id === selectedDevice);
 
@@ -93,23 +93,29 @@ useEffect(() => {
           <div className="flex-1 overflow-auto overscroll-contain p-6 space-y-6 bg-gray-50">
 
             {/* DEVICE SELECTOR */}
-            <div className="flex gap-2 mb-4">
-              {devices.map((d) => (
-                <button
-                  key={d.device_id}
-                  onClick={() => setSelectedDevice(d.device_id)}
-                  className={`
-                    px-5 py-2 !rounded-full text-sm font-medium transition-all duration-200
-                    ${
-                      selectedDevice === d.device_id
-                        ? "!bg-green-600 !text-white shadow-md shadow-green-300 !border-green-700"
-                        : "!bg-white !text-gray-600 !border-gray-300 hover:!bg-gray-100"
-                    }
-                  `}
-                >
-                  {d.name}
-                </button>
-              ))}
+            <div className="flex items-center mb-4 bg-gray-100 p-1 rounded-full w-fit">
+              {devices.map((d) => {
+                const isActive = selectedDevice === d.device_id;
+
+                return (
+                  <button
+                    key={d.device_id}
+                    onClick={() => setSelectedDevice(d.device_id)}
+                    className={`
+          px-5 py-2 text-sm font-medium transition-all duration-200 z-10
+          ${isActive
+                        ? "!bg-green-600 !text-white shadow-md shadow-green-300"
+                        : "!bg-transparent !text-gray-600 hover:!bg-gray-200"
+                      }
+        `}
+                    style={{
+                      borderRadius: "9999px",
+                    }}
+                  >
+                    {d.name}
+                  </button>
+                );
+              })}
             </div>
 
             {device && (
@@ -117,37 +123,88 @@ useEffect(() => {
                 {/* HEADER */}
                 <div className="mb-6 flex flex-col md:flex-row justify-between">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">{device.name}</h1>
-                    <p className="text-gray-500">{device.location}</p>
-                  </div>
-
-                  <div className="flex items-center gap-4 mt-4 md:mt-0">
                     <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                      <span className="text-green-600 font-semibold">
-                        {device.status}
-                      </span>
-                    </div>
 
-                  <div className="flex items-center gap-2">
-                    {hasActiveAlerts ? (
-                      <>
-                        <AlertCircle className="w-5 h-5 text-red-500" />
-                        <span className="text-red-600 font-semibold">
-                          {activeAlerts
-                            .map((a) => `${a.signal}: ${a.message}`)
-                            .join(" | ")}
-                        </span>
-                      </>
-                    ) : (
-                      <>
+                      {/* DEVICE NAME (slightly bigger, balanced) */}
+                      <h1 className="text-2xl font-bold">
+                        {device.name}
+                      </h1>
+
+                      {/* STATUS */}
+                      <div className="flex items-center gap-2">
                         <CheckCircle className="w-5 h-5 text-green-500" />
                         <span className="text-green-600 font-semibold">
-                          No anomaly detected
+                          {device.status}
                         </span>
-                      </>
-                    )}
+                      </div>
+
+                    </div>
+
+                    <div className="flex items-center gap-1 text-gray-500 mt-1">
+                      <MapPin className="w-4 h-4" />
+                      <p>{device.location}</p>
+                    </div>
                   </div>
+
+                  {/* ALERT BOX (FIXED NO COMPONENT DEPENDENCY) */}
+                  <div className="w-full max-w-sm">
+                    {hasActiveAlerts ? (
+                      <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex flex-col">
+                        <div className="flex items-center gap-2 text-red-600 font-semibold">
+                          <AlertCircle className="w-4 h-4" />
+                          Critical Anomalies Detected
+                        </div>
+
+                        <p className="text-red-700 text-sm mt-1 leading-snug whitespace-normal break-words">
+                          {activeAlerts.map((a) => `${a.signal}: ${a.message}`).join(" | ")}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex flex-col">
+                        <div className="flex items-center gap-2 text-green-700 font-semibold">
+                          <CheckCircle className="w-4 h-4" />
+                          System Stable
+                        </div>
+
+                        <p className="text-green-600 text-sm mt-1 leading-snug whitespace-normal break-words">
+                          No anomaly detected
+                        </p>
+                      </div>
+                    )}
+
+                    {/* DEVICE MESSAGE */}
+                    {device.message &&
+                      device.message !== "No issues detected" && (
+                        <div
+                          className={`mt-3 rounded-xl p-3 border flex flex-col ${device.message.toLowerCase().includes("stable")
+                              ? "bg-blue-50 border-blue-200"
+                              : "bg-red-50 border-red-200"
+                            }`}
+                        >
+                          <div
+                            className={`flex items-center gap-2 font-semibold ${device.message.toLowerCase().includes("stable")
+                                ? "text-blue-700"
+                                : "text-red-600"
+                              }`}
+                          >
+                            {device.message.toLowerCase().includes("stable") ? (
+                              <Activity className="w-4 h-4" />
+                            ) : (
+                              <AlertCircle className="w-4 h-4" />
+                            )}
+                            Device Status
+                          </div>
+
+                          <p
+                            className={`text-sm mt-1 leading-snug whitespace-normal break-words ${device.message.toLowerCase().includes("stable")
+                                ? "text-blue-600"
+                                : "text-red-700"
+                              }`}
+                          >
+                            {device.message}
+                          </p>
+                        </div>
+                      )}
                   </div>
                 </div>
 
@@ -161,7 +218,7 @@ useEffect(() => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
                     {/* Voltage */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+                    <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
                       <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
                         <img src="/voltage.png" alt="Voltage" className="w-7 h-7 object-contain" />
                       </div>
@@ -175,7 +232,7 @@ useEffect(() => {
                     </div>
 
                     {/* Current */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+                    <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
                       <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
                         <img src="/current.png" alt="Current" className="w-7 h-7 object-contain" />
                       </div>
@@ -189,7 +246,7 @@ useEffect(() => {
                     </div>
 
                     {/* Power */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+                    <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
                       <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
                         <svg
                           className="w-5 h-5 text-green-500"
@@ -262,7 +319,7 @@ useEffect(() => {
                       <Tooltip />
                       <Line type="monotone" dataKey="value" stroke="#f59e0b" strokeWidth={2}
                         dot={{ r: 3 }}
-                        activeDot={{ r: 6 }}/>
+                        activeDot={{ r: 6 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

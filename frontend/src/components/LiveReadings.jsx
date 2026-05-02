@@ -22,7 +22,7 @@ export default function LiveReadings({ readings = [] }) {
           <div className="grid grid-cols-3 gap-4">
 
             {/* Voltage */}
-            <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+            <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
               <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
                 <img
                   src="/voltage.png"
@@ -41,7 +41,7 @@ export default function LiveReadings({ readings = [] }) {
             </div>
 
             {/* Current */}
-            <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+            <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
               <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
                 <img
                   src="/current.png"
@@ -60,7 +60,7 @@ export default function LiveReadings({ readings = [] }) {
             </div>
 
             {/* Power */}
-            <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+            <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer">
               <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-green-500"

@@ -133,20 +133,18 @@ export default function Sidebar() {
                 >
                   {/* ICON */}
                   <Icon
-                    className={`w-5 h-5 transition ${
-                      isActive
+                    className={`w-5 h-5 transition ${isActive
                         ? "text-green-600 stroke-green-600"
                         : "text-gray-800"
-                    }`}
+                      }`}
                   />
 
                   {/* TEXT */}
                   <span
-                    className={`transition ${
-                      isActive
+                    className={`transition ${isActive
                         ? "text-green-600 font-medium"
                         : "text-gray-800"
-                    }`}
+                      }`}
                   >
                     {item.name}
                   </span>
@@ -172,9 +170,14 @@ export default function Sidebar() {
             {/* LOGOUT BUTTON */}
             <button
               onClick={handleLogout}
-              className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-200 text-gray-800 hover:bg-gray-100 transition-all duration-200"
+              className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl
+             !bg-green-600 !text-white !border-green-600
+             shadow-sm transition-all duration-200 ease-in-out
+             hover:!bg-green-700 hover:shadow-md hover:-translate-y-0.5
+             active:translate-y-0 active:shadow-sm
+             focus:outline-none"
             >
-              <LogOut size={18} className="text-gray-700" />
+              <LogOut size={18} className="text-white" />
               Logout
             </button>
 
