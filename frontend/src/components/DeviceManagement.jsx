@@ -50,15 +50,14 @@ function StatusBadge({ severity }) {
     );
   }
 
-  if (severity === "suspicious") {
-    return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-purple-50 text-purple-700 border border-purple-200">
-        <span className="w-1.5 h-1.5 rounded-full bg-purple-500 inline-block" />
-        Suspicious
-      </span>
-    );
-  }
-
+if (severity === "suspicious") {
+  return (
+    <span className="inline-flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-semibold rounded-md bg-purple-50 text-purple-700 border border-purple-200 leading-tight">
+      <span className="w-1 h-1 rounded-full bg-purple-500 flex-shrink-0" />
+      Suspicious
+    </span>
+  );
+}
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200">
       <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
@@ -291,11 +290,11 @@ const filterMeta = {
       "!bg-amber-100 !text-amber-900 !border-amber-300 shadow-[0_0_6px_rgba(245,158,11,0.35)] !rounded-full",
   },
 
-  Suspicious: {
-    label: "Suspicious",
-    activeClass:
-      "!bg-purple-100 !text-purple-900 !border-purple-300 shadow-[0_0_6px_rgba(147,51,234,0.35)] !rounded-full",
-  },
+Suspicious: {
+  label: "Suspicious",
+  activeClass:
+    "!bg-purple-100 !text-purple-900 !border-purple-300 shadow-[0_0_3px_rgba(147,51,234,0.25)] !rounded-full px-2 py-0.5",
+},
 
   Normal: {
     label: "Normal",
