@@ -33,13 +33,13 @@ export default function DeviceHealthSummary({ readings = [] }) {
         <Box
           label="Active"
           value={healthCounts.Active}
-          color="bg-green-50 border-green-100 text-green-700"
+          color="bg-green-50 border-green-100 text-green-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
         <Box
           label="Offline"
           value={healthCounts.Offline}
-          color="bg-gray-50 border-gray-200 text-gray-700"
+          color="bg-gray-50 border-gray-200 text-gray-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
       </div>
@@ -51,25 +51,25 @@ export default function DeviceHealthSummary({ readings = [] }) {
         <Box
           label="Critical"
           value={count(currentAlerts, "Critical")}
-          color="bg-red-50 border-red-100 text-red-700"
+          color="bg-red-50 border-red-100 text-red-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
         <Box
           label="Warning"
           value={count(currentAlerts, "Warning")}
-          color="bg-yellow-50 border-yellow-100 text-yellow-700"
+          color="bg-yellow-50 border-yellow-100 text-yellow-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
         <Box
           label="Suspicious"
           value={count(currentAlerts, "Suspicious")}
-          color="bg-purple-50 border-purple-100 text-purple-700"
+          color="bg-purple-50 border-purple-100 text-purple-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
         <Box
           label="Normal"
           value={count(currentAlerts, "Normal")}
-          color="bg-green-50 border-green-100 text-green-700"
+          color="bg-green-50 border-green-100 text-green-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
       </div>
@@ -81,25 +81,25 @@ export default function DeviceHealthSummary({ readings = [] }) {
         <Box
           label="Critical"
           value={count(voltageAlerts, "Critical")}
-          color="bg-red-50 border-red-100 text-red-700"
+          color="bg-red-50 border-red-100 text-red-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
         <Box
           label="Warning"
           value={count(voltageAlerts, "Warning")}
-          color="bg-yellow-50 border-yellow-100 text-yellow-700"
+          color="bg-yellow-50 border-yellow-100 text-yellow-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
         <Box
           label="Suspicious"
           value={count(voltageAlerts, "Suspicious")}
-          color="bg-purple-50 border-purple-100 text-purple-700"
+          color="bg-purple-50 border-purple-100 text-purple-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
         <Box
           label="Normal"
           value={count(voltageAlerts, "Normal")}
-          color="bg-green-50 border-green-100 text-green-700"
+          color="bg-green-50 border-green-100 text-green-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
       </div>
@@ -111,25 +111,25 @@ export default function DeviceHealthSummary({ readings = [] }) {
         <Box
           label="Critical"
           value={count(powerAlerts, "Critical")}
-          color="bg-red-50 border-red-100 text-red-700"
+          color="bg-red-50 border-red-100 text-red-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
         <Box
           label="Warning"
           value={count(powerAlerts, "Warning")}
-          color="bg-yellow-50 border-yellow-100 text-yellow-700"
+          color="bg-yellow-50 border-yellow-100 text-yellow-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
         <Box
           label="Suspicious"
           value={count(powerAlerts, "Suspicious")}
-          color="bg-purple-50 border-purple-100 text-purple-700"
+          color="bg-purple-50 border-purple-100 text-purple-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
         <Box
           label="Normal"
           value={count(powerAlerts, "Normal")}
-          color="bg-green-50 border-green-100 text-green-700"
+          color="bg-green-50 border-green-100 text-green-700 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
         />
 
       </div>

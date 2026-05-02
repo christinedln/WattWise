@@ -111,7 +111,7 @@ function SummaryCard({ label, value, sub, colorClass, textClass }) {
       <p className={`text-2xl font-bold ${textClass}`}>
         {value}
       </p>
-      
+
       <p className="text-xs mt-1 opacity-60">
         {sub}
       </p>
@@ -166,18 +166,18 @@ export default function AlertNotif() {
       (filter === "All" || a.severity === filter)
   );
 
-const activeAlerts = alerts.filter(
-  (a) =>
-    !a.resolved &&
-    ["Critical", "Warning", "Suspicious"].includes(a.severity)
-);
+  const activeAlerts = alerts.filter(
+    (a) =>
+      !a.resolved &&
+      ["Critical", "Warning", "Suspicious"].includes(a.severity)
+  );
 
-const stats = {
-  critical: activeAlerts.filter(a => a.severity === "Critical").length,
-  warnings: activeAlerts.filter(a => a.severity === "Warning").length,
-  suspicious: activeAlerts.filter(a => a.severity === "Suspicious").length,
-  total: activeAlerts.length,
-};
+  const stats = {
+    critical: activeAlerts.filter(a => a.severity === "Critical").length,
+    warnings: activeAlerts.filter(a => a.severity === "Warning").length,
+    suspicious: activeAlerts.filter(a => a.severity === "Suspicious").length,
+    total: activeAlerts.length,
+  };
 
   const toggleSelect = (id) =>
     setSelected((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
@@ -207,13 +207,15 @@ const stats = {
         </div>
       )}
 
-    
+
       {/* STATS */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
-        <SummaryCard label="Critical"    value={stats.critical}   sub="Needs attention"    colorClass="bg-red-50"    textClass="text-red-700" />
-        <SummaryCard label="Suspicious"  value={stats.suspicious} sub="Unusual behavior"   colorClass="bg-purple-50" textClass="text-purple-700" />
-        <SummaryCard label="Warning"     value={stats.warnings}   sub="Monitor"            colorClass="bg-amber-50"  textClass="text-amber-700" />
-        <SummaryCard label="Total"       value={stats.total}      sub="All alerts"         colorClass="bg-blue-50"   textClass="text-blue-700" />
+      <div className="bg-white rounded-lg border border-gray-200 px-6 py-4 mb-6">
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          <SummaryCard label="Critical" value={stats.critical} sub="Needs attention" colorClass="bg-red-50" textClass="text-red-700" />
+          <SummaryCard label="Suspicious" value={stats.suspicious} sub="Unusual behavior" colorClass="bg-purple-50" textClass="text-purple-700" />
+          <SummaryCard label="Warning" value={stats.warnings} sub="Monitor" colorClass="bg-amber-50" textClass="text-amber-700" />
+          <SummaryCard label="Total" value={stats.total} sub="All alerts" colorClass="bg-blue-50" textClass="text-blue-700" />
+        </div>
       </div>
 
       {/* Controls */}
@@ -242,23 +244,39 @@ const stats = {
         </button>
 
         {/* Filter Buttons */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm text-gray-500 font-medium">Filter:</span>
+        <div className="flex items-center gap-2 flex-wrap">
 
-              {Object.entries(filterMeta).map(([key, { label, activeClass }]) => (
+          <span className="text-sm text-gray-500 font-medium">Filter:</span>
+
+          <div className="flex items-center bg-gray-100 p-1 rounded-full w-fit flex-wrap gap-1">
+
+            {Object.entries(filterMeta).map(([key, { label, activeClass }]) => {
+              const isActive = filter === key;
+
+              const isAll = key === "All";
+
+              return (
                 <button
                   key={key}
                   onClick={() => setFilter(key)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-150 ${
-                    filter === key
-                      ? activeClass
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
-                  }`}
+                  className={`
+            px-5 py-2 text-sm font-medium transition-all duration-200 z-10
+            ${isActive
+                      ? (isAll
+                        ? "!bg-green-600 !text-white shadow-md shadow-green-300 !rounded-full"
+                        : activeClass)
+                      : "!bg-transparent !text-gray-600 hover:!bg-gray-200"
+                    }
+          `}
+                  style={{ borderRadius: "9999px" }}
                 >
                   {label}
                 </button>
-              ))}
-            </div>
+              );
+            })}
+
+          </div>
+        </div>
 
         {selected.length > 0 && (
           <button
@@ -300,8 +318,8 @@ const stats = {
       </div>
 
       {/* MODALS */}
-        {showEmail && <EmailModal onClose={() => setShowEmail(false)} onSave={() => { setShowEmail(false); showToast("Email preferences saved!"); }} />}
-        {showSound && <SoundModal onClose={() => setShowSound(false)} onSave={() => { setShowSound(false); showToast("Sound settings saved!"); }} />}
-            </div>
+      {showEmail && <EmailModal onClose={() => setShowEmail(false)} onSave={() => { setShowEmail(false); showToast("Email preferences saved!"); }} />}
+      {showSound && <SoundModal onClose={() => setShowSound(false)} onSave={() => { setShowSound(false); showToast("Sound settings saved!"); }} />}
+    </div>
   );
 }

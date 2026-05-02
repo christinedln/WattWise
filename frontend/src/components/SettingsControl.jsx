@@ -64,7 +64,7 @@ export default function SettingsControl() {
     }
   };
 
-  
+
   useEffect(() => {
     loadDevices();
   }, []);
@@ -245,24 +245,29 @@ export default function SettingsControl() {
       </div>
 
       {/* DEVICE SELECTOR */}
-      <div className="flex gap-2 mb-4 flex-wrap">
-        {devices.map((device) => (
-          <button
-            key={device.id}
-            onClick={() => selectDevice(device)}
-            className={`
-              !px-5 !py-2 !rounded-full !text-sm !font-medium 
-              !transition-all !duration-200 !border
-              ${
-                selectedDevice?.id === device.id
-                  ? "!bg-green-600 !text-white !shadow-md !border-green-700"
-                  : "!bg-white !text-gray-600 !border-gray-300 hover:!bg-gray-100"
-              }
-            `}
-          >
-            {device.name}
-          </button>
-        ))}
+      <div className="flex items-center bg-gray-100 p-1 rounded-full w-fit mb-4 flex-wrap gap-1">
+
+        {devices.map((device) => {
+          const isActive = selectedDevice?.id === device.id;
+
+          return (
+            <button
+              key={device.id}
+              onClick={() => selectDevice(device)}
+              className={`
+          px-5 py-2 text-sm font-medium transition-all duration-200 z-10
+          ${isActive
+                  ? "!bg-green-600 !text-white shadow-md shadow-green-300 !rounded-full"
+                  : "!bg-transparent !text-gray-600 hover:!bg-gray-200"
+                }
+        `}
+              style={{ borderRadius: "9999px" }}
+            >
+              {device.name}
+            </button>
+          );
+        })}
+
       </div>
 
       {/* BILLING */}
@@ -352,17 +357,11 @@ export default function SettingsControl() {
           <div className="flex justify-end">
             <button
               onClick={handleSave}
-              style={{
-                backgroundColor: "#16a34a",
-                color: "white",
-                padding: "10px 18px",
-                borderRadius: "8px",
-                border: "none",
-                fontSize: "14px",
-                fontWeight: "600",
-                cursor: "pointer",
-                outline: "none"
-              }}
+              className="!bg-green-600 !text-white px-5 py-2 rounded-lg text-sm font-semibold
+             shadow-sm transition-all duration-200
+             hover:!bg-green-700 hover:shadow-lg hover:-translate-y-0.5
+             active:translate-y-0 active:shadow-md
+             focus:outline-none"
             >
               {saved ? "✓ Saved!" : "Save Changes"}
             </button>
@@ -377,15 +376,41 @@ export default function SettingsControl() {
 
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-5 w-full">
 
-            {/* Card header */}
-            <p style={{ fontSize: "16px", fontWeight: "700", color: "#111827", margin: 0 }}>
-              Real-Time Monitoring Configuration
-            </p>
-            <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px", marginBottom: "20px" }}>
-              Adjust log window and anomaly sensitivity
-            </p>
+            {/* HEADER WITH ICON */}
+            <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "20px" }}>
 
-            {/* Log Window Row */}
+              {/* Icon */}
+              <div style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "50%",
+                backgroundColor: "#dcfce7",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0
+              }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                  viewBox="0 0 24 24" fill="none"
+                  stroke="#16a34a" strokeWidth="2.5"
+                  strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              </div>
+
+              {/* Text */}
+              <div style={{ textAlign: "left" }}>
+                <p style={{ fontSize: "16px", fontWeight: "700", color: "#111827", margin: 0 }}>
+                  Real-Time Monitoring Configuration
+                </p>
+                <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px" }}>
+                  Adjust log window and anomaly sensitivity
+                </p>
+              </div>
+
+            </div>
+
+            {/* LOG WINDOW */}
             <div style={{
               border: "1px solid #e5e7eb",
               borderRadius: "10px",
@@ -400,7 +425,7 @@ export default function SettingsControl() {
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <span style={{ fontSize: "13px", fontWeight: "600", color: "#111827" }}>Log Window Size</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                    <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
                   </svg>
                 </div>
                 <span style={{ fontSize: "12px", color: "#6b7280" }}>{logWindow} logs</span>
@@ -409,53 +434,54 @@ export default function SettingsControl() {
               {/* Slider */}
               <div style={{ flex: 1 }}>
                 <style>{`
-                  input[type=range] {
-                    cursor: pointer;
-                    -webkit-appearance: none;
-                    appearance: none;
-                    height: 6px;
-                    border-radius: 4px;
-                    outline: none;
-                  }
-                  input[type=range]::-webkit-slider-runnable-track {
-                    height: 6px;
-                    border-radius: 4px;
-                  }
-                  input[type=range]::-moz-range-track {
-                    height: 6px;
-                    border-radius: 4px;
-                    background: #d1d5db;
-                  }
-                  input[type=range]::-webkit-slider-thumb {
-                    -webkit-appearance: none;
-                    appearance: none;
-                    width: 18px;
-                    height: 18px;
-                    border-radius: 50%;
-                    margin-top: -6px;
-                    border: 2px solid white;
-                    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-                  }
-                  input[type=range]::-moz-range-thumb {
-                    width: 18px;
-                    height: 18px;
-                    border-radius: 50%;
-                    border: 2px solid white;
-                    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-                  }
-                  .slider-green::-webkit-slider-thumb { background: #16a34a; }
-                  .slider-green::-moz-range-thumb    { background: #16a34a; }
-                  .slider-green::-moz-range-progress { background: #16a34a; }
-                  .slider-orange::-webkit-slider-thumb { background: #f97316; }
-                  .slider-orange::-moz-range-thumb    { background: #f97316; }
-                  .slider-orange::-moz-range-progress { background: #f97316; }
-                  .slider-blue::-webkit-slider-thumb { background: #3b82f6; }
-                  .slider-blue::-moz-range-thumb    { background: #3b82f6; }
-                  .slider-blue::-moz-range-progress { background: #3b82f6; }
-                  .slider-purple::-webkit-slider-thumb { background: #8b5cf6; }
-                  .slider-purple::-moz-range-thumb    { background: #8b5cf6; }
-                  .slider-purple::-moz-range-progress { background: #8b5cf6; }
-                `}</style>
+    input[type=range] {
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 4px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 4px;
+    }
+    input[type=range]::-moz-range-track {
+      height: 6px;
+      border-radius: 4px;
+      background: #d1d5db;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      margin-top: -6px;
+      border: 2px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    .slider-green::-webkit-slider-thumb { background: #16a34a; }
+    .slider-green::-moz-range-thumb    { background: #16a34a; }
+    .slider-green::-moz-range-progress { background: #16a34a; }
+    .slider-orange::-webkit-slider-thumb { background: #f97316; }
+    .slider-orange::-moz-range-thumb    { background: #f97316; }
+    .slider-orange::-moz-range-progress { background: #f97316; }
+    .slider-blue::-webkit-slider-thumb { background: #3b82f6; }
+    .slider-blue::-moz-range-thumb    { background: #3b82f6; }
+    .slider-blue::-moz-range-progress { background: #3b82f6; }
+    .slider-purple::-webkit-slider-thumb { background: #8b5cf6; }
+    .slider-purple::-moz-range-thumb    { background: #8b5cf6; }
+    .slider-purple::-moz-range-progress { background: #8b5cf6; }
+  `}</style>
+
                 <input
                   type="range"
                   min="10"
@@ -463,14 +489,25 @@ export default function SettingsControl() {
                   value={logWindow}
                   onChange={(e) => setlogWindow(Number(e.target.value))}
                   className="slider-green"
-                  style={{ width: "100%", background: `linear-gradient(to right, #16a34a 0%, #16a34a ${((logWindow - 10) / (50 - 10)) * 100}%, #d1d5db ${((logWindow - 10) / (50 - 10)) * 100}%, #d1d5db 100%)` }}
+                  style={{
+                    width: "100%",
+                    background: `linear-gradient(to right, #16a34a 0%, #16a34a ${((logWindow - 10) / (50 - 10)) * 100}%, #d1d5db ${((logWindow - 10) / (50 - 10)) * 100}%, #d1d5db 100%)`
+                  }}
                 />
-              </div>
 
-              {/* Description */}
-              <p style={{ fontSize: "12px", color: "#6b7280", minWidth: "140px", textAlign: "right", margin: 0, lineHeight: "1.5" }}>
-                Number of recent readings used for anomaly detection and trends
-              </p>
+                {/* Bottom Center Description */}
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#6b7280",
+                    textAlign: "center",
+                    marginTop: "8px",
+                    lineHeight: "1.5"
+                  }}
+                >
+                  Number of recent readings used for anomaly detection and trends
+                </p>
+              </div>
             </div>
 
             {/* Section header */}
@@ -489,7 +526,7 @@ export default function SettingsControl() {
                 iconColor: "#f97316",
                 icon: (
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#f97316" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                   </svg>
                 ),
                 warning: currentwarning, setWarning: setcurrentWarning,
@@ -509,7 +546,7 @@ export default function SettingsControl() {
                 iconColor: "#3b82f6",
                 icon: (
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                   </svg>
                 ),
                 warning: voltagewarning, setWarning: setvoltageWarning,
@@ -529,7 +566,7 @@ export default function SettingsControl() {
                 iconColor: "#8b5cf6",
                 icon: (
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                   </svg>
                 ),
                 warning: powerwarning, setWarning: setpowerWarning,
@@ -541,103 +578,166 @@ export default function SettingsControl() {
                 description: "Controls how sensitive power-based anomaly detection is"
               }
             ].map((row, i) => (
-              <div key={i} style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: "10px",
-                padding: "14px 18px",
-                marginBottom: "10px",
-                display: "flex",
-                alignItems: "center",
-                gap: "16px"
-              }}>
-                {/* Icon */}
-                <div style={{
-                  width: "38px", height: "38px", borderRadius: "50%",
-                  backgroundColor: row.bgColor,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0
-                }}>
-                  {row.icon}
-                </div>
+              <div
+                key={i}
+                style={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "10px",
+                  padding: "14px 18px",
+                  marginBottom: "10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px"
+                }}
+              >
+                {/* TOP ROW */}
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
 
-                {/* Label */}
-                <div style={{ minWidth: "110px", flexShrink: 0 }}>
-                  <p style={{ fontSize: "13px", fontWeight: "600", color: "#111827", margin: 0 }}>{row.label}</p>
-                  <p style={{ fontSize: "11px", color: "#9ca3af", margin: 0 }}>{row.subtitle}</p>
-                </div>
-
-                {/* Sliders block */}
-                <div style={{ flex: 1 }}>
-                  {/* Values row */}
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                    {[
-                      { label: "Warning", value: row.warning },
-                      { label: "Suspicious", value: row.suspicious },
-                      { label: "Critical", value: row.critical }
-                    ].map((item) => (
-                      <div key={item.label} style={{ textAlign: "center", flex: 1 }}>
-                        <p style={{ fontSize: "10px", color: "#9ca3af", margin: 0 }}>{item.label}</p>
-                        <p style={{ fontSize: "13px", fontWeight: "600", color: "#111827", margin: 0 }}>{item.value.toFixed(1)}</p>
-                      </div>
-                    ))}
+                  {/* Icon */}
+                  <div style={{
+                    width: "38px",
+                    height: "38px",
+                    borderRadius: "50%",
+                    backgroundColor: row.bgColor,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0
+                  }}>
+                    {row.icon}
                   </div>
 
-                  {/* Warning slider */}
-                  <input type="range" min={row.wMin} max={row.wMax} step="0.1"
-                    value={row.warning} className={row.sliderClass}
-                    style={{ width: "100%", marginBottom: "4px", background: `linear-gradient(to right, ${row.color} 0%, ${row.color} ${((row.warning - row.wMin) / (row.wMax - row.wMin)) * 100}%, #d1d5db ${((row.warning - row.wMin) / (row.wMax - row.wMin)) * 100}%, #d1d5db 100%)` }}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      row.setWarning(val);
-                      if (val >= row.suspicious) row.setSuspicious(val);
-                    }}
-                  />
-                  {/* Suspicious slider */}
-                  <input type="range" min={row.sMin} max={row.sMax} step="0.1"
-                    value={row.suspicious} className={row.sliderClass}
-                    style={{ width: "100%", marginBottom: "4px", background: `linear-gradient(to right, ${row.color} 0%, ${row.color} ${((row.suspicious - row.sMin) / (row.sMax - row.sMin)) * 100}%, #d1d5db ${((row.suspicious - row.sMin) / (row.sMax - row.sMin)) * 100}%, #d1d5db 100%)` }}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      row.setSuspicious(val);
-                      if (val <= row.warning) row.setWarning(val);
-                      if (val >= row.critical) row.setCritical(val);
-                    }}
-                  />
-                  {/* Critical slider */}
-                  <input type="range" min={row.cMin} max={row.cMax} step="0.1"
-                    value={row.critical} className={row.sliderClass}
-                    style={{ width: "100%", background: `linear-gradient(to right, ${row.color} 0%, ${row.color} ${((row.critical - row.cMin) / (row.cMax - row.cMin)) * 100}%, #d1d5db ${((row.critical - row.cMin) / (row.cMax - row.cMin)) * 100}%, #d1d5db 100%)` }}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      row.setCritical(val);
-                      if (val <= row.suspicious) row.setSuspicious(val);
-                    }}
-                  />
+                  {/* Label */}
+                  <div style={{ minWidth: "110px", flexShrink: 0 }}>
+                    <p style={{ fontSize: "13px", fontWeight: "600", color: "#111827", margin: 0 }}>
+                      {row.label}
+                    </p>
+                    <p style={{ fontSize: "11px", color: "#9ca3af", margin: 0 }}>
+                      {row.subtitle}
+                    </p>
+                  </div>
+
+                  {/* Sliders (VALUE ALIGNED TO EACH RANGE) */}
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+
+                    {/* Warning */}
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: "6px" }}>
+                      <p style={{ fontSize: "10px", color: "#9ca3af", width: "70px", margin: 0 }}>
+                        Warning
+                      </p>
+
+                      <p style={{ fontSize: "13px", fontWeight: "600", color: "#111827", width: "40px", margin: 0 }}>
+                        {row.warning.toFixed(1)}
+                      </p>
+
+                      <input
+                        type="range"
+                        min={row.wMin}
+                        max={row.wMax}
+                        step="0.1"
+                        value={row.warning}
+                        className={row.sliderClass}
+                        style={{
+                          flex: 1,
+                          marginLeft: "8px",
+                          background: `linear-gradient(to right, ${row.color} 0%, ${row.color} ${((row.warning - row.wMin) / (row.wMax - row.wMin)) * 100}%, #d1d5db ${((row.warning - row.wMin) / (row.wMax - row.wMin)) * 100}%, #d1d5db 100%)`
+                        }}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          row.setWarning(val);
+                          if (val >= row.suspicious) row.setSuspicious(val);
+                        }}
+                      />
+                    </div>
+
+                    {/* Suspicious */}
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: "6px" }}>
+                      <p style={{ fontSize: "10px", color: "#9ca3af", width: "70px", margin: 0 }}>
+                        Suspicious
+                      </p>
+
+                      <p style={{ fontSize: "13px", fontWeight: "600", color: "#111827", width: "40px", margin: 0 }}>
+                        {row.suspicious.toFixed(1)}
+                      </p>
+
+                      <input
+                        type="range"
+                        min={row.sMin}
+                        max={row.sMax}
+                        step="0.1"
+                        value={row.suspicious}
+                        className={row.sliderClass}
+                        style={{
+                          flex: 1,
+                          marginLeft: "8px",
+                          background: `linear-gradient(to right, ${row.color} 0%, ${row.color} ${((row.suspicious - row.sMin) / (row.sMax - row.sMin)) * 100}%, #d1d5db ${((row.suspicious - row.sMin) / (row.sMax - row.sMin)) * 100}%, #d1d5db 100%)`
+                        }}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          row.setSuspicious(val);
+                          if (val <= row.warning) row.setWarning(val);
+                          if (val >= row.critical) row.setCritical(val);
+                        }}
+                      />
+                    </div>
+
+                    {/* Critical */}
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <p style={{ fontSize: "10px", color: "#9ca3af", width: "70px", margin: 0 }}>
+                        Critical
+                      </p>
+
+                      <p style={{ fontSize: "13px", fontWeight: "600", color: "#111827", width: "40px", margin: 0 }}>
+                        {row.critical.toFixed(1)}
+                      </p>
+
+                      <input
+                        type="range"
+                        min={row.cMin}
+                        max={row.cMax}
+                        step="0.1"
+                        value={row.critical}
+                        className={row.sliderClass}
+                        style={{
+                          flex: 1,
+                          marginLeft: "8px",
+                          background: `linear-gradient(to right, ${row.color} 0%, ${row.color} ${((row.critical - row.cMin) / (row.cMax - row.cMin)) * 100}%, #d1d5db ${((row.critical - row.cMin) / (row.cMax - row.cMin)) * 100}%, #d1d5db 100%)`
+                        }}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          row.setCritical(val);
+                          if (val <= row.suspicious) row.setSuspicious(val);
+                        }}
+                      />
+                    </div>
+
+                  </div>
                 </div>
 
-                {/* Description */}
-                <p style={{ fontSize: "12px", color: "#6b7280", minWidth: "130px", textAlign: "right", margin: 0, lineHeight: "1.5" }}>
+                {/* ✅ BOTTOM CENTER DESCRIPTION */}
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#6b7280",
+                    textAlign: "center",
+                    margin: 0,
+                    lineHeight: "1.5"
+                  }}
+                >
                   {row.description}
                 </p>
               </div>
             ))}
-
           </div>
 
           <div className="flex justify-end">
             <button
               onClick={handleSave}
-              style={{
-                backgroundColor: "#16a34a",
-                color: "white",
-                padding: "10px 18px",
-                borderRadius: "8px",
-                border: "none",
-                fontSize: "14px",
-                fontWeight: "600",
-                cursor: "pointer",
-                outline: "none"
-              }}
+              className="!bg-green-600 text-white px-5 py-2 rounded-lg text-sm font-semibold
+               shadow-sm transition-all duration-200
+               hover:!bg-green-700 hover:shadow-lg hover:-translate-y-0.5
+               active:translate-y-0 active:shadow-md
+               focus:outline-none"
             >
               {saved ? "Saved!" : "Save Changes"}
             </button>

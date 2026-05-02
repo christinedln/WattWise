@@ -19,25 +19,25 @@ const Badge = ({ type }) => {
 
 const MusicIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+    <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
   </svg>
 );
 
 const BeepIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
   </svg>
 );
 
 const AlarmIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/>
+    <circle cx="12" cy="13" r="8" /><path d="M12 9v4l2 2" /><path d="M5 3 2 6" /><path d="m22 6-3-3" />
   </svg>
 );
 
 const PlayIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-    <polygon points="5,3 19,12 5,21"/>
+    <polygon points="5,3 19,12 5,21" />
   </svg>
 );
 
@@ -47,8 +47,8 @@ export default function SoundModal({ onClose, onSave }) {
 
   const soundTypes = [
     { key: "chime", label: "Chime", Icon: MusicIcon },
-    { key: "beep",  label: "Beep",  Icon: BeepIcon  },
-    { key: "alarm", label: "Alarm", Icon: AlarmIcon  },
+    { key: "beep", label: "Beep", Icon: BeepIcon },
+    { key: "alarm", label: "Alarm", Icon: AlarmIcon },
   ];
 
   return (
@@ -67,8 +67,8 @@ export default function SoundModal({ onClose, onSave }) {
           <div className="flex items-center gap-2.5">
             <div className="flex items-center justify-center rounded-lg" style={{ width: 30, height: 30, background: "#16a34a" }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
             </div>
             <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#111827", letterSpacing: "-0.02em" }}>
@@ -109,28 +109,28 @@ export default function SoundModal({ onClose, onSave }) {
             Sound Type
           </label>
           <div style={{ display: "flex", gap: 8 }}>
-           {soundTypes.map(({ key, label, Icon: SoundIcon }) => {
-            const active = sound.type === key;
-            return (
-              <button
-                key={key}
-                onClick={() => setSound({ ...sound, type: key })}
-                style={{
-                  ...iosFont,
-                  flex: 1, padding: "10px 0", borderRadius: 10,
-                  border: active ? "1.5px solid #16a34a" : "1px solid #e5e7eb",
-                  background: active ? "#dcfce7" : "#f9fafb",
-                  color: active ? "#15803d" : "#374151",
-                  fontSize: 13, fontWeight: 600, cursor: "pointer",
-                  transition: "all 0.15s", letterSpacing: "-0.01em",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+            {soundTypes.map(({ key, label, Icon: SoundIcon }) => {
+              const active = sound.type === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setSound({ ...sound, type: key })}
+                  style={{
+                    ...iosFont,
+                    flex: 1, padding: "10px 0", borderRadius: 10,
+                    border: active ? "1.5px solid #16a34a" : "1px solid #e5e7eb",
+                    background: active ? "#dcfce7" : "#f9fafb",
+                    color: active ? "#15803d" : "#374151",
+                    fontSize: 13, fontWeight: 600, cursor: "pointer",
+                    transition: "all 0.15s", letterSpacing: "-0.01em",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
                     outline: "none",
-                }}
-              >
-                <SoundIcon /> {label}
-              </button>
-            );
-          })}
+                  }}
+                >
+                  <SoundIcon /> {label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -165,7 +165,7 @@ export default function SoundModal({ onClose, onSave }) {
                   }}>
                     {checked && (
                       <svg width="11" height="11" viewBox="0 0 11 11">
-                        <polyline points="1.5,5.5 4.5,8.5 9.5,2.5" stroke="white" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                        <polyline points="1.5,5.5 4.5,8.5 9.5,2.5" stroke="white" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}
                   </div>
@@ -177,34 +177,35 @@ export default function SoundModal({ onClose, onSave }) {
         </div>
 
         {/* Actions */}
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="flex gap-2">
+
+          {/* Test Sound */}
           <button
             onClick={() => playSound(sound.type)}
-            style={{
-              ...iosFont,
-              flex: 1, padding: "13px 0", borderRadius: 14,
-              border: "1px solid #e5e7eb", background: "#f9fafb",
-              color: "#374151", fontWeight: 600, fontSize: 15,
-              cursor: "pointer", letterSpacing: "-0.01em",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            }}
+            className="flex-1 px-4 py-3 rounded-[14px] border border-gray-200
+               bg-gray-50 text-gray-700 text-sm font-semibold
+               flex items-center justify-center gap-2
+               shadow-sm transition-all duration-200 ease-in-out
+               hover:bg-gray-100 hover:shadow-md hover:-translate-y-0.5
+               active:translate-y-0 active:shadow-sm
+               focus:outline-none"
           >
             <PlayIcon /> Test Sound
           </button>
+
+          {/* Save Settings */}
           <button
             onClick={onSave}
-            style={{
-              ...iosFont,
-              flex: 1, padding: "13px 0", borderRadius: 14,
-              border: "none", background: "#dcfce7",
-              color: "#16a34a", fontWeight: 600, fontSize: 15,
-              cursor: "pointer", letterSpacing: "-0.01em",
-            }}
+            className="!bg-green-600 !text-white flex-1 px-4 py-3 rounded-[14px]
+             text-sm font-semibold shadow-sm
+             transition-all duration-200 ease-in-out
+             hover:!bg-green-700 hover:shadow-lg hover:-translate-y-0.5
+             active:translate-y-0 active:shadow-md"
           >
             Save Settings
           </button>
-        </div>
 
+        </div>
       </div>
     </div>
   );
