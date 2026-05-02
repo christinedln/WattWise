@@ -119,6 +119,9 @@ function SummaryCard({ label, value, sub, colorClass, textClass }) {
   );
 }
 
+const capitalize = (str) =>
+  str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
+
 export default function AlertNotif() {
   const [alerts, setAlerts] = useState([]);
 
@@ -129,7 +132,7 @@ export default function AlertNotif() {
 
         const transformed = data.map((alert, index) => ({
           id: `${alert.device_id}-${index}`,
-          severity: alert.severity,
+          severity: capitalize(alert.severity),
           title: alert.device_name,
           description: alert.message,
           time: "Just now",
@@ -204,7 +207,7 @@ const stats = {
         </div>
       )}
 
-
+    
       {/* STATS */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         <SummaryCard label="Critical"    value={stats.critical}   sub="Needs attention"    colorClass="bg-red-50"    textClass="text-red-700" />
