@@ -1,3 +1,9 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, ".env") });
+
 const express = require("express");
 const cors = require("cors");
 
@@ -7,6 +13,8 @@ const realtimeRoutes = require("./routes/realtimemonitor");
 const predictionsRoutes = require("./routes/predictions");
 const settingsRoutes = require("./routes/settings");
 const alertsRoutes = require("./routes/alerts");
+const { startAnomalyListener } = require("./services/anomalyListener");
+const { verifyTransporter } = require("./utils/emailService");
 
 const app = express();
 
@@ -30,4 +38,6 @@ app.get("/api/health", (req, res) => {
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://127.0.0.1:${PORT}`);
+  verifyTransporter();
+  startAnomalyListener();
 });
