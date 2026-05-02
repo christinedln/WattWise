@@ -1,120 +1,158 @@
-import { TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 export default function CostPredictions({
-  weeklyCost,
-  weeklyKwh,
-  monthlyCost,
-  monthlyKwh,
+  weeklyCost = 0,
+  weeklyKwh = 0,
+  monthlyCost = 0,
+  monthlyKwh = 0,
+  actualVsPredicted = [],
+  dailyForecast = [],
+  perDevice = {}, // ✅ NEW (optional)
+  selectedDeviceId = null, // ✅ NEW
 }) {
-  // ✅ normalize values (VERY IMPORTANT)
-  const safeWeeklyCost = Number(weeklyCost) || 0;
-  const safeWeeklyKwh = Number(weeklyKwh) || 0;
-  const safeMonthlyCost = Number(monthlyCost) || 0;
-  const safeMonthlyKwh = Number(monthlyKwh) || 0;
 
-  const data = [
+  // ===============================
+  // DEVICE OR GLOBAL DATA PICK
+  // ===============================
+  const activeDevice = selectedDeviceId
+    ? perDevice?.[selectedDeviceId]
+    : null;
+
+  const finalWeeklyKwh =
+    activeDevice?.weekly_kwh ?? weeklyKwh;
+
+  const finalMonthlyKwh =
+    activeDevice?.monthly_kwh ?? monthlyKwh;
+
+  const finalWeeklyCost =
+    activeDevice?.weekly_cost ?? weeklyCost;
+
+  const finalMonthlyCost =
+    activeDevice?.monthly_cost ?? monthlyCost;
+
+  // ===============================
+  // TREND CALCULATION
+  // ===============================
+  const getTrend = (data = []) => {
+    if (!data || data.length < 2) return 0;
+
+    const first = Number(data[0]?.actual ?? 0);
+    const last = Number(data[data.length - 1]?.actual ?? 0);
+
+    if (first === 0) return 0;
+
+    return ((last - first) / first) * 100;
+  };
+
+  const weeklyTrend = getTrend(actualVsPredicted);
+  const monthlyTrend = weeklyTrend;
+
+  // ===============================
+  // UI DATA
+  // ===============================
+  const predictions = [
     {
-      title: "This Week",
-      cost: safeWeeklyCost,
-      usage: safeWeeklyKwh,
-      max: 245,
-      percent: 89,
-      trend: "up",
-      change: "5.2%",
-      label: "Mon - Sun (current billing period)",
-      color: "yellow",
+      period: "This Week",
+      cost: `₱${Number(finalWeeklyCost).toFixed(2)}`,
+      estimatedUsage: `${Number(finalWeeklyKwh).toFixed(2)} kWh`,
+      trend: weeklyTrend >= 0 ? "up" : "down",
+      trendPercent: `${Math.abs(weeklyTrend).toFixed(2)}%`,
+      trendLabel: activeDevice
+        ? `Device: ${activeDevice.name}`
+        : "All devices combined",
+      bgColor: "bg-yellow-50",
     },
     {
-      title: "This Month",
-      cost: safeMonthlyCost,
-      usage: safeMonthlyKwh,
-      max: 920,
-      percent: 67,
-      trend: "down",
-      change: "2.8%",
-      label: "Feb 1 - Feb 28 (projected)",
-      color: "blue",
+      period: "This Month",
+      cost: `₱${Number(finalMonthlyCost).toFixed(2)}`,
+      estimatedUsage: `${Number(finalMonthlyKwh).toFixed(2)} kWh`,
+      trend: monthlyTrend >= 0 ? "up" : "down",
+      trendPercent: `${Math.abs(monthlyTrend).toFixed(2)}%`,
+      trendLabel: "30-day projection",
+      bgColor: "bg-blue-50",
     },
   ];
 
+  // ===============================
+  // CHART DATA
+  // ===============================
+  const chartData =
+    dailyForecast?.length > 0
+      ? dailyForecast
+      : actualVsPredicted.map((d) => ({
+          date: d.date,
+          consumption: d.actual,
+        }));
+
+  const maxValue = Math.max(
+    ...chartData.map((d) => Number(d.consumption || 0)),
+    1
+  );
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6">
-      <h2 className="text-xl font-bold text-gray-900">
+    <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <h3 className="font-bold text-lg mb-1">
         Energy Cost Predictions
-      </h2>
-      <p className="text-sm text-gray-500 mb-6">
-        Weekly and monthly cost forecasts at ₱13.50/kWh
+      </h3>
+
+      <p className="text-gray-500 text-sm mb-6">
+        {activeDevice
+          ? `Device: ${activeDevice.name}`
+          : "Based on all devices"}
       </p>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {data.map((item, i) => (
-          <div
-            key={i}
-            className="bg-green-50/40 border border-green-200 rounded-xl p-5 shadow-sm"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div
-                  className={`p-2 rounded-lg ${
-                    item.color === "yellow"
-                      ? "bg-yellow-100 text-yellow-600"
-                      : "bg-blue-100 text-blue-600"
-                  }`}
-                >
-                  <Calendar size={16} />
-                </div>
-                <span className="font-semibold text-gray-800">
-                  {item.title}
-                </span>
-              </div>
+      <div className="grid grid-cols-2 gap-6">
+        {predictions.map((pred, index) => (
+          <div key={index} className={`${pred.bgColor} rounded-lg p-6`}>
+            <p className="text-sm text-gray-600 mb-3">{pred.period}</p>
 
-              <div
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium
-                ${
-                  item.trend === "up"
-                    ? "bg-red-50 text-red-600"
-                    : "bg-green-50 text-green-600"
-                }`}
-              >
-                {item.trend === "up" ? (
-                  <TrendingUp size={14} />
-                ) : (
-                  <TrendingDown size={14} />
-                )}
-                {item.change}
-              </div>
-            </div>
-
-            {/* Cost */}
-            <div className="flex items-baseline gap-2 mb-2">
-              <h3 className="text-3xl font-bold text-green-600">
-                ₱{item.cost.toFixed(2)}
-              </h3>
+            <div className="flex items-baseline gap-2 mb-4">
+              <span className="text-4xl font-bold text-gray-900">
+                {pred.cost}
+              </span>
               <span className="text-sm text-gray-500">estimated</span>
             </div>
 
-            {/* Usage */}
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>
-                {item.usage}/{item.max} kWh
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">
+                {pred.estimatedUsage}
               </span>
-              <span className="font-medium">{item.percent}%</span>
+
+              <div className="flex items-center gap-1">
+                {pred.trend === "up" ? (
+                  <TrendingUp className="w-4 h-4 text-red-500" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-green-500" />
+                )}
+
+                <span
+                  className={
+                    pred.trend === "up"
+                      ? "text-red-600"
+                      : "text-green-600"
+                  }
+                >
+                  {pred.trendPercent}
+                </span>
+              </div>
             </div>
 
-            {/* Progress */}
-            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-3">
-              <div
-                className={`h-full rounded-full ${
-                  item.color === "yellow"
-                    ? "bg-yellow-400"
-                    : "bg-blue-400"
-                }`}
-                style={{ width: `${item.percent}%` }}
-              />
+            {/* MINI CHART */}
+            <div className="w-full h-12 bg-white bg-opacity-50 rounded flex items-end gap-1 p-1 mt-3">
+              {chartData.slice(-7).map((d, i) => (
+                <div
+                  key={i}
+                  className="flex-1 bg-blue-400 rounded-t opacity-80"
+                  style={{
+                    height: `${((d.consumption || 0) / maxValue) * 100}%`,
+                  }}
+                />
+              ))}
             </div>
 
-            <p className="text-xs text-gray-500">{item.label}</p>
+            <p className="text-xs text-gray-600 mt-2">
+              {pred.trendLabel}
+            </p>
           </div>
         ))}
       </div>

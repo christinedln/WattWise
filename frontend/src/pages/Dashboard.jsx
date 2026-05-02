@@ -16,12 +16,21 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await apiFetch("/dashboard/summary"); 
+        // ✅ FETCH BOTH APIs
+        const dashboardData = await apiFetch("/dashboard/summary");
+        const predictionData = await apiFetch("/predictions/summary");
 
-        setData(data);
+        // ✅ MERGE THEM
+        const mergedData = {
+          ...dashboardData,
+          ...predictionData, // prediction values overwrite dashboard ones
+        };
+
+        setData(mergedData);
         setLoading(false);
+
       } catch (err) {
-        console.error(err); // add this for debugging
+        console.error(err);
         setError(err.message);
         setLoading(false);
       }
@@ -80,6 +89,10 @@ export default function DashboardPage() {
                 weeklyKwh={data.weekly_predicted_kwh}
                 monthlyCost={data.monthly_predicted_cost}
                 monthlyKwh={data.monthly_predicted_kwh}
+
+                actualVsPredicted={data.actual_vs_predicted}
+                dailyForecast={data.daily_forecast}
+                perDevice={data.per_device}
               />
 
             </div>
