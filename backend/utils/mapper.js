@@ -1,13 +1,11 @@
 // utils/mapper
-const { getDevices, getRealtimeLogs } = require("../services/data_service");
-const { generateCurrentAlerts } = require("./generateCurrentAlerts");
-const { generateVoltageAlerts } = require("./generateVoltageAlerts");
-const { generatePowerAlerts } = require("./generatePowerAlerts");
+const { getDevices, getRealtimeLogs, getAlerts } = require("../services/data_service");
 const { nowTime } = require("../utils/time_helper");
 const { calcKwh } = require("../utils/calculations");
 
 async function mergeDeviceData(userId) {
     if (!userId || typeof userId !== "string") return [];
+
     const rawDevices = await getDevices(userId);
     const devices = Array.isArray(rawDevices) ? rawDevices : [];
 
@@ -25,7 +23,6 @@ async function mergeDeviceData(userId) {
 
         const settings = d.settings || {};
 
-        // RAW LOGS
         const logWindow = settings.log_window;
 
         const logsRaw = await getRealtimeLogs(
@@ -33,9 +30,9 @@ async function mergeDeviceData(userId) {
             deviceId,
             logWindow
         );
+
         const realtimeLogs = Array.isArray(logsRaw) ? logsRaw : [];
 
-        // SIGNAL-SPECIFIC MAPPING
         const structuredLogs = {
             current: realtimeLogs.map(log => ({
                 value: log.current ?? 0,
@@ -58,54 +55,15 @@ async function mergeDeviceData(userId) {
 
         d.realtime_logs = structuredLogs;
 
-        // CURRENT ALERT ENGINE ONLY
-        const currentAlerts = generateCurrentAlerts([
-            {
-                device_id: deviceId,
-                name: d.name,
-                settings,
-                logs: structuredLogs.current
-            }
-        ]);
+        const rawAlerts = await getAlerts(userId, deviceId);
+        const alertsArray = Array.isArray(rawAlerts) ? rawAlerts : [];
 
-        const voltageAlerts = generateVoltageAlerts
-            ? generateVoltageAlerts([
-                {
-                    device_id: deviceId,
-                    name: d.name,
-                    settings,
-                    logs: structuredLogs.voltage
-                }
-            ])
-            : [];
+        const alerts = alertsArray.map(a => ({
+            signal: a.signal || "unknown",
+            severity: a.severity || "normal",
+            message: a.message || `${a.severity || "normal"} anomaly detected`
+        }));
 
-        const powerAlerts = generatePowerAlerts
-            ? generatePowerAlerts([
-                {
-                    device_id: deviceId,
-                    name: d.name,
-                    settings,
-                    logs: structuredLogs.power
-                }
-            ])
-            : [];
-
-        // merge everything
-        const alerts = [
-                ...currentAlerts.map(a => ({ ...a, signal: "current" })),
-                ...voltageAlerts.map(a => ({ ...a, signal: "voltage" })),
-                ...powerAlerts.map(a => ({ ...a, signal: "power" }))
-            ];
-
-            if (alerts.length === 0) {
-                alerts.push({
-                    signal: "all",
-                    severity: "Normal",
-                    message: "No issues detected"
-                });
-            }
-        
-        // FINAL MERGED DEVICE OBJECT
         merged.push({
             id: `device-${deviceId}`,
             device_id: deviceId,

@@ -106,6 +106,32 @@ async function getRealtimeLogs(userId, deviceId, logWindow) {
   }
 }
 
+async function getAlerts(userId, deviceId) {
+  try {
+    if (!userId || !deviceId) return [];
+
+    const alertsRef = db
+      .collection("user")
+      .doc(userId)
+      .collection("devices")
+      .doc(deviceId)
+      .collection("anomalies");
+
+    const snapshot = await alertsRef
+      .orderBy("timestamp", "desc")
+      .get();
+
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+  } catch (error) {
+    console.error("Alerts fetch error:", error);
+    return [];
+  }
+}
+
 // Get electricity rate per device 
 async function getRate(userId, deviceId) {
   try {
@@ -127,5 +153,6 @@ async function getRate(userId, deviceId) {
 module.exports = {
   getDevices,
   getRate,
+  getAlerts,
   getRealtimeLogs
 };
