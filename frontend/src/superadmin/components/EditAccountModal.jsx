@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader, AlertCircle, CheckCircle } from 'lucide-react';
 import { updateAccountDisplayName, updateAccountRole, resetAccountPassword } from '../services/adminAccountsService';
-import { ROLES } from '../config/permissions';
+import { ROLES, hasPermission } from '../config/permissions';
+import { useAuth } from '../context/AuthContext';
 
 export default function EditAccountModal({ account, isOpen, onClose, onSuccess }) {
+  const { role: currentRole } = useAuth();
+  const canManage = hasPermission(currentRole, 'manage_users');
   const [displayName, setDisplayName] = useState(account?.displayName || '');
   const [role, setRole] = useState(account?.role || '');
   const [newPassword, setNewPassword] = useState('');
@@ -118,8 +121,11 @@ export default function EditAccountModal({ account, isOpen, onClose, onSuccess }
               />
               <button
                 onClick={handleUpdateDisplayName}
-                disabled={loading || displayName === account.displayName}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+                disabled={loading || displayName === account.displayName || !canManage}
+                className={
+                  `px-4 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ` +
+                  (canManage ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-500 border border-gray-200')
+                }
               >
                 {loading && <Loader className="h-4 w-4 animate-spin" />}
                 Update
@@ -145,8 +151,11 @@ export default function EditAccountModal({ account, isOpen, onClose, onSuccess }
               </select>
               <button
                 onClick={handleUpdateRole}
-                disabled={loading || role === account.role}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+                disabled={loading || role === account.role || !canManage}
+                className={
+                  `px-4 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ` +
+                  (canManage ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-500 border border-gray-200')
+                }
               >
                 {loading && <Loader className="h-4 w-4 animate-spin" />}
                 Update
@@ -167,8 +176,11 @@ export default function EditAccountModal({ account, isOpen, onClose, onSuccess }
               />
               <button
                 onClick={handleResetPassword}
-                disabled={loading}
-                className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={loading || !canManage}
+                className={
+                  `w-full px-4 py-2 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ` +
+                  (canManage ? 'bg-orange-600 text-white hover:bg-orange-700' : 'bg-gray-100 text-gray-500 border border-gray-200')
+                }
               >
                 {loading && <Loader className="h-4 w-4 animate-spin" />}
                 Set New Password

@@ -4,8 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission } from "../config/permissions";
 import { fetchAuditLogPage } from "../services/auditLogService";
-import { collection, getCountFromServer, query, where } from "firebase/firestore";
-import { db } from "../../firebase";
+import { fetchDashboardSummary } from "../services/dashboardSummaryService";
 
 function formatTimestamp(value) {
   if (!value) return "-";
@@ -23,9 +22,8 @@ export default function DashboardPage() {
   const [recentLogs, setRecentLogs] = useState([]);
   const [stats, setStats] = useState({
     totalUsers: "-",
-    activeSessions: "-",
-    securityLogs: "-",
-    systemHealth: "99.9%",
+    activeUsers: "-",
+    admins: "-",
   });
 
   const canViewDashboard = hasPermission(role, "view_dashboard");
@@ -43,24 +41,14 @@ export default function DashboardPage() {
 
     async function fetchStats() {
       try {
-        const [usersSnap, activeSnap, logsSnap] = await Promise.all([
-          getCountFromServer(collection(db, "user")),
-          getCountFromServer(
-            query(collection(db, "roleBasedAccounts"), where("status", "==", "active"))
-          ),
-          getCountFromServer(collection(db, "audit_logs")),
-        ]);
+        const summary = await fetchDashboardSummary();
 
         if (!isMounted) return;
 
-        const logCount = logsSnap.data().count;
-
         setStats({
-          totalUsers: usersSnap.data().count,
-          activeSessions: activeSnap.data().count,
-          securityLogs:
-            logCount >= 1000 ? `${(logCount / 1000).toFixed(1)}K` : logCount,
-          systemHealth: "99.9%",
+          totalUsers: summary.totalUsers,
+          activeUsers: summary.activeUsers,
+          admins: summary.admins,
         });
       } catch (e) {
         console.error(e);
@@ -90,25 +78,19 @@ export default function DashboardPage() {
     label: "Total Users",
     value: stats.totalUsers,
     icon: Users,
-    subtitle: "Registered & active users",
+    subtitle: "Total user accounts in Firestore",
   },
   {
-    label: "Active Sessions",
-    value: stats.activeSessions,
+    label: "Active Users",
+    value: stats.activeUsers,
     icon: Activity,
-    subtitle: "Real-time connections",
+    subtitle: "Users active in the last 30 days",
   },
   {
-    label: "Security Logs",
-    value: stats.securityLogs,
+    label: "Admins",
+    value: stats.admins,
     icon: FileText,
-    subtitle: "Recorded system and security events",
-  },
-  {
-    label: "System Health",
-    value: stats.systemHealth,
-    icon: ShieldCheck,
-    subtitle: "Current system performance status",
+    subtitle: "Active role-based accounts",
   },
 ];
   return (
@@ -146,7 +128,8 @@ export default function DashboardPage() {
   {/* Button */}
   <Link
     to="/super-admin/security-logs"
-    className="inline-flex items-center gap-2 bg-green-600 !text-white px-5 py-3 rounded-lg font-medium shadow-sm hover:bg-green-700 hover:shadow-md transition-all duration-200 active:scale-95"
+    className="inline-flex items-center gap-2 bg-green-600 px-5 py-3 rounded-lg font-medium shadow-sm hover:bg-green-700 hover:shadow-md transition-all duration-200 active:scale-95"
+    style={{ color: "#ffffff" }}
   >
     <ShieldAlert className="w-5 h-5" />
     View Security Logs
@@ -177,7 +160,7 @@ export default function DashboardPage() {
           </div>
 
           {/* make content column full height */}
-          <div className="flex flex-col flex-1 min-h-[70px]">
+          <div className="flex flex-col flex-1" style={{ minHeight: 70 }}>
             <p className="text-xs text-gray-500">{card.label}</p>
 
             <p className="text-xl font-bold text-gray-900">

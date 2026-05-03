@@ -18,8 +18,8 @@ export async function apiFetch(url, options = {}) {
   if (!user) {
     throw new Error("User not authenticated");
   }
-  // 2. Get fresh token (handles expiration automatically)
-  const token = await user.getIdToken();
+  // 2. Get a fresh token so newly assigned custom claims are included immediately
+  const token = await user.getIdToken(true);
 
   // 3. Send request with Authorization header
   const res = await fetch(`http://127.0.0.1:5000/api${url}`, {

@@ -1,5 +1,5 @@
 import { Bell, Menu } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function DashboardHeader({
   criticalAlerts = 0,
@@ -8,6 +8,7 @@ export default function DashboardHeader({
   onSoundClick,
 }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
 
   const titleMap = {
     "/super-admin/dashboard": ["Dashboard", "Overview of system performance"],
@@ -64,7 +65,12 @@ export default function DashboardHeader({
         <div className="flex items-center gap-2 sm:gap-3">
 
           {/* NOTIFICATION BELL */}
-          <div className="relative cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition">
+          <button
+            type="button"
+            onClick={() => navigate("/super-admin/alerts")}
+            className="relative cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition"
+            aria-label="Open alerts"
+          >
             <Bell className="w-5 h-5 text-gray-700" />
 
             {criticalAlerts > 0 && (
@@ -72,7 +78,7 @@ export default function DashboardHeader({
                 {criticalAlerts > 9 ? "9+" : criticalAlerts}
               </span>
             )}
-          </div>
+          </button>
 
         </div>
 

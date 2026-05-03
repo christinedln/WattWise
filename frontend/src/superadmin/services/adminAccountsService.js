@@ -1,5 +1,7 @@
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase';
+import { invalidateDashboardSummaryCache } from './dashboardSummaryService';
+import { invalidateRoleBasedAccountsCache } from './roleBasedAccountsService';
 
 const API_BASE_URL = 'http://localhost:5000/api/admin-accounts';
 
@@ -52,6 +54,9 @@ export async function createAdminAccount({ email, role, displayName = '' }) {
     return await response.json();
   } catch (error) {
     throw new Error(`Account creation error: ${error.message}`);
+  } finally {
+    invalidateRoleBasedAccountsCache();
+    invalidateDashboardSummaryCache();
   }
 }
 
@@ -81,6 +86,9 @@ export async function updateAccountRole(userId, newRole) {
     return await response.json();
   } catch (error) {
     throw new Error(`Role update error: ${error.message}`);
+  } finally {
+    invalidateRoleBasedAccountsCache();
+    invalidateDashboardSummaryCache();
   }
 }
 
@@ -107,6 +115,9 @@ export async function disableAdminAccount(userId) {
     return await response.json();
   } catch (error) {
     throw new Error(`Account disable error: ${error.message}`);
+  } finally {
+    invalidateRoleBasedAccountsCache();
+    invalidateDashboardSummaryCache();
   }
 }
 
@@ -136,6 +147,9 @@ export async function updateAccountDisplayName(userId, newDisplayName) {
     return await response.json();
   } catch (error) {
     throw new Error(`Display name update error: ${error.message}`);
+  } finally {
+    invalidateRoleBasedAccountsCache();
+    invalidateDashboardSummaryCache();
   }
 }
 
@@ -191,5 +205,8 @@ export async function deleteAdminAccount(userId) {
     return await response.json();
   } catch (error) {
     throw new Error(`Account deletion error: ${error.message}`);
+  } finally {
+    invalidateRoleBasedAccountsCache();
+    invalidateDashboardSummaryCache();
   }
 }

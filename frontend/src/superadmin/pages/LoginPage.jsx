@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -57,8 +57,9 @@ export default function SuperAdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const hasCheckedInitialSession = useRef(false);
 
-  const { signIn } = useAuth();
+  const { user, loading, signIn, signOutUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -66,6 +67,18 @@ export default function SuperAdminLoginPage() {
     import.meta.env.VITE_USER_PORTAL_URL || "http://localhost:5173/";
 
   const from = location.state?.from || "/super-admin/dashboard";
+
+  useEffect(() => {
+    if (loading || hasCheckedInitialSession.current) {
+      return;
+    }
+
+    hasCheckedInitialSession.current = true;
+
+    if (user) {
+      signOutUser();
+    }
+  }, [loading, signOutUser, user]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -100,7 +113,7 @@ export default function SuperAdminLoginPage() {
         {/* ── LEFT PANEL ── */}
           <div className="hidden md:flex flex-col flex-1 p-8 overflow-hidden bg-card text-card-foreground">
             <div className="flex items-center gap-3 mb-7">
-              <div className="w-14 h-14 bg-[#1a7a45] rounded-[14px] flex items-center justify-center flex-shrink-0">
+              <div className="w-14 h-14 bg-[#1a7a45] rounded-[14px] flex items-center justify-center shrink-0">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8">
                   <path d="M13 2L4.5 13.5H11L10 22L20.5 10.5H14L13 2Z" fill="white" stroke="white" strokeWidth="1.2" strokeLinejoin="round"/>
                 </svg>

@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, Loader, UserRoundPlus, Shield, RotateCcw } from "lucide-react";
 import { createAdminAccount } from '../services/adminAccountsService';
+import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../config/permissions';
 
-export default function CreateAccountPage() {
+export default function AccountCreationCard() {
+  const { role } = useAuth();
+  const canCreate = hasPermission(role, 'manage_users');
   const [formData, setFormData] = useState({
     email: '',
     role: 'admin',
@@ -26,8 +30,9 @@ export default function CreateAccountPage() {
 
     try {
       if (!formData.email.trim()) throw new Error('Email is required');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
         throw new Error('Please enter a valid email address');
+      }
 
       const result = await createAdminAccount({
         email: formData.email.toLowerCase(),
@@ -51,62 +56,28 @@ export default function CreateAccountPage() {
     setSuccess(null);
   };
 
-return (
-    <div
-      className="space-y-6"
-      style={{
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif",
-      }}
-    >
-      {/* HEADER CARD */}
-      <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-md">
-
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
-          {/* Title section */}
-          <div className="flex items-center gap-4">
-
-  <div className="p-2 rounded-lg bg-green-50 flex items-center justify-center">
-      <UserRoundPlus className="h-6 w-6 text-green-600" />
- </div>
-
-  <div>
-    <h2 className="text-2xl font-bold text-gray-900">
-        Account Management
-    </h2>
-
-    <p className="text-sm leading-6 text-gray-400">
-        Create new admin accounts with assigned roles. A temporary password will be generated and sent to the user.
-     </p>
-  </div>
-
-</div>
-</div>
-      </section>
-
-      {/* Error Alert */}
+  return (
+    <div className="space-y-6">
       {error && (
         <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-          <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
           <div>
             <p className="text-sm font-semibold text-red-800">Error</p>
-            <p className="text-sm text-red-600 mt-0.5">{error}</p>
+            <p className="mt-0.5 text-sm text-red-600">{error}</p>
           </div>
         </div>
       )}
 
-      {/* Success Alert */}
       {success && (
         <div className="flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
-          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+          <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
           <div>
             <p className="text-sm font-semibold text-green-800">Account Created Successfully</p>
-            <div className="text-sm text-green-700 mt-1 space-y-0.5">
+            <div className="mt-1 space-y-0.5 text-sm text-green-700">
               <p><span className="font-medium">Email:</span> {success.user?.email}</p>
               <p><span className="font-medium">Role:</span> {success.user?.role}</p>
               <p><span className="font-medium">UID:</span> {success.user?.uid}</p>
-              <p className="text-xs text-green-600 mt-1">
+              <p className="mt-1 text-xs text-green-600">
                 A temporary password was generated. The user should change it on first login.
               </p>
             </div>
@@ -114,19 +85,15 @@ return (
         </div>
       )}
 
-      {/* Main Card */}
-      <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <form onSubmit={handleSubmit}>
-          <div className="px-6 pt-5 pb-6 space-y-5">
-
-            {/* Email */}
+          <div className="space-y-5 px-6 pb-6 pt-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-800 mb-1.5">
+              <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-800">
                 Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
                   <svg className="h-4 w-4 text-[#1a7a45]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" />
                     <path d="M1.5 5.5l6.5 4 6.5-4" />
@@ -140,24 +107,18 @@ return (
                   onChange={handleInputChange}
                   placeholder="admin@company.com"
                   required
-                  className="w-full pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400
-                    border border-gray-300 rounded-xl bg-white
-                    focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20 focus:border-[#1a7a45]
-                    transition-all duration-150"
+                  className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
                 />
               </div>
-              <p className="mt-1.5 text-xs text-gray-400">
-                The user will receive a setup email with instructions
-              </p>
+              <p className="mt-1.5 text-xs text-gray-400">The user will receive a setup email with instructions</p>
             </div>
 
-            {/* Role */}
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-800 mb-1.5">
+              <label htmlFor="role" className="mb-1.5 block text-sm font-medium text-gray-800">
                 Role <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
                   <Shield className="h-4 w-4 text-[#1a7a45]" />
                 </span>
                 <select
@@ -165,10 +126,7 @@ return (
                   name="role"
                   value={formData.role}
                   onChange={handleInputChange}
-                  className="w-full pl-9 pr-10 py-2.5 text-sm text-gray-900
-                    border border-gray-300 rounded-xl bg-white appearance-none
-                    focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20 focus:border-[#1a7a45]
-                    transition-all duration-150 cursor-pointer"
+                  className="w-full cursor-pointer appearance-none rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-10 text-sm text-gray-900 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
                 >
                   <option value="admin">Admin</option>
                   <option value="security">Security</option>
@@ -176,24 +134,21 @@ return (
                   <option value="analyst">Analyst</option>
                   <option value="superadmin">Super Admin</option>
                 </select>
-                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2">
                   <svg className="h-4 w-4 text-[#1a7a45]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
               </div>
-              <p className="mt-1.5 text-xs text-gray-400">
-                Select the role for this account
-              </p>
+              <p className="mt-1.5 text-xs text-gray-400">Select the role for this account</p>
             </div>
 
-            {/* Display Name */}
             <div>
-              <label htmlFor="displayName" className="block text-sm font-medium text-gray-800 mb-1.5">
+              <label htmlFor="displayName" className="mb-1.5 block text-sm font-medium text-gray-800">
                 Display Name
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
                   <UserRoundPlus className="h-4 w-4 text-[#1a7a45]" />
                 </span>
                 <input
@@ -203,28 +158,28 @@ return (
                   value={formData.displayName}
                   onChange={handleInputChange}
                   placeholder="John Doe"
-                  className="w-full pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400
-                    border border-gray-300 rounded-xl bg-white
-                    focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20 focus:border-[#1a7a45]
-                    transition-all duration-150"
+                  className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
                 />
               </div>
-              <p className="mt-1.5 text-xs text-gray-400">
-                Optional. Full name of the admin user
-              </p>
+              <p className="mt-1.5 text-xs text-gray-400">Optional. Full name of the admin user</p>
             </div>
 
-            {/* Buttons */}
             <div className="flex items-center gap-3 pt-1">
               <button
                 type="submit"
-                disabled={loading}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#e8f5ee] border border-[#b2d8c0] px-4 py-2 text-sm font-semibold text-gray-900 transition hover:bg-[#d4eddf] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading
-                  ? <Loader className="h-4 w-4 animate-spin text-[#1a7a45]" />
-                  : <UserRoundPlus className="h-4 w-4 text-[#1a7a45]" />
+                disabled={loading || !canCreate}
+                className={
+                  `inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ` +
+                  (canCreate
+                    ? 'border border-[#b2d8c0] bg-[#e8f5ee] text-gray-900 hover:bg-[#d4eddf]'
+                    : 'border border-gray-200 bg-gray-100 text-gray-500')
                 }
+              >
+                {loading ? (
+                  <Loader className="h-4 w-4 animate-spin text-[#1a7a45]" />
+                ) : (
+                  <UserRoundPlus className={canCreate ? 'h-4 w-4 text-[#1a7a45]' : 'h-4 w-4 text-gray-400'} />
+                )}
                 {loading ? 'Creating...' : 'Create Account'}
               </button>
 
@@ -237,14 +192,12 @@ return (
                 Clear
               </button>
             </div>
-
           </div>
         </form>
       </div>
 
-      {/* Important Information Box */}
       <div className="rounded-2xl border border-green-200 bg-green-50 px-6 py-5">
-        <div className="flex items-center gap-2.5 mb-3">
+        <div className="mb-3 flex items-center gap-2.5">
           <svg className="h-5 w-5 text-[#1a7a45]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
             <circle cx="10" cy="10" r="8.5" />
             <path d="M10 9v5M10 6.5v.5" strokeLinecap="round" />
@@ -258,10 +211,10 @@ return (
             'Custom claims will be set in Firebase Auth immediately',
             'The account will appear in the role-based accounts Firestore collection',
             'Firestore security rules will be enforced based on the role',
-          ].map((item, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-sm text-green-800">
-              <span className="mt-0.5 flex-shrink-0 flex items-center justify-center w-4 h-4 rounded-full bg-[#1a7a45]">
-                <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2">
+          ].map((item, index) => (
+            <li key={index} className="flex items-start gap-2.5 text-sm text-green-800">
+              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#1a7a45]">
+                <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M2 5l2.5 2.5L8 3" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>
@@ -270,7 +223,6 @@ return (
           ))}
         </ul>
       </div>
-
     </div>
   );
 }

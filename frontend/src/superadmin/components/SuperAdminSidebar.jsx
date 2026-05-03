@@ -1,40 +1,69 @@
-import React, { useState } from "react";
-import { Outlet, NavLink } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Outlet, NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
-  UserPlus,
-  UserCog,
   Server,
   BellRing,
   FileText,
   ClipboardList,
   Settings,
-  ShieldCheck,
   LogOut,
   Menu,
   X,
+  Lock,
 } from "lucide-react";
 
+import { apiFetch } from "../../api/api";
 import { useAuth } from "../context/AuthContext";
 import DashboardHeader from "./SuperAdminHeader";
+import { hasPermission } from "../config/permissions";
 
 const navigationItems = [
-  { to: "/super-admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/super-admin/users", label: "Users", icon: Users },
-  { to: "/super-admin/create-account", label: "Create Account", icon: UserPlus },
-  { to: "/super-admin/role-based-accounts", label: "Roles", icon: UserCog },
-  { to: "/super-admin/devices", label: "Devices", icon: Server },
-  { to: "/super-admin/alerts", label: "Alerts", icon: BellRing },
-  { to: "/super-admin/reports", label: "Reports", icon: FileText },
-  { to: "/super-admin/security-logs", label: "Logs", icon: ClipboardList },
-  { to: "/super-admin/settings", label: "Settings", icon: Settings },
-  // { to: "/super-admin/mfa-setup", label: "MFA Setup", icon: ShieldCheck },
+  { to: "/super-admin/dashboard", label: "Dashboard", icon: LayoutDashboard, requiredAction: "view_dashboard" },
+  { to: "/super-admin/users", label: "Users", icon: Users, requiredAction: "view_users" },
+  { to: "/super-admin/devices", label: "Devices", icon: Server, requiredAction: "view_devices" },
+  { to: "/super-admin/alerts", label: "Alerts", icon: BellRing, requiredAction: "view_alerts" },
+  { to: "/super-admin/reports", label: "Reports", icon: FileText, requiredAction: "view_reports" },
+  { to: "/super-admin/security-logs", label: "Logs", icon: ClipboardList, requiredAction: "view_security_logs" },
+  { to: "/super-admin/settings", label: "Settings", icon: Settings, requiredActions: ["manage_users", "manage_settings"] },
 ];
 
 export default function SuperAdminLayout() {
   const { profile, signOutUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [criticalAlerts, setCriticalAlerts] = useState(0);
+  const location = useLocation();
+  const canAccessItem = (item) =>
+    Array.isArray(item.requiredActions)
+      ? item.requiredActions.some((action) => hasPermission(profile?.role, action))
+      : hasPermission(profile?.role, item.requiredAction);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCriticalAlerts() {
+      try {
+        const response = await apiFetch("/superadmin/alerts");
+
+        if (!isMounted) {
+          return;
+        }
+
+        setCriticalAlerts(response?.summary?.criticalAlerts || 0);
+      } catch (error) {
+        if (isMounted) {
+          setCriticalAlerts(0);
+        }
+      }
+    }
+
+    loadCriticalAlerts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [location.pathname]);
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -86,38 +115,50 @@ export default function SuperAdminLayout() {
           {/* NAVIGATION */}
           <nav className="flex flex-col gap-2 flex-1 overflow-y-auto min-h-0">
             {navigationItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={() => setIsOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-xl transition ${
-                    isActive ? "bg-green-50" : "hover:bg-gray-100"
-                  }`
-                }
-              >
-                {({ isActive }) => {
-                  const Icon = item.icon;
+              canAccessItem(item) ? (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setIsOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-xl transition ${
+                      isActive ? "bg-green-50" : "hover:bg-gray-100"
+                    }`
+                  }
+                >
+                  {({ isActive }) => {
+                    const Icon = item.icon;
 
-                  return (
-                    <>
-                      <Icon
-                        className={`w-5 h-5 ${
-                          isActive ? "text-green-600" : "text-gray-800"
-                        }`}
-                      />
+                    return (
+                      <>
+                        <Icon
+                          className={`w-5 h-5 ${
+                            isActive ? "text-green-600" : "text-gray-800"
+                          }`}
+                        />
 
-                      <span
-                        className={`text-sm ${
-                          isActive ? "text-green-600 font-medium" : "text-gray-800"
-                        }`}
-                      >
-                        {item.label}
-                      </span>
-                    </>
-                  );
-                }}
-              </NavLink>
+                        <span
+                          className={`text-sm ${
+                            isActive ? "text-green-600 font-medium" : "text-gray-800"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      </>
+                    );
+                  }}
+                </NavLink>
+              ) : (
+                <div
+                  key={item.to}
+                  className="flex items-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-3 py-2 text-gray-400"
+                  title="You do not have permission to access this page"
+                >
+                  <item.icon className="h-5 w-5 text-gray-300" />
+                  <span className="text-sm font-medium text-gray-400">{item.label}</span>
+                  <Lock className="ml-auto h-4 w-4 text-gray-300" />
+                </div>
+              )
             ))}
           </nav>
 
@@ -147,7 +188,7 @@ export default function SuperAdminLayout() {
       <div className="flex flex-col flex-1 h-screen overflow-hidden">
 
         <DashboardHeader
-          criticalAlerts={3}
+          criticalAlerts={criticalAlerts}
           onMenuClick={() => setIsOpen(true)}
         />
 

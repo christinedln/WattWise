@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { browserLocalPersistence, onAuthStateChanged, setPersistence, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth, db } from "../../firebase";
 import { normalizeRole } from "../config/permissions";
 
@@ -18,7 +18,7 @@ const AuthContext = createContext(null);
 
 async function loadUserProfile(uid, fallbackUser) {
   const snapshot = await getDoc(doc(db, "users", uid));
-  const tokenResult = fallbackUser?.getIdTokenResult ? await fallbackUser.getIdTokenResult() : null;
+  const tokenResult = fallbackUser?.getIdTokenResult ? await fallbackUser.getIdTokenResult(true) : null;
   const claimRole = tokenResult?.claims?.role;
   const claimOrganizationId = tokenResult?.claims?.organizationId || null;
 
@@ -112,6 +112,10 @@ export function AuthProvider({ children }) {
   }, [scheduleIdleTimeout]);
 
   useEffect(() => {
+    setPersistence(auth, browserLocalPersistence).catch(() => {
+      // Keep the existing default if the browser blocks persistence.
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
       if (!nextUser) {
         clearTimer();

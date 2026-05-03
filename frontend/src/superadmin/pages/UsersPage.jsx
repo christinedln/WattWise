@@ -63,7 +63,7 @@ export default function UsersPage() {
           {canManageUsers ? (
             <button
               type="button"
-              onClick={() => navigate("/super-admin/create-account")}
+              onClick={() => navigate("/super-admin/settings")}
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700 hover:shadow-md active:scale-95"
             >
               <UserPlus className="h-4 w-4" />

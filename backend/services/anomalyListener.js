@@ -1,4 +1,5 @@
 const { sendAlertEmail } = require("../utils/emailService");
+const { removeAlert, upsertAlert } = require("./alertCache");
 
 let db;
 
@@ -31,10 +32,17 @@ function startAnomalyListener() {
 
     db.collectionGroup("anomalies").onSnapshot(async (snapshot) => {
       for (const change of snapshot.docChanges()) {
-        if (change.type !== "added") continue;
+        if (change.type === "removed") {
+          removeAlert(change.doc.ref);
+          continue;
+        }
+
+        if (change.type !== "added" && change.type !== "modified") continue;
 
         const docRef = change.doc;
         const data = docRef.data();
+
+        upsertAlert(docRef.ref, data);
 
         // ─── HARD GUARD (IMPORTANT) ─────────────────────
         if (!data || Object.keys(data).length === 0) {
