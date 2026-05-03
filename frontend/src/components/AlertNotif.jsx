@@ -366,23 +366,25 @@ const resolveSelected = async () => {
         ))}
       </div>
 {logModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
 
     {/* modal */}
-    <div className="bg-white w-[560px] max-h-[80vh] overflow-hidden rounded-2xl shadow-2xl border border-gray-200 flex flex-col">
+    <div className="bg-white w-[560px] max-h-[80vh] overflow-hidden rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-gray-200 flex flex-col">
 
       {/* header */}
-      <div className="flex justify-between items-center px-5 py-4 border-b bg-gray-50">
+      <div className="flex justify-between items-center px-6 py-4 border-b border-green-100 bg-green-50">
         <div>
-          <h2 className="font-bold text-lg text-gray-900">Anomaly Timeline</h2>
-          <p className="text-xs text-gray-500">
+          <h2 className="font-semibold text-[17px] text-gray-900 tracking-tight">
+            Anomaly Timeline
+          </h2>
+          <p className="text-xs text-gray-500 mt-0.5">
             Context logs leading to detection
           </p>
         </div>
 
         <button
           onClick={() => setLogModal(null)}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600"
+          className="w-8 h-8 flex items-center justify-center rounded-full text-gray-600 hover:bg-green-100 hover:text-gray-900 transition-all duration-150"
         >
           ✕
         </button>
@@ -402,7 +404,7 @@ const resolveSelected = async () => {
             <div className="relative">
 
               {/* vertical timeline line */}
-              <div className="absolute left-3 top-2 bottom-2 w-px bg-gray-200" />
+              <div className="absolute left-1 top-2 bottom-2 w-[2px] bg-gray-400" />
 
               <div className="space-y-3">
 
@@ -413,10 +415,10 @@ const resolveSelected = async () => {
                     <div key={idx} className="flex gap-3 relative">
 
                       {/* dot */}
-                      <div className={`mt-2 w-3 h-3 rounded-full z-10 border-2
+                      <div className={`mt-2 w-3 h-3 rounded-full z-10 border-2 shadow-sm
                         ${isAnomaly
-                          ? "bg-red-500 border-red-300"
-                          : "bg-gray-300 border-white"
+                          ? "bg-red-500 border-red-200"
+                          : "bg-green-600 border-white"
                         }
                       `} />
 

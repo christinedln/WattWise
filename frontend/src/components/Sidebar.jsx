@@ -72,12 +72,12 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Toggle */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 rounded-lg hover:bg-gray-100"
-      >
-        <Menu className="w-6 h-6 text-gray-800" />
-      </button>
+     <button
+  onClick={() => setIsOpen(true)}
+  className="md:hidden fixed top-4 left-4 z-50 w-10 h-10 opacity-0"
+>
+  <Menu className="w-6 h-6" />
+</button>
 
       {/* Overlay */}
       {isOpen && (
@@ -194,4 +194,4 @@ export default function Sidebar() {
       </div>
     </>
   );
-} 
+}

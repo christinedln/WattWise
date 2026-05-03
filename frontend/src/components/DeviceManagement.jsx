@@ -283,7 +283,7 @@ function ActivityTimeline({ device }) {
         <div className="relative pl-8">
 
           {/* vertical line */}
-          <div className="absolute left-3 top-0 bottom-0 w-px bg-gray-200" />
+          <div className="absolute left-1 top-2 bottom-2 w-[2px] bg-gray-400" />
 
           <div className="space-y-5">
             {device.activity_timeline.map((log, idx) => {
@@ -313,11 +313,10 @@ function ActivityTimeline({ device }) {
               return (
                 <div key={idx} className="relative flex items-start gap-3">
 
-                  {/* dot */}
-                  <div
-                    className={`absolute left-[-6px] top-1 w-3 h-3 rounded-full border-2 border-white shadow ${dotColor}`}
-                  />
-
+  {/* dot */}
+ <div
+  className={`absolute top-1 left-0 w-3 h-3 rounded-full border-2 border-white shadow ${dotColor} -translate-x-8`}
+/>
                   {/* card */}
                   <div className="w-full bg-gray-50 hover:bg-gray-100 transition rounded-lg px-3 py-2 border border-gray-100">
 
