@@ -9,7 +9,6 @@ const predictionsRoutes = require("./routes/predictions");
 const adminAccountsRoutes = require("./routes/adminAccounts");
 const settingsRoutes = require("./routes/settings");
 const alertsRoutes = require("./routes/alerts");
-const adminAccountsRoutes = require("./routes/adminAccounts");
 
 const app = express();
 
