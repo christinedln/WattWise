@@ -1,5 +1,5 @@
-import React from "react";
-import { Users, ShieldCheck } from "lucide-react";
+import React, { useState } from "react";
+import { Users, ShieldCheck, X, UserRoundPlus } from "lucide-react";
 import { hasPermission } from "../config/permissions";
 import { useAuth } from "../context/AuthContext";
 import AccountCreationCard from "../components/AccountCreationCard";
@@ -7,6 +7,7 @@ import RoleBasedAccountsTable from "../components/RoleBasedAccountsTable";
 
 export default function SettingsPage() {
   const { role } = useAuth();
+  const [showModal, setShowModal] = useState(false);
   const canViewSettings = hasPermission(role, "manage_users") || hasPermission(role, "manage_settings");
 
   if (!canViewSettings) {
@@ -28,6 +29,7 @@ export default function SettingsPage() {
           "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif",
       }}
     >
+      {/* Header */}
       <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-md">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
@@ -36,10 +38,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Settings Workspace
-              </h2>
-
+              <h2 className="text-2xl font-bold text-gray-900">Settings Workspace</h2>
               <p className="text-sm leading-6 text-gray-400">
                 Create admin accounts and manage role-based accounts from one place.
               </p>
@@ -53,24 +52,9 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-600">
-              Create Account
-            </p>
-            <h3 className="mt-2 text-xl font-bold text-gray-900">
-              Add a new admin role
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-gray-600">
-              Use this form to provision a Firebase Auth user and sync it into the role-based accounts collection.
-            </p>
-          </div>
-
-          <AccountCreationCard />
-        </section>
-
-        <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      {/* Role Directory — full width */}
+      <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-600">
               Role Directory
@@ -83,9 +67,54 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          <RoleBasedAccountsTable />
-        </section>
-      </div>
+          {/* Open modal button */}
+          {hasPermission(role, "manage_users") && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-green-700 bg-green-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-800 whitespace-nowrap"
+            >
+              <UserRoundPlus className="h-4 w-4 text-white" />
+              Create Account
+            </button>
+          )}
+        </div>
+
+        <RoleBasedAccountsTable />
+      </section>
+
+      {/* Modal */}
+      {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="relative w-full max-w-3xl mx-4 rounded-2xl bg-white shadow-xl max-h-[90vh] flex flex-col">
+
+              {/* Modal header - sticky so X is always visible */}
+              <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 shrink-0">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-600">
+                    Create Account
+                  </p>
+                  <h3 className="mt-1 text-lg font-bold text-gray-900">Add a new admin role</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Use this form to provision a Firebase Auth user and sync it into the role-based accounts collection.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 shrink-0 self-start"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Modal body - scrollable */}
+              <div className="px-6 py-5 overflow-y-auto">
+                <AccountCreationCard onSuccess={() => setShowModal(false)} />
+              </div>
+
+            </div>
+          </div>
+        )}
+    
     </div>
   );
 }
