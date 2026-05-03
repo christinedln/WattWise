@@ -289,9 +289,19 @@ export default function PredictionsPage() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Tooltip />
+                   <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#fff",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                    }}
+                    labelStyle={{
+                      color: "#000", // ONLY time label
+                      fontWeight: 600,
+                    }}
+                  />
                   <Legend />
-                  <Bar dataKey="consumption" fill= "#f59e0b" />
+                  <Bar dataKey="consumption" fill="#f59e0b" />
                   <Bar dataKey="cost" fill="#16a34a" />
                 </BarChart>
               </ResponsiveContainer>
@@ -306,10 +316,20 @@ export default function PredictionsPage() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#fff",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                    }}
+                    labelStyle={{
+                      color: "#000", // ONLY time label
+                      fontWeight: 600,
+                    }}
+                  />
                   <Legend />
                   <Line dataKey="predicted" stroke="#f59e0b" />
-<Line dataKey="actual" stroke="#16a34a" />
+                  <Line dataKey="actual" stroke="#16a34a" />
                 </LineChart>
               </ResponsiveContainer>
             </div>

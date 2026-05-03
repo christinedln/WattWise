@@ -67,7 +67,7 @@ export default function RealtimeMonitoringPage() {
         console.error("Trend fetch error:", err);
       }
     };
-    
+
 
     fetchAllTrends();
     // const interval = setInterval(fetchAllTrends, 5000);
@@ -85,11 +85,11 @@ export default function RealtimeMonitoringPage() {
     const severity = (a.severity || "").toLowerCase();
     if (severity === "normal") return false;
 
-    if (!a.timestamp) return true; 
+    if (!a.timestamp) return true;
 
     return Date.now() - new Date(a.timestamp).getTime() <= FIVE_MINUTES;
   });
-  
+
   const hasActiveAlerts = activeAlerts.length > 0;
 
   return (
@@ -191,14 +191,14 @@ export default function RealtimeMonitoringPage() {
                       device.message !== "No issues detected" && (
                         <div
                           className={`mt-3 rounded-xl p-3 border flex flex-col ${device.message.toLowerCase().includes("stable")
-                              ? "bg-blue-50 border-blue-200"
-                              : "bg-red-50 border-red-200"
+                            ? "bg-blue-50 border-blue-200"
+                            : "bg-red-50 border-red-200"
                             }`}
                         >
                           <div
                             className={`flex items-center gap-2 font-semibold ${device.message.toLowerCase().includes("stable")
-                                ? "text-blue-700"
-                                : "text-red-600"
+                              ? "text-blue-700"
+                              : "text-red-600"
                               }`}
                           >
                             {device.message.toLowerCase().includes("stable") ? (
@@ -211,8 +211,8 @@ export default function RealtimeMonitoringPage() {
 
                           <p
                             className={`text-sm mt-1 leading-snug whitespace-normal break-words ${device.message.toLowerCase().includes("stable")
-                                ? "text-blue-600"
-                                : "text-red-700"
+                              ? "text-blue-600"
+                              : "text-red-700"
                               }`}
                           >
                             {device.message}
@@ -287,13 +287,23 @@ export default function RealtimeMonitoringPage() {
                 {/* CHART */}
                 <div className="bg-white p-6 rounded-lg border">
                   <h2 className="text-xl font-bold mb-4 text-gray-900">Power Trend (Live)</h2>
-                  
+
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="time" />
                       <YAxis />
-                      <Tooltip />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{
+                          color: "#000", // ONLY time label
+                          fontWeight: 600,
+                        }}
+                      />
                       <Line
                         type="monotone"
                         dataKey="value"
@@ -314,10 +324,25 @@ export default function RealtimeMonitoringPage() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="time" />
                       <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={2}
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{
+                          color: "#000",
+                          fontWeight: 600,
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#2563eb"
+                        strokeWidth={2}
                         dot={{ r: 3 }}
-                        activeDot={{ r: 6 }} />
+                        activeDot={{ r: 6 }}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -330,10 +355,25 @@ export default function RealtimeMonitoringPage() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="time" />
                       <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="value" stroke="#f59e0b" strokeWidth={2}
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{
+                          color: "#000",
+                          fontWeight: 600,
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#f59e0b"
+                        strokeWidth={2}
                         dot={{ r: 3 }}
-                        activeDot={{ r: 6 }} />
+                        activeDot={{ r: 6 }}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
