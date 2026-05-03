@@ -1,24 +1,24 @@
 const express = require("express");
 const router = express.Router();
 
-// Utils / services
-const { mergeDeviceData } = require("../utils/mapper");
-const { computePowerTrend } = require("../utils/calculations");
+const { mapRealtimePage } = require("../utils/realtime_mapper");
 
-// Auth middleware
+// auth
 const authRequired = require("../utils/auth");
 
-// ALL DEVICES
+// ALL DEVICES (REALTIME PAGE)
 router.get("/devices", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
 
-        const devices = await mergeDeviceData(userId) || [];
+        const devices = await mapRealtimePage(userId) || [];
 
-        const updated = (devices || []).map(d => ({
+        const updated = devices.map(d => ({
             ...d,
-            alerts: d.alerts || []
+            alerts: d.currentalert || []
         }));
+
+        console.log("time:", new Date().toISOString());
 
         res.json(updated);
 
@@ -28,76 +28,49 @@ router.get("/devices", authRequired, async (req, res) => {
     }
 });
 
-// SINGLE DEVICE
-router.get("/device/:device_id", authRequired, async (req, res) => {
-    try {
-        const userId = req.user_id;
-        const deviceId = req.params.device_id;
-
-        if (!deviceId || typeof deviceId !== "string" || deviceId.trim() === "") {
-            return res.status(400).json({
-                error: "Invalid device ID"
-            });
-        }
-
-        const devices = await mergeDeviceData(userId) || [];
-
-        const device = (devices || []).find(d => d.device_id === deviceId);
-
-        if (!device) {
-            return res.status(404).json({ error: "Device not found" });
-        }
-
-        device.alerts = device.alerts || [];
-
-        res.json(device);
-
-    } catch (error) {
-        console.error("Single device error:", error);
-        res.status(500).json({ error: "Server error" });
-    }
-});
-
-// POWER TREND
+// POWER TREND 
 router.get("/power-trend/:device_id", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
         const deviceId = req.params.device_id;
 
-        const devices = await mergeDeviceData(userId) || [];
+        const devices = await mapRealtimePage(userId) || [];
 
-        const device = (devices || []).find(d => d.device_id === deviceId);
-
-        if (!device) {
-            return res.status(404).json({ error: "Device not found" });
-        }
-
-        const trend = computePowerTrend(device.realtime_logs || []);
-
-        res.json(trend);
-
-    } catch (error) {
-        console.error("Power trend error:", error);
-        res.status(500).json({ error: "Server error" });
-    }
-});
-
-// current trend
-router.get("/current-trend/:device_id", authRequired, async (req, res) => {
-    try {
-        const userId = req.user_id;
-        const deviceId = req.params.device_id;
-
-        const devices = await mergeDeviceData(userId) || [];
         const device = devices.find(d => d.device_id === deviceId);
 
         if (!device) {
             return res.status(404).json({ error: "Device not found" });
         }
 
-        const trend = (device.realtime_logs?.current || []).map(p => ({
+        const trend = (device.realtimelogs || []).map(p => ({
             time: p.timestamp,
-            value: p.value
+            value: p.power
+        }));
+
+        res.json(trend);
+    } catch (error) {
+        console.error("Power trend error:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+
+// CURRENT TREND
+router.get("/current-trend/:device_id", authRequired, async (req, res) => {
+    try {
+        const userId = req.user_id;
+        const deviceId = req.params.device_id;
+
+        const devices = await mapRealtimePage(userId) || [];
+        const device = devices.find(d => d.device_id === deviceId);
+
+        if (!device) {
+            return res.status(404).json({ error: "Device not found" });
+        }
+
+        const trend = (device.realtimelogs || []).map(p => ({
+            time: p.timestamp,
+            value: p.current
         }));
 
         res.json(trend);
@@ -108,22 +81,23 @@ router.get("/current-trend/:device_id", authRequired, async (req, res) => {
     }
 });
 
-// voltage trend
+
+// VOLTAGE TREND
 router.get("/voltage-trend/:device_id", authRequired, async (req, res) => {
     try {
         const userId = req.user_id;
         const deviceId = req.params.device_id;
 
-        const devices = await mergeDeviceData(userId) || [];
+        const devices = await mapRealtimePage(userId) || [];
         const device = devices.find(d => d.device_id === deviceId);
 
         if (!device) {
             return res.status(404).json({ error: "Device not found" });
         }
 
-        const trend = (device.realtime_logs?.voltage || []).map(p => ({
+        const trend = (device.realtimelogs || []).map(p => ({
             time: p.timestamp,
-            value: p.value
+            value: p.voltage
         }));
 
         res.json(trend);

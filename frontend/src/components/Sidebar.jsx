@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useNotifications } from "../context/NotificationContext";
 import {
   Home,
   Zap,
@@ -21,6 +22,7 @@ export default function Sidebar() {
   const location = useLocation();
   const [userData, setUserData] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { notifCount } = useNotifications();
 
   const menuItems = [
     { name: "Dashboard", to: "/dashboard", icon: Home },
@@ -129,7 +131,7 @@ export default function Sidebar() {
                   key={item.name}
                   to={item.to}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl transition"
+                  className="relative flex items-center gap-3 px-3 py-2 rounded-xl transition"
                 >
                   {/* ICON */}
                   <Icon
@@ -148,6 +150,12 @@ export default function Sidebar() {
                   >
                     {item.name}
                   </span>
+                  
+                    {item.name === "Alerts" && notifCount > 0 && (
+                      <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        {notifCount}
+                      </span>
+                    )}
                 </Link>
               );
             })}

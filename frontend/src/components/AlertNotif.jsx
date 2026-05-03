@@ -133,11 +133,9 @@ function SummaryCard({ label, value, sub, colorClass, textClass }) {
   );
 }
 
-const capitalize = (str) =>
-  str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
-
 export default function AlertNotif() {
   const [alerts, setAlerts] = useState([]);
+  const [logModal, setLogModal] = useState(null);
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -161,6 +159,7 @@ export default function AlertNotif() {
           time: formatTime(alert.timestamp),
 
           resolved: alert.resolved,
+          context_logs: alert.context_logs || [],
         }));
 
         setAlerts(transformed);
@@ -378,6 +377,15 @@ const toggleResolveAlert = async (id, currentResolved) => {
               <p className="text-xs text-gray-400 mt-1">{alert.time}</p>
             </div>
 
+            {/* INFO BUTTON */}
+            <button
+              onClick={() => setLogModal(alert)}
+              className="text-xs px-1.5 py-0.5 text-blue-600 hover:text-blue-800"
+              title="View context logs"
+            >
+              ℹ
+            </button>
+
             <button
               onClick={() => toggleResolveAlert(alert.id, alert.resolved)}
               className={`text-xs px-1.5 py-0.5 font-medium transition ${
@@ -391,7 +399,114 @@ const toggleResolveAlert = async (id, currentResolved) => {
           </div>
         ))}
       </div>
+{logModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
 
+    {/* modal */}
+    <div className="bg-white w-[560px] max-h-[80vh] overflow-hidden rounded-2xl shadow-2xl border border-gray-200 flex flex-col">
+
+      {/* header */}
+      <div className="flex justify-between items-center px-5 py-4 border-b bg-gray-50">
+        <div>
+          <h2 className="font-bold text-lg">Anomaly Timeline</h2>
+          <p className="text-xs text-gray-500">
+            Context logs leading to detection
+          </p>
+        </div>
+
+        <button
+          onClick={() => setLogModal(null)}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* body */}
+      <div className="p-5 overflow-auto">
+
+        {logModal.context_logs?.length > 0 ? (() => {
+          const logs = [...logModal.context_logs].sort(
+            (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+          );
+
+          const anomalyIndex = logs.length - 1;
+
+          return (
+            <div className="relative">
+
+              {/* vertical timeline line */}
+              <div className="absolute left-3 top-2 bottom-2 w-px bg-gray-200" />
+
+              <div className="space-y-3">
+
+                {logs.map((log, idx) => {
+                  const isAnomaly = idx === anomalyIndex;
+
+                  return (
+                    <div key={idx} className="flex gap-3 relative">
+
+                      {/* dot */}
+                      <div className={`mt-2 w-3 h-3 rounded-full z-10 border-2
+                        ${isAnomaly
+                          ? "bg-red-500 border-red-300"
+                          : "bg-gray-300 border-white"
+                        }
+                      `} />
+
+                      {/* card */}
+                      <div
+                        className={`flex-1 rounded-xl border p-3 transition-all
+                          ${isAnomaly
+                            ? "bg-red-50 border-red-300 shadow-md"
+                            : "bg-white border-gray-200"
+                          }
+                        `}
+                      >
+
+                        {/* top row */}
+                        <div className="flex justify-between items-center mb-1">
+                          <span className={`text-xs font-semibold ${
+                            isAnomaly ? "text-red-600" : "text-gray-500"
+                          }`}>
+                            {isAnomaly ? "Anomaly Trigger" : "Normal Reading"}
+                          </span>
+
+                          <span className="text-[11px] text-gray-400">
+                            {formatTime(log.timestamp)}
+                          </span>
+                        </div>
+
+                        {/* values */}
+                        <div className="grid grid-cols-3 text-xs text-gray-600">
+                          <div>V: {log.voltage}</div>
+                          <div>I: {log.current}</div>
+                          <div>P: {log.power}</div>
+                        </div>
+
+                        {/* explanation */}
+                        {isAnomaly && (
+                          <div className="mt-2 text-xs text-red-600 font-medium">
+                            This spike caused the alert detection.
+                          </div>
+                        )}
+
+                      </div>
+                    </div>
+                  );
+                })}
+
+              </div>
+            </div>
+          );
+        })() : (
+          <p className="text-sm text-gray-500">No logs available</p>
+        )}
+
+      </div>
+    </div>
+  </div>
+)}
       {/* MODALS */}
         {showEmail && (
           <EmailModal
@@ -404,5 +519,7 @@ const toggleResolveAlert = async (id, currentResolved) => {
           />
         )}
             </div>
+
+
   );
 }

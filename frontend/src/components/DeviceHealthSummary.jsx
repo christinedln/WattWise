@@ -1,6 +1,8 @@
 export default function DeviceHealthSummary({ readings = [] }) {
 
-  const allAlerts = readings.flatMap(d => d.alerts || []);
+  const allAlerts = readings
+  .flatMap(d => d.alerts || [])
+  .filter(a => !a.resolved);
 
   // DEVICE STATUS 
   const healthCounts = {

@@ -67,6 +67,7 @@ export default function RealtimeMonitoringPage() {
         console.error("Trend fetch error:", err);
       }
     };
+    
 
     fetchAllTrends();
     // const interval = setInterval(fetchAllTrends, 5000);
@@ -76,9 +77,19 @@ export default function RealtimeMonitoringPage() {
 
   const device = devices.find((d) => d.device_id === selectedDevice);
 
-  const alerts = device?.alerts || [];
+  const alerts = device?.currentAlerts || [];
 
-  const activeAlerts = alerts.filter(a => a.severity !== "Normal");
+  const FIVE_MINUTES = 5 * 60 * 1000;
+
+  const activeAlerts = alerts.filter((a) => {
+    const severity = (a.severity || "").toLowerCase();
+    if (severity === "normal") return false;
+
+    if (!a.timestamp) return true; 
+
+    return Date.now() - new Date(a.timestamp).getTime() <= FIVE_MINUTES;
+  });
+  
   const hasActiveAlerts = activeAlerts.length > 0;
 
   return (
@@ -152,11 +163,18 @@ export default function RealtimeMonitoringPage() {
                       <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex flex-col">
                         <div className="flex items-center gap-2 text-red-600 font-semibold">
                           <AlertCircle className="w-4 h-4" />
-                          Critical Anomalies Detected
+                          Anomaly Detected
                         </div>
 
                         <p className="text-red-700 text-sm mt-1 leading-snug whitespace-normal break-words">
-                          {activeAlerts.map((a) => `${a.signal}: ${a.message}`).join(" | ")}
+                          {activeAlerts
+                            .map((a) => {
+                              const signal = a.signal || "unknown";
+                              const severity = (a.severity || "normal").toLowerCase();
+
+                              return `${signal.toUpperCase()}: ${severity.toUpperCase()}`;
+                            })
+                            .join(" | ")}
                         </p>
                       </div>
                     ) : (
@@ -282,7 +300,7 @@ export default function RealtimeMonitoringPage() {
                       <Tooltip />
                       <Line
                         type="monotone"
-                        dataKey="power"
+                        dataKey="value"
                         stroke="#16a34a"
                         strokeWidth={2}
                         dot={{ r: 3 }}

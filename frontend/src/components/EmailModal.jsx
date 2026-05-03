@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { TYPE } from "./AlertsData";
 
-// ⚠️ Firebase init (safe singleton)
+// Firebase init (safe singleton)
 const app = getApps().length
   ? getApp()
   : initializeApp({

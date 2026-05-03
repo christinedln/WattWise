@@ -1,8 +1,8 @@
 import { Bell, Menu } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { useNotifications } from "../context/NotificationContext";
 
 export default function DashboardHeader({
-  criticalAlerts = 0,
   onMenuClick,
   onEmailClick,
   onSoundClick,
@@ -16,6 +16,7 @@ export default function DashboardHeader({
   const isRealtimeMonitoringPage = path === "/realtime";
   const isPredictionsPage = path === "/predictions";
   const isSettingsPage = path === "/settings";
+  const { notifCount } = useNotifications();
 
   const title = isAlertsPage
     ? "Alerts & Notifications"
@@ -122,9 +123,9 @@ export default function DashboardHeader({
           <div className="relative flex items-center justify-center">
             <Bell className="w-6 h-6 text-gray-700" />
 
-            {criticalAlerts > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                {criticalAlerts}
+            {notifCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center">
+                {notifCount}
               </span>
             )}
           </div>

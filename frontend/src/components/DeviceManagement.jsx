@@ -29,6 +29,26 @@ const PencilIcon = () => (
   </svg>
 );
 
+const ChevronIcon = ({ open }) => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{
+      transform: open ? "rotate(180deg)" : "rotate(0deg)",
+      transition: "transform 0.2s ease",
+      display: "block",
+    }}
+  >
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
 
 // ─── Status Badge ─────────────────────────────────
 function StatusBadge({ severity }) {
@@ -94,12 +114,23 @@ function UsageBar({ pct }) {
   );
 }
 
-function getSeverity(alerts = [], signal) {
-  return alerts.find(a => a.signal === signal)?.severity || "normal";
+function getSeverity(currentalert = [], signal) {
+  const alert = currentalert.find(a => a.signal === signal);
+
+  if (!alert) return "normal";
+
+  if (!alert.timestamp) return "normal";
+
+  const FIVE_MINUTES = 5 * 60 * 1000;
+
+  const isRecent =
+    Date.now() - new Date(alert.timestamp).getTime() <= FIVE_MINUTES;
+
+  return isRecent ? (alert.severity || "normal") : "normal";
 }
 
 // ─── Row ─────────────────────────────────────
-function DeviceRow({ device, pct, openEdit }) {
+function DeviceRow({ device, pct, openEdit, onDelete }) {
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50">
       <td className="px-4 py-3 font-semibold whitespace-nowrap">
@@ -125,15 +156,15 @@ function DeviceRow({ device, pct, openEdit }) {
       </td>
 
       <td className="px-4 py-3">
-        <StatusBadge severity={getSeverity(device.alerts, "current")} />
+        <StatusBadge severity={getSeverity(device.currentalert, "current")} />
       </td>
 
       <td className="px-4 py-3">
-        <StatusBadge severity={getSeverity(device.alerts, "voltage")} />
+        <StatusBadge severity={getSeverity(device.currentalert, "voltage")} />
       </td>
 
       <td className="px-4 py-3">
-        <StatusBadge severity={getSeverity(device.alerts, "power")} />
+        <StatusBadge severity={getSeverity(device.currentalert, "power")} />
       </td>
 
       <td className="px-4 py-3 font-mono text-sm text-gray-700 font-medium">{device.kwh}</td>
@@ -181,6 +212,7 @@ function DeviceRow({ device, pct, openEdit }) {
           {/* ── Remove Device ── */}
           <button
             title="Remove device"
+            onClick={() => onDelete(device.device_id)}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -196,7 +228,7 @@ function DeviceRow({ device, pct, openEdit }) {
             onMouseEnter={e => e.currentTarget.style.background = "#E0E0E0"}
             onMouseLeave={e => e.currentTarget.style.background = "#F0F0F0"}
           >
-            <TrashIcon size={14} />
+            <TrashIcon />
           </button>
         </div>
       </td>
@@ -216,26 +248,102 @@ function formatTime(time) {
   });
 }
 
-// ─── Activity Timeline ─────────────────────────────────
+// Activity Timeline 
 function ActivityTimeline({ device }) {
+  const [open, setOpen] = useState(false);
   if (!device.activity_timeline?.length) return null;
 
   return (
-    <div className="px-4 py-3 bg-slate-50 border-t border-gray-100">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-        Activity Timeline
-      </p>
+    <div className="w-full px-4 py-5 bg-white border-t border-gray-100">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Activity Timeline
+        </p>
 
-      <div className="space-y-1.5">
-        {device.activity_timeline.map((log, idx) => (
-          <div key={idx} className="text-xs text-gray-600 flex gap-3">
-            <span className="text-gray-400 shrink-0">
-              {formatTime(log.time)}
-            </span>
-            <span>{log.event}</span>
-          </div>
-        ))}
+        <button
+          onClick={() => setOpen(prev => !prev)}
+          className="
+            inline-flex items-center gap-1.5
+            px-3 py-1.5
+            text-xs font-medium
+            rounded-full
+            transition-all duration-200
+          "
+        >
+          <ChevronIcon open={open} />
+          <span>{open ? "" : ""}</span>
+        </button>
       </div>
+
+      {/* Timeline container */}
+      {open && (
+        <div className="relative pl-8">
+
+          {/* vertical line */}
+          <div className="absolute left-3 top-0 bottom-0 w-px bg-gray-200" />
+
+          <div className="space-y-5">
+            {device.activity_timeline.map((log, idx) => {
+
+              // simple severity color parsing from event text
+              const isCritical = log.event.includes("critical");
+              const isWarning = log.event.includes("warning");
+              const isSuspicious = log.event.includes("suspicious");
+              const signal = log.event.split("]")[0].replace("[", "").toLowerCase();
+              const severityText = (log.event.split("-")[1]?.trim() || log.event).toUpperCase();
+
+              const signalColor =
+                signal === "current"
+                  ? "bg-blue-100 text-blue-700 border-blue-300"
+                  : signal === "voltage"
+                  ? "bg-indigo-100 text-indigo-700 border-indigo-300"
+                  : signal === "power"
+                  ? "bg-pink-100 text-pink-700 border-pink-300"
+                  : "bg-gray-100 text-gray-600 border-gray-200";
+
+              const dotColor =
+                isCritical ? "bg-red-500"
+                  : isWarning ? "bg-amber-500"
+                    : isSuspicious ? "bg-purple-500"
+                      : "bg-emerald-500";
+
+              return (
+                <div key={idx} className="relative flex items-start gap-3">
+
+                  {/* dot */}
+                  <div
+                    className={`absolute left-[-6px] top-1 w-3 h-3 rounded-full border-2 border-white shadow ${dotColor}`}
+                  />
+
+                  {/* card */}
+                  <div className="w-full bg-gray-50 hover:bg-gray-100 transition rounded-lg px-3 py-2 border border-gray-100">
+
+                    {/* top row */}
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[11px] text-gray-400">
+                        {formatTime(log.time)}
+                      </span>
+
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold capitalize ${signalColor}`}
+                      >
+                        {signal}
+                      </span>
+                    </div>
+
+                    {/* message */}
+                    <p className="text-xs text-gray-700 leading-snug">
+                      {severityText}
+                    </p>
+
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -324,27 +432,47 @@ export default function DeviceManagement() {
   const [signalFilter, setSignalFilter] = useState(null);
   const [severityFilter, setSeverityFilter] = useState(null);
 
+  const fetchDevices = async () => {
+    const json = await apiFetch("/devices/");
 
-  useEffect(() => {
-    const fetchDevices = async () => {
-      const json = await apiFetch("/devices/");
+    const formatted = (json.data || []).map((d) => ({
+      id: d.id,
+      device_id: d.device_id,
+      name: d.name,
+      location: d.location,
+      status: d.status,
+      kwh: d.kwh ?? d.consumption ?? 0,
+      currentalert: d.currentalert || [],
+      alerts: d.alerts || [],
+      lastUpdated: d.lastUpdated,
+    }));
 
-      const formatted = (json.data || []).map((d) => ({
-        id: d.id,
-        device_id: d.device_id,
-        name: d.name,
-        location: d.location,
-        status: d.status,
-        kwh: d.kwh ?? d.consumption ?? 0,
-        alerts: d.alerts || [],
-        lastUpdated: d.lastUpdated,
-      }));
+    setDevices(formatted);
+  };
 
-      setDevices(formatted);
-    };
+    useEffect(() => {
+      fetchDevices();
+    }, []);
 
-    fetchDevices();
-  }, []);
+  const refreshAfterDelay = () => {
+    setTimeout(() => {
+      fetchDevices();
+    }, 5000);
+  };
+
+  const handleDelete = async (deviceId) => {
+    try {
+      await apiFetch(`/devices/${deviceId}`, {
+        method: "DELETE",
+      });
+
+      setDevices((prev) => prev.filter(d => d.device_id !== deviceId));
+      refreshAfterDelay();
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert(err.message || "Failed to delete device");
+    }
+  };
 
   const openEdit = (device, field) => {
     setErrorMsg("");
@@ -401,12 +529,22 @@ export default function DeviceManagement() {
     if (filter === "active" && d.status !== "active") return false;
     if (filter === "offline" && d.status !== "offline") return false;
     if (signalFilter && severityFilter) {
-      const severity = getSeverity(d.alerts, signalFilter);
+      const severity = getSeverity(d.currentalert, signalFilter);
       return severity === severityFilter.toLowerCase();
     }
 
     return true;
   });
+
+    const devicesWithTimeline = filteredDevices.map(d => ({
+    ...d,
+    activity_timeline: (d.alerts || [])
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .map(a => ({
+        time: a.timestamp,
+        event: `[${a.signal}] ${a.severity} - ${a.message}`
+      }))
+  }));
 
   const totalKwh = filteredDevices.reduce((s, d) => s + d.kwh, 0);
 
@@ -583,13 +721,26 @@ export default function DeviceManagement() {
                   </td>
                 </tr>
               ) : (
-                filteredDevices.map((d) => (
+                devicesWithTimeline.map((d) => (
                   <React.Fragment key={d.id}>
                     <DeviceRow
                       device={d}
                       pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0}
                       openEdit={openEdit}
+                      onDelete={handleDelete}
                     />
+
+                    {/* FULL WIDTH TIMELINE ROW */}
+                    <tr>
+                      <td colSpan={10} className="p-0 border-b border-gray-100 bg-white">
+
+                        <div className="w-full">
+                          <ActivityTimeline device={d} />
+                        </div>
+
+                      </td>
+                    </tr>
+
                   </React.Fragment>
                 ))
               )}

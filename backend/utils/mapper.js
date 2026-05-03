@@ -1,7 +1,6 @@
 // utils/mapper
-const { getDevices, getRealtimeLogs, getAlerts } = require("../services/data_service");
+const { getDevices, getRealtimeLogs, getAlerts, getCurrentAlerts } = require("../services/data_service");
 const { nowTime } = require("../utils/time_helper");
-const { calcKwh } = require("../utils/calculations");
 
 async function mergeDeviceData(userId) {
     if (!userId || typeof userId !== "string") return [];
@@ -53,8 +52,6 @@ async function mergeDeviceData(userId) {
             }))
         };
 
-        d.realtime_logs = structuredLogs;
-
         const rawAlerts = await getAlerts(userId, deviceId);
         const alertsArray = Array.isArray(rawAlerts) ? rawAlerts : [];
 
@@ -63,9 +60,20 @@ async function mergeDeviceData(userId) {
             severity: a.severity || "normal",
             message: a.message || `${a.severity || "normal"} anomaly detected`,
             timestamp: a.timestamp,
-            resolved: a.resolved ?? false
+            resolved: a.resolved ?? false,
         }));
 
+        const rawCurrentAlerts = await getCurrentAlerts(userId, deviceId);
+
+        const currentalert = Array.isArray(rawCurrentAlerts)
+            ? rawCurrentAlerts.map(a => ({
+                id: a.id,
+                signal: a.signal,
+                severity: (a.severity || "normal").toLowerCase(),
+                timestamp: a.timestamp || null,
+            }))
+            : [];
+            
         merged.push({
             id: `device-${deviceId}`,
             device_id: deviceId,
@@ -85,13 +93,13 @@ async function mergeDeviceData(userId) {
             enabled: d.enabled ?? true,
 
             alerts,
+            
+            currentalert,
 
             consumption: Number(d.consumption) || 0,
 
             lastUpdated: nowTime(),
-
-            realtime_logs: structuredLogs,
-
+            
             settings
         });
     }
