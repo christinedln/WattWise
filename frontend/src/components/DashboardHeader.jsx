@@ -5,7 +5,6 @@ import { useNotifications } from "../context/NotificationContext";
 export default function DashboardHeader({
   onMenuClick,
   onEmailClick,
-  onSoundClick,
 }) {
   const location = useLocation();
   const path = location.pathname;
@@ -97,22 +96,7 @@ export default function DashboardHeader({
                 </svg>
               </div>
 
-              {/* Sound */}
-              <div
-                onClick={onSoundClick}
-                className="cursor-pointer flex items-center justify-center group"
-              >
-                <svg
-                  className="w-6 h-6 text-gray-700 group-hover:text-green-700 transition-colors duration-200"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                </svg>
-              </div>
+              
             </>
           )}
 

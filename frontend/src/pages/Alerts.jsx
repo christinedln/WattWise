@@ -9,7 +9,7 @@ import EmailModal from "../components/EmailModal";
 
 export default function Alerts() {
   const [showEmail, setShowEmail] = useState(false);
-  const [showSound, setShowSound] = useState(false);
+  
 
   return (
     <Layout>
@@ -19,7 +19,6 @@ export default function Alerts() {
         <div className="flex-1 flex flex-col overflow-hidden">
           <DashboardHeader
             onEmailClick={() => setShowEmail(true)}
-            onSoundClick={() => setShowSound(true)}
           />
 
           <div className="flex-1 overflow-auto p-6">

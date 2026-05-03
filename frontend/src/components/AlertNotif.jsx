@@ -4,19 +4,6 @@ import { apiFetch } from "../api/api";
 import { CheckCircle, Undo2 } from "lucide-react";
 
 // ─── Inline SVG Icons ─────────────────────────────────
-const MailIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="2" y="4" width="20" height="16" rx="2" />
-    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-  </svg>
-);
-
-const ClockIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
 
 const VolumeIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -38,15 +25,6 @@ const EyeOffIcon = () => (
   </svg>
 );
 
-const TrashIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6l-1 14H6L5 6" />
-    <path d="M10 11v6" />
-    <path d="M14 11v6" />
-    <path d="M9 6V4h6v2" />
-  </svg>
-);
 
 // ─── Filter meta ──────────────────────────────────────
 const filterMeta = {
@@ -259,24 +237,6 @@ const resolveSelected = async () => {
         </div>
       )}
 
-      {/* HEADER */}
-      <div className="flex justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Alerts & Notifications</h1>
-            <p className="text-sm text-gray-400">Device issues and anomalies</p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowEmail(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150"
-             style={{ backgroundColor: "#F0F8F5 ", color: "black", border: "1px solid #86efac" }}
-            >
-          <MailIcon /> Email Alerts
-            </button>
-            
-          </div>
-        </div>
 
       {/* STATS */}
       <div className="bg-white rounded-lg border border-gray-200 px-6 py-4 mb-6">
