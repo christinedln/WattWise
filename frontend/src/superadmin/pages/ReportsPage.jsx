@@ -59,10 +59,11 @@ export default function ReportsPage() {
         setLoading(true);
         setError("");
 
+        // Minor addition:
         const [logsPage, alertsSummary] = await Promise.all([
-          fetchAuditLogPage({ pageSize: 10 }),
-          apiFetch("/superadmin/alerts"),
-        ]);
+        fetchAuditLogPage({ pageSize: 10 }),
+        apiFetch("/superadmin/alerts").catch(() => null), // ← just add .catch(() => null)
+      ]);
 
         if (!isMounted) return;
 
@@ -171,11 +172,10 @@ export default function ReportsPage() {
           <button
             type="button"
             onClick={() => downloadCsv(auditRows)}
-            disabled={!auditRows.length}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download className="h-4 w-4" />
-            Export current log page
+            Export current reports
           </button>
         </div>
       </section>
