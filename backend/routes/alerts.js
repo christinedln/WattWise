@@ -101,9 +101,27 @@ router.patch("/:id/resolve", authRequired, async (req, res) => {
       const doc = await ref.get();
 
       if (doc.exists) {
+        const newResolved = resolved ?? true;
+
+        // update anomalies
         await ref.update({
-          resolved: resolved ?? true,
+          resolved: newResolved,
         });
+
+        // update notif_anomalies
+        const notifRef = db
+          .collection("user")
+          .doc(userId)
+          .collection("notif_anomalies")
+          .doc(alertId);
+
+        const notifDoc = await notifRef.get();
+
+        if (notifDoc.exists) {
+          await notifRef.update({
+            resolved: newResolved,
+          });
+        }
 
         found = true;
         break;

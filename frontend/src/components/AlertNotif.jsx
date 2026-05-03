@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import EmailModal from "./EmailModal";
 import { apiFetch } from "../api/api";
+import { CheckCircle, Undo2 } from "lucide-react";
 
 // ─── Inline SVG Icons ─────────────────────────────────
 const MailIcon = () => (
@@ -224,27 +225,30 @@ const toggleResolveAlert = async (id, currentResolved) => {
   }
 };
 
-  const resolveSelected = async () => {
-    try {
-      await Promise.all(
-        selected.map((id) =>
-          apiFetch(`/alerts/${id}/resolve`, { method: "PATCH" })
-        )
-      );
+const resolveSelected = async () => {
+  try {
+    await Promise.all(
+      selected.map((id) =>
+        apiFetch(`/alerts/${id}/resolve`, {
+          method: "PATCH",
+          body: JSON.stringify({ resolved: true }), 
+        })
+      )
+    );
 
-      setAlerts((p) =>
-        p.map((a) =>
-          selected.includes(a.id) ? { ...a, resolved: true } : a
-        )
-      );
+    setAlerts((p) =>
+      p.map((a) =>
+        selected.includes(a.id) ? { ...a, resolved: true } : a
+      )
+    );
 
-      setSelected([]);
-      showToast("Marked as resolved");
+    setSelected([]);
+    showToast("Marked as resolved");
 
-    } catch (err) {
-      console.error("Resolve failed:", err);
-    }
-  };
+  } catch (err) {
+    console.error("Resolve failed:", err);
+  }
+};
 
   return (
     <div className="relative">
@@ -345,12 +349,13 @@ const toggleResolveAlert = async (id, currentResolved) => {
         </div>
 
         {selected.length > 0 && (
-          <button
-            onClick={resolveSelected}
-            className="ml-auto px-3 py-2 rounded-lg bg-green-50 border border-green-300 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
-          >
-            ✓ Resolve {selected.length} selected
-          </button>
+         <button
+  onClick={resolveSelected}
+  className="ml-auto inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 border border-green-300 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
+>
+  <CheckCircle className="w-4 h-4" />
+  Resolve {selected.length} selected
+</button>
         )}
       </div>
 
@@ -387,15 +392,15 @@ const toggleResolveAlert = async (id, currentResolved) => {
             </button>
 
             <button
-              onClick={() => toggleResolveAlert(alert.id, alert.resolved)}
-              className={`text-xs px-1.5 py-0.5 font-medium transition ${
-                alert.resolved
-                  ? "text-gray-500 hover:text-gray-700"
-                  : "text-green-600 hover:text-green-800"
-              }`}
-            >
-              {alert.resolved ? "↩" : "✓"}
-            </button>
+  onClick={() => toggleResolveAlert(alert.id, alert.resolved)}
+  className="inline-flex items-center justify-center p-2 rounded-md !bg-transparent !bg-none !shadow-none !border-0 transition"
+>
+  {alert.resolved ? (
+    <Undo2 className="w-5 h-5 !text-blue-600 hover:!text-blue-800" />
+  ) : (
+    <CheckCircle className="w-5 h-5 !text-green-600 hover:!text-green-800" />
+  )}
+</button>
           </div>
         ))}
       </div>

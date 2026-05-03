@@ -53,7 +53,7 @@ export default function DashboardHeader({
         {/* LEFT SIDE */}
         <div className="flex items-center gap-4">
 
-          {/* Burger (mobile only) */}
+          {/* Burger */}
           <div className="md:hidden flex items-center mr-8">
             <Menu
               className="w-6 h-6 text-gray-800 cursor-pointer"
@@ -61,7 +61,7 @@ export default function DashboardHeader({
             />
           </div>
 
-          {/* TITLE + SUBTITLE */}
+          {/* TITLE */}
           <div>
             <h2 className="text-2xl font-semibold text-gray-900 tracking-tight leading-tight">
               {title}
@@ -73,14 +73,11 @@ export default function DashboardHeader({
               </p>
             )}
           </div>
-
         </div>
 
         {/* RIGHT SIDE */}
-
         <div className="flex items-center gap-3">
 
-          {/* Email + Sound — alerts page only */}
           {isAlertsPage && (
             <>
               {/* Email */}
@@ -132,8 +129,6 @@ export default function DashboardHeader({
 
         </div>
       </div>
-
     </div>
-
   );
 }

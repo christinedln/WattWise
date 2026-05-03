@@ -167,91 +167,136 @@ export default function PredictionsPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
           <DashboardHeader />
 
-          <div className="flex-1 overflow-auto p-6">
+<div className="flex-1 overflow-auto overscroll-contain p-6 space-y-6 bg-gray-50">
 
-            {/* HEADER */}
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Energy Predictions
-              </h1>
-              <p className="text-gray-500">
-                Device-based forecasting from energy logs
-              </p>
+  {/* DEVICE BUTTONS */}
+  {deviceIds.length > 0 && (
+    <div className="flex items-center mb-4 bg-gray-100 p-1 rounded-full w-fit flex-wrap gap-1">
+      
+      {/* ALL DEVICES */}
+      <button
+        onClick={() => setSelectedDeviceId(null)}
+        className={`
+          px-5 py-2 text-sm font-medium transition-all duration-200 z-10
+          ${!selectedDeviceId
+            ? "!bg-green-600 !text-white shadow-md shadow-green-300"
+            : "!bg-transparent !text-gray-600 hover:!bg-gray-200"
+          }
+        `}
+        style={{ borderRadius: "9999px" }}
+      >
+        All Devices
+      </button>
+
+      {/* DEVICE LIST */}
+      {deviceIds.map((id) => {
+        const isActive = selectedDeviceId === id;
+
+        return (
+          <button
+            key={id}
+            onClick={() => setSelectedDeviceId(id)}
+            className={`
+              px-5 py-2 text-sm font-medium transition-all duration-200 z-10
+              ${isActive
+                ? "!bg-green-600 !text-white shadow-md shadow-green-300"
+                : "!bg-transparent !text-gray-600 hover:!bg-gray-200"
+              }
+            `}
+            style={{ borderRadius: "9999px" }}
+          >
+            {perDevice[id]?.name || id}
+          </button>
+        );
+      })}
+    </div>
+  )}
+
+
+
+{/* PREDICTION CARDS */}
+<div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
+  <h2 className="text-xl font-bold text-gray-900 mb-4">
+    Energy Cost Predictions
+    {activeDevice && (
+      <span className="ml-2 text-sm text-green-600 font-medium">
+        ({activeDevice.name})
+      </span>
+    )}
+  </h2>
+
+  <div className="grid md:grid-cols-2 gap-6 mt-2">
+    {weeklyPredictions.map((pred, i) => {
+      const isWeek = pred.period.toLowerCase().includes("week");
+
+      return (
+        <div
+          key={i}
+          className={`rounded-xl p-5 border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
+            isWeek
+              ? "bg-yellow-50/60 border-yellow-200"
+              : "bg-blue-50/60 border-blue-200"
+          }`}
+        >
+          {/* HEADER */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div
+                className={`p-2 rounded-lg ${
+                  isWeek
+                    ? "bg-yellow-100 text-yellow-600"
+                    : "bg-blue-100 text-blue-600"
+                }`}
+              >
+                <Calendar size={16} />
+              </div>
+
+              <span className="font-semibold text-gray-800">
+                {pred.period}
+              </span>
             </div>
 
-            {/* DEVICE BUTTONS */}
-            {deviceIds.length > 0 && (
-              <div className="flex gap-2 mb-6 flex-wrap">
-                <button
-                  onClick={() => setSelectedDeviceId(null)}
-                  className={`px-4 py-2 rounded-full text-sm border ${
-                    !selectedDeviceId
-                      ? "bg-green-600 text-white"
-                      : "bg-white"
-                  }`}
-                >
-                  All Devices
-                </button>
+            {/* TREND BADGE */}
+            <div
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${
+                pred.trend === "up"
+                  ? "bg-red-50 text-red-600"
+                  : "bg-green-50 text-green-600"
+              }`}
+            >
+              {pred.trend === "up" ? (
+                <TrendingUp size={14} />
+              ) : (
+                <TrendingDown size={14} />
+              )}
 
-                {deviceIds.map((id) => (
-                  <button
-                    key={id}
-                    onClick={() => setSelectedDeviceId(id)}
-                    className={`px-4 py-2 rounded-full text-sm border ${
-                      selectedDeviceId === id
-                        ? "bg-green-600 text-white"
-                        : "bg-white"
-                    }`}
-                  >
-                    {perDevice[id]?.name || id}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* PREDICTION CARDS */}
-            <div className="bg-white border rounded-xl p-6 mb-6">
-              <h2 className="text-xl font-bold text-gray-900">
-                Energy Cost Predictions
-                {activeDevice && (
-                  <span className="ml-2 text-sm text-green-600">
-                    ({activeDevice.name})
-                  </span>
-                )}
-              </h2>
-
-              <div className="grid md:grid-cols-2 gap-6 mt-4">
-                {weeklyPredictions.map((pred, i) => (
-                  <div key={i} className="p-5 border rounded-xl bg-green-50/40">
-                    <div className="flex justify-between">
-                      <span className="font-semibold">{pred.period}</span>
-
-                      <span
-                        className={
-                          pred.trend === "up"
-                            ? "text-red-500"
-                            : "text-green-500"
-                        }
-                      >
-                        {pred.trendPercent}
-                      </span>
-                    </div>
-
-                    <h3 className="text-3xl font-bold text-green-600 mt-2">
-                      {pred.cost}
-                    </h3>
-
-                    <p className="text-sm text-gray-600">
-                      {pred.estimatedUsage}
-                    </p>
-
-                    <p className="text-xs text-gray-500 mt-2">
-                      {pred.trendLabel}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {pred.trendPercent}
             </div>
+          </div>
+
+          {/* COST */}
+          <h3
+            className={`text-3xl font-bold mt-2 ${
+              isWeek ? "text-yellow-700" : "text-blue-700"
+            }`}
+          >
+            {pred.cost}
+          </h3>
+
+          {/* USAGE */}
+          <p className="text-sm text-gray-600 mt-1">
+            {pred.estimatedUsage}
+          </p>
+
+          {/* LABEL */}
+          <p className="text-xs text-gray-500 mt-3">
+            {pred.trendLabel}
+          </p>
+        </div>
+      );
+    })}
+  </div>
+</div>
 
             {/* FORECAST */}
             <div className="bg-white p-6 border rounded-xl mb-6">

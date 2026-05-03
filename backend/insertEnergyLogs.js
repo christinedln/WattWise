@@ -1,7 +1,7 @@
 const { db } = require("./firebase_config.js");
 
-const userId = "T6kSTXn5Z3diE0AUDG6xoMevVf83";
-const deviceId = "5C4F00AB61C5";
+const userId = "IaMyl82XHgT7DxAiMv3L95sWU5v1";
+const deviceId = "8C4F00AB61C4";
 
 // ===============================
 // BASE VALUES (for simulation only)
