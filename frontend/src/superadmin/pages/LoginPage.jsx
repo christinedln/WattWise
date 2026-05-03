@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -22,20 +22,7 @@ export default function SuperAdminLoginPage() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const userPortalUrl = import.meta.env.VITE_USER_PORTAL_URL || "http://localhost:5173/";
   const from = location.state?.from || "/super-admin/dashboard";
-
-  useEffect(() => {
-    if (loading || hasCheckedInitialSession.current) {
-      return;
-    }
-
-    hasCheckedInitialSession.current = true;
-
-    if (user) {
-      signOutUser();
-    }
-  }, [loading, signOutUser, user]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -159,7 +146,7 @@ export default function SuperAdminLoginPage() {
 
             <p className="mt-6 text-sm leading-6 text-muted-foreground text-center">
               Need the standard WattWise customer portal?{" "}
-              <a href={userPortalUrl} className="font-semibold text-green-700 hover:text-green-800">
+              <a href="http://localhost:5173/" className="font-semibold text-green-700 hover:text-green-800">
                 Go to the main login
               </a>
               .
