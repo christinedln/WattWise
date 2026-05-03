@@ -3,7 +3,7 @@ function calcKwh(powerW, runtimeSeconds) {
         return 0;
     }
 
-    return Number(((powerW * runtimeSeconds) / 3600 / 1000).toFixed(4));
+    return Number(((powerW * runtimeSeconds) / 3600 / 1000).toFixed(4));  ///kwh = (power times runtime)/ (3600 watts times 1000seconds)
 }
 
 module.exports = {
