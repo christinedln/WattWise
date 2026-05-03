@@ -98,39 +98,47 @@ export default function ReportsPage() {
   }, [canViewReports]);
 
   const reportCards = useMemo(() => [
-    {
-      label: "Critical Alerts",
-      value: overview.criticalAlerts,
-      icon: ShieldAlert,
-      tone: "text-red-600",
-      bg: "bg-red-50",
-      border: "border-red-200",
-    },
-    {
-      label: "Unresolved Alerts",
-      value: overview.unresolvedAlerts,
-      icon: AlertTriangle,
-      tone: "text-amber-600",
-      bg: "bg-amber-50",
-      border: "border-amber-200",
-    },
-    {
-      label: "Users Affected",
-      value: overview.usersAffected,
-      icon: Users,
-      tone: "text-green-600",
-      bg: "bg-green-50",
-      border: "border-green-200",
-    },
-    {
-      label: "Devices Affected",
-      value: overview.devicesAffected,
-      icon: Server,
-      tone: "text-sky-600",
-      bg: "bg-sky-50",
-      border: "border-sky-200",
-    },
-  ], [overview]);
+  {
+    label: "Critical Alerts",
+    value: overview.criticalAlerts,
+    icon: ShieldAlert,
+    tone: "text-black",
+    iconTone: "text-red-600",
+    bg: "bg-red-50",
+    border: "border-red-200",
+    hover: "hover:border-red-300 hover:bg-red-100",
+  },
+  {
+    label: "Unresolved Alerts",
+    value: overview.unresolvedAlerts,
+    icon: AlertTriangle,
+    tone: "text-black",
+    iconTone: "text-amber-600",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    hover: "hover:border-amber-300 hover:bg-amber-100",
+  },
+  {
+    label: "Users Affected",
+    value: overview.usersAffected,
+    icon: Users,
+    tone: "text-black",
+    iconTone: "text-green-600",
+    bg: "bg-green-50",
+    border: "border-green-200",
+    hover: "hover:border-green-300 hover:bg-green-100",
+  },
+  {
+    label: "Devices Affected",
+    value: overview.devicesAffected,
+    icon: Server,
+    tone: "text-black",
+    iconTone: "text-sky-600",
+    bg: "bg-sky-50",
+    border: "border-sky-200",
+    hover: "hover:border-sky-300 hover:bg-sky-100",
+  },
+], [overview]);
 
   if (!canViewReports) {
     return (
@@ -186,25 +194,36 @@ export default function ReportsPage() {
         </div>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {reportCards.map((card) => {
-          const Icon = card.icon;
+<section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+  {reportCards.map((card) => {
+    const Icon = card.icon;
 
-          return (
-            <div key={card.label} className={`rounded-2xl border ${card.border} ${card.bg} p-5 shadow-sm`}>
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gray-500">
-                    {card.label}
-                  </p>
-                  <p className="mt-2 text-3xl font-bold text-gray-900">{loading ? "-" : card.value}</p>
-                </div>
-                <Icon className={`h-6 w-6 ${card.tone}`} />
-              </div>
-            </div>
-          );
-        })}
-      </section>
+    return (
+<div
+  key={card.label}
+  className={`rounded-2xl border ${card.border} ${card.bg} p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-opacity-80`}
+>
+  <div className="flex justify-between gap-4 items-start">
+    
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gray-500">
+        {card.label}
+      </p>
+
+      <p className="mt-2 text-3xl font-bold text-black">
+        {loading ? "-" : card.value}
+      </p>
+    </div>
+
+    <div className="pt-1">
+      <Icon className={`h-6 w-6 ${card.iconTone}`} />
+    </div>
+
+  </div>
+</div>
+    );
+  })}
+</section>
 
       <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-100 px-6 py-4">

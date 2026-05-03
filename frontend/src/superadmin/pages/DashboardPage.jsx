@@ -102,51 +102,54 @@ export default function DashboardPage() {
       }}
     >
 
-      {/* HEADER */}
-      <section className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-all duration-200">
-<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    {/* HEADER */}
+<section className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-all duration-200">
+  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
-  {/* Welcome section */}
-  <div className="flex items-center gap-4">
+    {/* Welcome section */}
+    <div className="flex items-start gap-4">
 
-  <div className="p-2 rounded-lg bg-green-50 flex items-center justify-center">
-    <Sparkles className="w-6 h-6 text-green-600" />
+      <div className="p-2 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+        <Sparkles className="w-6 h-6 text-green-600" />
+      </div>
+
+      <div className="min-w-0">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight break-words">
+          Welcome back,{" "}
+          <span className="block sm:inline">
+            {profile?.displayName || profile?.email || "Super Admin"}
+          </span>
+        </h1>
+
+        <p className="text-sm sm:text-base text-gray-500 mt-1">
+          Manage users, devices, and system security
+        </p>
+      </div>
+
+    </div>
+
+    {/* Button */}
+    <Link
+      to="/super-admin/security-logs"
+      className="inline-flex items-center gap-2 bg-green-600 px-5 py-3 rounded-lg font-medium shadow-sm hover:bg-green-700 hover:shadow-md transition-all duration-200 active:scale-95"
+      style={{ color: "#ffffff" }}
+    >
+      <ShieldAlert className="w-5 h-5" />
+      View Security Logs
+    </Link>
+
   </div>
-
-  <div>
-    <h1 className="text-3xl font-bold text-gray-900">
-      Welcome back,{" "}
-      {profile?.displayName || profile?.email || "Super Admin"}
-    </h1>
-
-    <p className="text-gray-500">
-      Manage users, devices, and system security
-    </p>
-  </div>
-
-</div>
-  {/* Button */}
-  <Link
-    to="/super-admin/security-logs"
-    className="inline-flex items-center gap-2 bg-green-600 px-5 py-3 rounded-lg font-medium shadow-sm hover:bg-green-700 hover:shadow-md transition-all duration-200 active:scale-95"
-    style={{ color: "#ffffff" }}
-  >
-    <ShieldAlert className="w-5 h-5" />
-    View Security Logs
-  </Link>
-
-</div>
 </section>
 
       {/* SUMMARY */}
-      <section className="bg-green-50/40 border border-green-200 rounded-2xl p-6 shadow-sm">
+     <section className="bg-green-50/40 border border-green-200 rounded-2xl p-6 shadow-sm">
   <div className="mb-5">
-    <h3 className="font-semibold text-lg text-gray-900">
+    <h3 className="font-bold text-lg text-gray-900">
       System Summary
     </h3>
   </div>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
     {summaryCards.map((card, idx) => {
       const Icon = card.icon;
 
