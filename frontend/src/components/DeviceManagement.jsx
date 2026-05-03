@@ -255,25 +255,28 @@ function ActivityTimeline({ device }) {
   return (
     <div className="w-full px-4 py-5 bg-white border-t border-gray-100">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
           Activity Timeline
         </p>
 
         <button
           onClick={() => setOpen(prev => !prev)}
           className="
-            inline-flex items-center gap-1.5
-            px-3 py-1.5
-            text-xs font-medium
+            inline-flex items-center justify-center
+            w-7 h-7
             rounded-full
+            bg-green-600 hover:bg-green-700
             transition-all duration-200
+            flex-shrink-0
           "
         >
           <ChevronIcon open={open} />
-          <span>{open ? "" : ""}</span>
         </button>
       </div>
+
+
+
 
       {/* Timeline container */}
       {open && (
