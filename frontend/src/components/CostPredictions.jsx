@@ -95,7 +95,13 @@ export default function CostPredictions({
         {predictions.map((pred, index) => (
           <div
             key={index}
-            className={`${pred.bgColor} rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer`}
+            className={`rounded-xl p-6 shadow-sm border cursor-pointer transition-all duration-200 hover:shadow-md
+  ${
+    pred.period.toLowerCase().includes("week")
+      ? "bg-yellow-50/60 border-yellow-200 hover:border-yellow-300"
+      : "bg-blue-50/60 border-blue-200 hover:border-blue-300"
+  }
+`}
           >
             {/* HEADER */}
             <div className="flex items-center justify-between mb-3">
@@ -132,7 +138,7 @@ export default function CostPredictions({
               {chartData.slice(-7).map((d, i) => (
                 <div
                   key={i}
-                  className="flex-1 bg-blue-400 rounded-t opacity-80"
+                  className="flex-1 bg-green-600 rounded-t opacity-80"
                   style={{
                     height: `${((d.consumption || 0) / maxValue) * 100}%`,
                   }}

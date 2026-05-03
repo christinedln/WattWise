@@ -291,8 +291,8 @@ export default function PredictionsPage() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="consumption" fill="#10b981" />
-                  <Bar dataKey="cost" fill="#3b82f6" />
+                  <Bar dataKey="consumption" fill= "#f59e0b" />
+                  <Bar dataKey="cost" fill="#16a34a" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -308,8 +308,8 @@ export default function PredictionsPage() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line dataKey="predicted" stroke="#3b82f6" />
-                  <Line dataKey="actual" stroke="#10b981" />
+                  <Line dataKey="predicted" stroke="#f59e0b" />
+<Line dataKey="actual" stroke="#16a34a" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
