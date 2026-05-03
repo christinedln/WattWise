@@ -4,8 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission } from "../config/permissions";
 import { fetchAuditLogPage } from "../services/auditLogService";
-import { collection, getCountFromServer, query, where } from "firebase/firestore";
-import { db } from "../../firebase";
+import { fetchDashboardSummary } from "../services/dashboardSummaryService";
 
 function formatTimestamp(value) {
   if (!value) return "-";
@@ -20,9 +19,8 @@ export default function DashboardPage() {
   const [recentLogs, setRecentLogs] = useState([]);
   const [stats, setStats] = useState({
     totalUsers: "-",
-    activeSessions: "-",
-    securityLogs: "-",
-    systemHealth: "99.9%",
+    activeUsers: "-",
+    admins: "-",
   });
 
   const canViewDashboard = hasPermission(role, "view_dashboard");

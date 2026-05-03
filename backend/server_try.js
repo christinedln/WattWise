@@ -1,10 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 
+
 const dashboardRoutes = require("./routes/dashboard");
 const devicesRoutes = require("./routes/devices");
 // const realtimeRoutes = require("./routes/realtimemonitor");
+// const realtimeRoutes = require("./routes/realtimemonitor");
 const predictionsRoutes = require("./routes/predictions");
+const adminAccountsRoutes = require("./routes/adminAccounts");
 const settingsRoutes = require("./routes/settings");
 const alertsRoutes = require("./routes/alerts");
 const adminAccountsRoutes = require("./routes/adminAccounts");

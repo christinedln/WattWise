@@ -26,39 +26,34 @@ const ROLE_PERMISSIONS = {
   [ROLES.ADMIN]: [
     "view_dashboard",
     "view_users",
-    "manage_users",
     "view_devices",
-    "manage_devices",
     "view_alerts",
-    "manage_alerts",
     "view_reports",
-    "configure_mfa",
-    "manage_settings_limited", // Limited access to settings
   ],
   [ROLES.SECURITY]: [
     "view_dashboard",
-    "view_users", // View only
-    "view_devices", // View only
-    "view_reports", // View only
     "view_alerts",
     "view_security_logs",
+    "manage_alerts",
     "configure_mfa",
   ],
   [ROLES.SUPPORT]: [
     "view_dashboard",
     "view_users",
     "manage_users",
+    "view_devices",
   ],
   [ROLES.ANALYST]: [
     "view_dashboard",
     "view_reports",
-    "view_alerts", // View only
+    "view_alerts",
   ],
   [ROLES.OPERATOR]: [
     "view_dashboard",
     "view_devices",
     "view_alerts",
     "view_reports",
+    "manage_devices",
   ],
   [ROLES.USER]: ["view_dashboard"],
 };
@@ -106,8 +101,9 @@ export function normalizeRole(role) {
  * 
  * Role Descriptions:
  * - superadmin: Full access to all features and settings
- * - admin: Full access except security logs and limited settings management
- * - security: Dashboard, alerts, security logs, MFA, view-only for users/devices/reports
- * - support: Dashboard and users management
- * - analyst: Dashboard and reports (view-only for alerts)
+ * - admin: Read-only operational access across users, devices, alerts, and reports
+ * - security: Monitoring and incident response, with alert handling and security logs
+ * - support: User support workflows plus light visibility into devices
+ * - analyst: Reporting and alert visibility only
+ * - operator: Device operations and monitoring, without user administration
  */

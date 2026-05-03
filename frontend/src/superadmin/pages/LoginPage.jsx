@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -24,6 +24,18 @@ export default function SuperAdminLoginPage() {
   const location = useLocation();
   const userPortalUrl = import.meta.env.VITE_USER_PORTAL_URL || "http://localhost:5173/";
   const from = location.state?.from || "/super-admin/dashboard";
+
+  useEffect(() => {
+    if (loading || hasCheckedInitialSession.current) {
+      return;
+    }
+
+    hasCheckedInitialSession.current = true;
+
+    if (user) {
+      signOutUser();
+    }
+  }, [loading, signOutUser, user]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

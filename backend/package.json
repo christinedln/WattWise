@@ -1,13 +1,13 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "server_try.js",
+  "main": "firebase_config.js",
   "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server_try.js",
     "dev": "node server_try.js",
     "setup:roles": "node scripts/setRoleClaims.js",
-    "sync:accounts": "node scripts/syncAccountsToFirestore.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "sync:accounts": "node scripts/syncAccountsToFirestore.js"
   },
   "keywords": [],
   "author": "",

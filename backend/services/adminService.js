@@ -6,6 +6,7 @@
 const admin = require('firebase-admin');
 const db = admin.firestore();
 const auth = admin.auth();
+const { refreshUsersSummary } = require('./usersSummaryRefresh');
 
 const ADMIN_ACCOUNTS_COLLECTION = 'admin_accounts';
 const VALID_ROLES = ['superadmin', 'admin', 'security', 'support', 'analyst'];
@@ -51,6 +52,8 @@ class AdminService {
       };
 
       await db.collection(ADMIN_ACCOUNTS_COLLECTION).doc(user.uid).set(adminData);
+
+      await refreshUsersSummary();
 
       return adminData;
     } catch (error) {
@@ -153,6 +156,8 @@ class AdminService {
 
       // Disable Firebase auth user
       await auth.updateUser(adminUid, { disabled: true });
+
+      await refreshUsersSummary();
     } catch (error) {
       throw new Error(`Error deactivating admin account: ${error.message}`);
     }
@@ -169,6 +174,8 @@ class AdminService {
 
       // Enable Firebase auth user
       await auth.updateUser(adminUid, { disabled: false });
+
+      await refreshUsersSummary();
     } catch (error) {
       throw new Error(`Error reactivating admin account: ${error.message}`);
     }
@@ -208,6 +215,8 @@ class AdminService {
 
       // Delete Firestore document
       await db.collection(ADMIN_ACCOUNTS_COLLECTION).doc(adminUid).delete();
+
+      await refreshUsersSummary();
     } catch (error) {
       throw new Error(`Error deleting admin account: ${error.message}`);
     }

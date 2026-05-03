@@ -9,12 +9,13 @@ import SuperAdminLayout from "./superadmin/components/SuperAdminLayout";
 import SuperAdminLoginPage from "./superadmin/pages/LoginPage";
 import SuperAdminDashboardPage from "./superadmin/pages/DashboardPage";
 import SuperAdminUsersPage from "./superadmin/pages/UsersPage";
-import CreateAccountPage from "./superadmin/pages/CreateAccountPage";
-import RoleBasedAccountsPage from "./superadmin/pages/RoleBasedAccountsPage";
 import SecurityLogsPage from "./superadmin/pages/SecurityLogsPage";
 import UnauthorizedPage from "./superadmin/pages/UnauthorizedPage";
 import SectionPage from "./superadmin/pages/SectionPage";
 import DevicesPage from "./superadmin/pages/DevicesPage";
+import AlertsPage from "./superadmin/pages/AlertsPage";
+import ReportsPage from "./superadmin/pages/ReportsPage";
+import SettingsPage from "./superadmin/pages/SettingsPage";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -31,46 +32,11 @@ createRoot(document.getElementById("root")).render(
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<SuperAdminDashboardPage />} />
             <Route path="users" element={<SuperAdminUsersPage />} />
-            <Route path="create-account" element={<CreateAccountPage />} />
-            <Route path="role-based-accounts" element={<RoleBasedAccountsPage />} />
             <Route path="security-logs" element={<SecurityLogsPage />} />
               <Route path="devices" element={<DevicesPage />} />
-            <Route
-              path="alerts"
-              element={
-                <SectionPage
-                  title="Alerts"
-                  description="Track active anomalies, alert routing, and notification policy changes for the admin team."
-                  actionLabel="Open security logs"
-                  actionTo="/super-admin/security-logs"
-                  requiredAction="view_alerts"
-                />
-              }
-            />
-            <Route
-              path="reports"
-              element={
-                <SectionPage
-                  title="Reports"
-                  description="Export compliance reports, energy summaries, and operational snapshots for investigations."
-                  actionLabel="Open users"
-                  actionTo="/super-admin/users"
-                  requiredAction="view_reports"
-                />
-              }
-            />
-            <Route
-              path="settings"
-              element={
-                <SectionPage
-                  title="Settings"
-                  description="Control organization-wide policies, retention rules, and security defaults from a single place."
-                  actionLabel="Open dashboard"
-                  actionTo="/super-admin/dashboard"
-                  requiredAction="manage_settings"
-                />
-              }
-            />
+            <Route path="alerts" element={<AlertsPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
             <Route
               path="mfa-setup"
               element={

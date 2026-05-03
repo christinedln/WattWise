@@ -6,6 +6,7 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const AdminService = require('../services/adminService');
+const { refreshUsersSummary } = require('../services/usersSummaryRefresh');
 
 const router = express.Router();
 const auth = admin.auth();
@@ -145,6 +146,8 @@ router.post('/:userId/disable', requireSuperAdmin, async (req, res) => {
       updatedAt: new Date(),
     });
 
+    await refreshUsersSummary();
+
     res.status(200).json({
       message: 'Account disabled successfully',
       userId,
@@ -236,6 +239,8 @@ router.delete('/:userId', requireSuperAdmin, async (req, res) => {
     // Delete Firestore document
     const db = admin.firestore();
     await db.collection('roleBasedAccounts').doc(userId).delete();
+
+    await refreshUsersSummary();
 
     res.status(200).json({
       message: 'Account deleted successfully',

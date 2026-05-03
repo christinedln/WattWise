@@ -1,0 +1,202 @@
+import React, { useEffect, useState } from "react";
+import { Outlet, NavLink, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Users,
+  Server,
+  BellRing,
+  FileText,
+  ClipboardList,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  Lock,
+} from "lucide-react";
+
+import { apiFetch } from "../../api/api";
+import { useAuth } from "../context/AuthContext";
+import DashboardHeader from "./SuperAdminHeader";
+import { hasPermission } from "../config/permissions";
+
+const navigationItems = [
+  { to: "/super-admin/dashboard", label: "Dashboard", icon: LayoutDashboard, requiredAction: "view_dashboard" },
+  { to: "/super-admin/users", label: "Users", icon: Users, requiredAction: "view_users" },
+  { to: "/super-admin/devices", label: "Devices", icon: Server, requiredAction: "view_devices" },
+  { to: "/super-admin/alerts", label: "Alerts", icon: BellRing, requiredAction: "view_alerts" },
+  { to: "/super-admin/reports", label: "Reports", icon: FileText, requiredAction: "view_reports" },
+  { to: "/super-admin/security-logs", label: "Logs", icon: ClipboardList, requiredAction: "view_security_logs" },
+  { to: "/super-admin/settings", label: "Settings", icon: Settings, requiredActions: ["manage_users", "manage_settings"] },
+];
+
+export default function SuperAdminLayout() {
+  const { profile, signOutUser } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const [criticalAlerts, setCriticalAlerts] = useState(0);
+  const location = useLocation();
+  const canAccessItem = (item) =>
+    Array.isArray(item.requiredActions)
+      ? item.requiredActions.some((action) => hasPermission(profile?.role, action))
+      : hasPermission(profile?.role, item.requiredAction);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCriticalAlerts() {
+      try {
+        const response = await apiFetch("/superadmin/alerts");
+
+        if (!isMounted) {
+          return;
+        }
+
+        setCriticalAlerts(response?.summary?.criticalAlerts || 0);
+      } catch (error) {
+        if (isMounted) {
+          setCriticalAlerts(0);
+        }
+      }
+    }
+
+    loadCriticalAlerts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [location.pathname]);
+
+  return (
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+
+      {/* MOBILE MENU BUTTON */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-50 rounded-lg hover:bg-gray-100"
+      >
+        <Menu className="w-6 h-6 text-gray-800" />
+      </button>
+
+      {/* OVERLAY */}
+      {isOpen && (
+        <div
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+        />
+      )}
+
+      {/* SIDEBAR */}
+      <aside
+        className={`
+          fixed md:static top-0 left-0
+          h-screen w-64 bg-white shadow-xl z-50
+          flex flex-col
+          transform transition-transform duration-300
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+        `}
+      >
+        <div className="flex flex-col p-4 h-full min-h-0">
+
+          {/* HEADER */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <img src="/icon.png" className="w-10 h-10 rounded-md" alt="logo" />
+              <h2 className="text-xl font-bold text-gray-800">WattWise</h2>
+            </div>
+
+            <button onClick={() => setIsOpen(false)} className="md:hidden">
+              <X size={22} />
+            </button>
+          </div>
+
+          {/* DIVIDER */}
+          <div className="border-b border-gray-300 mb-4" />
+
+          {/* NAVIGATION */}
+          <nav className="flex flex-col gap-2 flex-1 overflow-y-auto min-h-0">
+            {navigationItems.map((item) => (
+              canAccessItem(item) ? (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setIsOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-xl transition ${
+                      isActive ? "bg-green-50" : "hover:bg-gray-100"
+                    }`
+                  }
+                >
+                  {({ isActive }) => {
+                    const Icon = item.icon;
+
+                    return (
+                      <>
+                        <Icon
+                          className={`w-5 h-5 ${
+                            isActive ? "text-green-600" : "text-gray-800"
+                          }`}
+                        />
+
+                        <span
+                          className={`text-sm ${
+                            isActive ? "text-green-600 font-medium" : "text-gray-800"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      </>
+                    );
+                  }}
+                </NavLink>
+              ) : (
+                <div
+                  key={item.to}
+                  className="flex items-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-3 py-2 text-gray-400"
+                  title="You do not have permission to access this page"
+                >
+                  <item.icon className="h-5 w-5 text-gray-300" />
+                  <span className="text-sm font-medium text-gray-400">{item.label}</span>
+                  <Lock className="ml-auto h-4 w-4 text-gray-300" />
+                </div>
+              )
+            ))}
+          </nav>
+
+          {/* BOTTOM SECTION */}
+          <div className="border-t pt-4 mt-4">
+
+            <p className="font-semibold text-sm text-gray-800">
+              {profile?.displayName || profile?.email || "Super Admin"}
+            </p>
+
+            <p className="font-italic text-sm text-gray-500">{profile?.role || ""}</p>
+
+            <button
+              onClick={signOutUser}
+              className="mt-3 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+            >
+              <LogOut className="inline w-4 h-4 mr-2" />
+              Logout
+            </button>
+
+          </div>
+
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT */}
+      <div className="flex flex-col flex-1 h-screen overflow-hidden">
+
+        <DashboardHeader
+          criticalAlerts={criticalAlerts}
+          onMenuClick={() => setIsOpen(true)}
+        />
+
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+
+      </div>
+    </div>
+  );
+}

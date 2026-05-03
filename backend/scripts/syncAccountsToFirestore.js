@@ -12,6 +12,7 @@
 
 const admin = require('firebase-admin');
 const fs = require('fs');
+const { refreshUsersSummary } = require('../services/usersSummaryRefresh');
 
 // Initialize Firebase Admin
 const serviceAccount = JSON.parse(
@@ -116,6 +117,8 @@ async function syncAccountsToFirestore() {
     console.log(`✏️  Existing accounts updated: ${updatedUsers}`);
     console.log(`⏭️  Skipped (no role): ${skippedUsers}`);
     console.log('='.repeat(60) + '\n');
+
+    await refreshUsersSummary();
 
     process.exit(0);
   } catch (error) {

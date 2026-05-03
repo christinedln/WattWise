@@ -15,6 +15,20 @@ import { db } from "../../firebase";
 
 export const ROLE_BASED_ACCOUNTS_PAGE_SIZE = 25;
 
+const roleBasedAccountsPageCache = new Map();
+
+function getPageKey({ cursor = null, pageSize = ROLE_BASED_ACCOUNTS_PAGE_SIZE } = {}) {
+  return JSON.stringify({
+    collection: "roleBasedAccounts",
+    pageSize,
+    cursorPath: cursor?.ref?.path || cursor?.ref?.id || cursor?.id || null,
+  });
+}
+
+export function invalidateRoleBasedAccountsCache() {
+  roleBasedAccountsPageCache.clear();
+}
+
 /**
  * Fetch paginated list of role-based accounts
  */
@@ -22,6 +36,12 @@ export async function fetchRoleBasedAccountsPage({
   cursor = null,
   pageSize = ROLE_BASED_ACCOUNTS_PAGE_SIZE,
 } = {}) {
+  const cacheKey = getPageKey({ cursor, pageSize });
+
+  if (roleBasedAccountsPageCache.has(cacheKey)) {
+    return roleBasedAccountsPageCache.get(cacheKey);
+  }
+
   const constraints = [orderBy("createdAt", "desc")];
 
   if (cursor) {
@@ -30,18 +50,27 @@ export async function fetchRoleBasedAccountsPage({
 
   constraints.push(limit(pageSize));
 
-  const snapshot = await getDocs(
+  const request = getDocs(
     query(collection(db, "roleBasedAccounts"), ...constraints)
-  );
-
-  return {
+  ).then((snapshot) => ({
     rows: snapshot.docs.map((document) => ({
       id: document.id,
       ...document.data(),
     })),
     lastCursor: snapshot.docs.length ? snapshot.docs[snapshot.docs.length - 1] : null,
     hasMore: snapshot.docs.length === pageSize,
-  };
+  }));
+
+  roleBasedAccountsPageCache.set(cacheKey, request);
+
+  try {
+    const response = await request;
+    roleBasedAccountsPageCache.set(cacheKey, Promise.resolve(response));
+    return response;
+  } catch (error) {
+    roleBasedAccountsPageCache.delete(cacheKey);
+    throw error;
+  }
 }
 
 /**
@@ -84,6 +113,8 @@ export async function createRoleBasedAccount({ email, role, uid = null }) {
     updatedAt: now,
   });
 
+  invalidateRoleBasedAccountsCache();
+
   return { id: docRef.id, email, role, uid, createdAt: now, updatedAt: now };
 }
 
@@ -102,6 +133,7 @@ export async function updateRoleBasedAccount(accountId, { role = null, email = n
   }
 
   await updateDoc(doc(db, "roleBasedAccounts", accountId), updates);
+  invalidateRoleBasedAccountsCache();
 }
 
 /**
@@ -109,6 +141,7 @@ export async function updateRoleBasedAccount(accountId, { role = null, email = n
  */
 export async function deleteRoleBasedAccount(accountId) {
   await deleteDoc(doc(db, "roleBasedAccounts", accountId));
+  invalidateRoleBasedAccountsCache();
 }
 
 /**
@@ -119,4 +152,5 @@ export async function linkUidToRoleBasedAccount(accountId, uid) {
     uid,
     updatedAt: new Date().toISOString(),
   });
+  invalidateRoleBasedAccountsCache();
 }
