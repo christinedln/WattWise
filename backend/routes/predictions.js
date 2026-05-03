@@ -204,7 +204,6 @@ router.get("/summary", authRequired, async (req, res) => {
 
             per_device,
 
-            // 🔥 THESE WERE MISSING (MAIN BUG)
             daily_forecast,
             actual_vs_predicted
         });

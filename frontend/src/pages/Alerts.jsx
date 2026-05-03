@@ -9,7 +9,6 @@ import EmailModal from "../components/EmailModal";
 
 export default function Alerts() {
   const [showEmail, setShowEmail] = useState(false);
-  
 
   return (
     <Layout>
@@ -27,15 +26,14 @@ export default function Alerts() {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* ✅ Email Modal */}
       {showEmail && (
         <EmailModal
+          isOpen={showEmail}   
           onClose={() => setShowEmail(false)}
           onSave={() => setShowEmail(false)}
         />
       )}
-
     </Layout>
   );
 }
-

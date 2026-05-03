@@ -5,6 +5,14 @@ import { CheckCircle, Undo2 } from "lucide-react";
 
 // ─── Inline SVG Icons ─────────────────────────────────
 
+const MailIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="2" y="4" width="20" height="16" rx="2" />
+    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </svg>
+);
+
+
 const VolumeIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
@@ -180,6 +188,9 @@ const stats = {
   suspicious: activeAlerts.filter(a => a.severity === "Suspicious").length,
   total: activeAlerts.length,
 };
+  const toggleSelect = (id) =>
+    setSelected((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+
 
   const selectAll = () =>
     setSelected(selected.length === filtered.length ? [] : filtered.map((a) => a.id));
@@ -251,6 +262,8 @@ const resolveSelected = async () => {
 
       {/* Controls */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
+
+        
 
         {/* Show / Hide Resolved */}
         <button
