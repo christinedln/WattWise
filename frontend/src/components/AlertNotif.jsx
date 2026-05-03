@@ -139,9 +139,9 @@ export default function AlertNotif() {
 
           description: `
             ${alert.signal?.toUpperCase()} anomaly
-            | ${alert.power ?? "-"} W
-            | ${alert.voltage ?? "-"} V
-            | ${alert.current ?? "-"} A
+            | ${alert.power != null ? Number(alert.power).toFixed(2) : "-"} W
+            | ${alert.voltage != null ? Number(alert.voltage).toFixed(2) : "-"} V
+            | ${alert.current != null ? Number(alert.current).toFixed(2) : "-"} A
           `,
 
           time: formatTime(alert.timestamp),
@@ -460,9 +460,9 @@ const resolveSelected = async () => {
 
                         {/* values */}
                         <div className="grid grid-cols-3 text-xs text-gray-600">
-                          <div>V: {log.voltage}</div>
-                          <div>I: {log.current}</div>
-                          <div>P: {log.power}</div>
+                          <div>V: {log.voltage != null ? Number(log.voltage).toFixed(2) : "-"}</div>
+                          <div>I: {log.current != null ? Number(log.current).toFixed(2) : "-"}</div>
+                          <div>P: {log.power != null ? Number(log.power).toFixed(2) : "-"}</div>
                         </div>
 
                         {/* explanation */}

@@ -129,7 +129,7 @@ function getSeverity(currentalert = [], signal) {
 }
 
 // ─── Row ─────────────────────────────────────
-function DeviceRow({ device, pct, openEdit, onDelete }) {
+function DeviceRow({ device, pct, openEdit, onDelete, fetchDevices }) {
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50">
       <td className="px-4 py-3 font-semibold whitespace-nowrap">
@@ -182,6 +182,23 @@ function DeviceRow({ device, pct, openEdit, onDelete }) {
           {/* ── Toggle Power ── */}
           <button
             title="Toggle power"
+            onClick={async () => {
+              try {
+                await apiFetch("/relay/toggle", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    device_id: device.device_id
+                  })
+                });
+
+                console.log("Relay toggled from device UI");
+
+                await fetchDevices();
+
+              } catch (err) {
+                console.error("Toggle failed", err);
+              }
+            }}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -455,11 +472,6 @@ export default function DeviceManagement() {
       fetchDevices();
     }, []);
 
-  const refreshAfterDelay = () => {
-    setTimeout(() => {
-      fetchDevices();
-    }, 5000);
-  };
 
   const handleDelete = async (deviceId) => {
     try {
@@ -468,7 +480,6 @@ export default function DeviceManagement() {
       });
 
       setDevices((prev) => prev.filter(d => d.device_id !== deviceId));
-      refreshAfterDelay();
     } catch (err) {
       console.error("Delete failed", err);
       alert(err.message || "Failed to delete device");
@@ -729,6 +740,7 @@ export default function DeviceManagement() {
                       pct={totalKwh ? (d.kwh / totalKwh) * 100 : 0}
                       openEdit={openEdit}
                       onDelete={handleDelete}
+                      fetchDevices={fetchDevices}
                     />
 
                     {/* FULL WIDTH TIMELINE ROW */}

@@ -1,4 +1,5 @@
 const { getDevices, getRealtimeLogs, getCurrentAlerts } = require("../services/data_service");
+const { calcKwh } = require("../utils/calculations");
 
 async function mapRealtimePage(userId) {
   try {
@@ -26,6 +27,8 @@ async function mapRealtimePage(userId) {
         timestamp: a.timestamp || null,
       }));
 
+      const computedKwh = calcKwh(d.power || 0, d.runtime || 0);
+
       mapped.push({
         device_id: deviceId,
 
@@ -44,6 +47,8 @@ async function mapRealtimePage(userId) {
 
         // renamed for clarity
         currentAlerts,
+
+        consumption: computedKwh
       });
     }
 
