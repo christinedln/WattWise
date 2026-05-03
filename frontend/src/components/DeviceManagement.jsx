@@ -134,7 +134,7 @@ function DeviceRow({ device, pct, openEdit, onDelete }) {
     <tr className="border-b border-gray-100 hover:bg-gray-50">
       <td className="px-4 py-3 font-semibold whitespace-nowrap">
         <div className="flex items-center justify-between gap-2">
-          <span>{device.name}</span>
+          <span className="text-gray-900">{device.name}</span>
           <button onClick={() => openEdit(device, "name")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", color: "#9ca3af" }}>
             <PencilIcon />
           </button>

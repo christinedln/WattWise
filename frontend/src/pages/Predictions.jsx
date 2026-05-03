@@ -5,7 +5,7 @@ import { apiFetch } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import DashboardHeader from "../components/DashboardHeader";
 import Layout from "../components/layout";
-import { TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -141,8 +141,6 @@ export default function PredictionsPage() {
       period: "This Week",
       cost: `₱${weeklyCost.toFixed(2)}`,
       estimatedUsage: `${weeklyKwh.toFixed(2)} kWh`,
-      trend: trend.direction,
-      trendPercent: `${trend.percent.toFixed(1)}%`,
       trendLabel: activeDevice
         ? `Device: ${activeDevice.name}`
         : "All devices combined",
@@ -256,22 +254,6 @@ export default function PredictionsPage() {
               </span>
             </div>
 
-            {/* TREND BADGE */}
-            <div
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${
-                pred.trend === "up"
-                  ? "bg-red-50 text-red-600"
-                  : "bg-green-50 text-green-600"
-              }`}
-            >
-              {pred.trend === "up" ? (
-                <TrendingUp size={14} />
-              ) : (
-                <TrendingDown size={14} />
-              )}
-
-              {pred.trendPercent}
-            </div>
           </div>
 
           {/* COST */}
@@ -300,7 +282,7 @@ export default function PredictionsPage() {
 
             {/* FORECAST */}
             <div className="bg-white p-6 border rounded-xl mb-6">
-              <h2 className="font-bold mb-4">Next 7 Days Forecast</h2>
+              <h2 className="font-bold mb-4 text-gray-900">Next 7 Days Forecast</h2>
 
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={forecastData}>
@@ -317,7 +299,7 @@ export default function PredictionsPage() {
 
             {/* ACTUAL VS PREDICTED */}
             <div className="bg-white p-6 border rounded-xl">
-              <h2 className="font-bold mb-4">Predicted vs Actual</h2>
+              <h2 className="font-bold mb-4 text-gray-900">Predicted vs Actual</h2>
 
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={actualVsPredicted}>

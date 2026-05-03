@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 export default function CostPredictions({
   weeklyCost = 0,
@@ -47,8 +47,6 @@ export default function CostPredictions({
       period: "This Week",
       cost: `₱${Number(finalWeeklyCost).toFixed(2)}`,
       estimatedUsage: `${Number(finalWeeklyKwh).toFixed(2)} kWh`,
-      trend: weeklyTrend >= 0 ? "up" : "down",
-      trendPercent: `${Math.abs(weeklyTrend).toFixed(2)}%`,
       trendLabel: activeDevice
         ? `Device: ${activeDevice.name}`
         : "All devices combined",
@@ -85,7 +83,7 @@ export default function CostPredictions({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="font-bold text-lg mb-1">Energy Cost Predictions</h3>
+      <h3 className="font-bold text-lg mb-1 text-gray-900">Energy Cost Predictions</h3>
 
       <p className="text-gray-500 text-sm mb-6">
         {activeDevice
@@ -127,23 +125,6 @@ export default function CostPredictions({
                 {pred.estimatedUsage}
               </span>
 
-              <div className="flex items-center gap-1">
-                {pred.trend === "up" ? (
-                  <TrendingUp className="w-4 h-4 text-red-500" />
-                ) : (
-                  <TrendingDown className="w-4 h-4 text-green-500" />
-                )}
-
-                <span
-                  className={
-                    pred.trend === "up"
-                      ? "text-red-600"
-                      : "text-green-600"
-                  }
-                >
-                  {pred.trendPercent}
-                </span>
-              </div>
             </div>
 
             {/* MINI CHART */}

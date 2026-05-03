@@ -127,6 +127,7 @@ export default function AlertNotif() {
           severity: normalizeSeverity(alert.severity),
 
           title: alert.device_name,
+          
 
           description: `
             ${alert.signal?.toUpperCase()} anomaly
@@ -337,7 +338,7 @@ const resolveSelected = async () => {
 
             <div className="flex-1">
               <Badge type={alert.severity} />
-              <p className="font-bold">{alert.title}</p>
+              <p className="font-bold text-gray-900">{alert.title}</p>
               <p className="text-sm text-gray-500">{alert.description}</p>
               <p className="text-xs text-gray-400 mt-1">{alert.time}</p>
             </div>
@@ -373,7 +374,7 @@ const resolveSelected = async () => {
       {/* header */}
       <div className="flex justify-between items-center px-5 py-4 border-b bg-gray-50">
         <div>
-          <h2 className="font-bold text-lg">Anomaly Timeline</h2>
+          <h2 className="font-bold text-lg text-gray-900">Anomaly Timeline</h2>
           <p className="text-xs text-gray-500">
             Context logs leading to detection
           </p>
