@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Loader, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, Loader, AlertCircle, CheckCircle, Shield, UserRoundPlus, KeyRound } from 'lucide-react';
 import { updateAccountDisplayName, updateAccountRole, resetAccountPassword } from '../services/adminAccountsService';
 import { ROLES, hasPermission } from '../config/permissions';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +14,7 @@ export default function EditAccountModal({ account, isOpen, onClose, onSuccess }
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // Reset state when account changes
+
   useEffect(() => {
     if (account) {
       setDisplayName(account.displayName || '');
@@ -84,141 +84,189 @@ export default function EditAccountModal({ account, isOpen, onClose, onSuccess }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Edit Account</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="relative w-full max-w-3xl mx-4 rounded-2xl bg-white shadow-xl max-h-[90vh] flex flex-col">
+
+        {/* Modal header */}
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 shrink-0">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-green-600">
+              Edit Account
+            </p>
+            <h3 className="mt-1 text-lg font-bold text-gray-900">Update account details</h3>
+            <p className="mt-1 text-sm text-gray-500">{account.email}</p>
+          </div>
           <button
             onClick={onClose}
-            className="p-1 text-gray-500 hover:text-gray-700"
+            className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 shrink-0 self-start"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
-          {/* Email (read-only) */}
+        {/* Modal body */}
+        <div className="px-6 py-5 overflow-y-auto space-y-5">
+
+          {/* Error */}
+          {error && (
+            <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+              <div>
+                <p className="text-sm font-semibold text-red-800">Error</p>
+                <p className="mt-0.5 text-sm text-red-600">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Success */}
+          {success && (
+            <div className="flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
+              <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+              <div>
+                <p className="text-sm font-semibold text-green-800">Success</p>
+                <p className="mt-0.5 text-sm text-green-700">{success}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Email read-only */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email (Read-only)</label>
-            <input
-              type="email"
-              value={account.email}
-              disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
-            />
+            <label className="mb-1.5 block text-sm font-medium text-gray-800">
+              Email Address <span className="text-xs text-gray-400">(read-only)</span>
+            </label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
+                <svg className="h-4 w-4 text-gray-400" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" />
+                  <path d="M1.5 5.5l6.5 4 6.5-4" />
+                </svg>
+              </span>
+              <input
+                type="email"
+                value={account.email}
+                disabled
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-4 text-sm text-gray-500 cursor-not-allowed"
+              />
+            </div>
           </div>
 
           {/* Display Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-800">
+              Display Name
+            </label>
             <div className="flex gap-2">
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Enter display name"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <div className="relative flex-1">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
+                  <UserRoundPlus className="h-4 w-4 text-[#1a7a45]" />
+                </span>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Enter display name"
+                  className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
+                />
+              </div>
               <button
                 onClick={handleUpdateDisplayName}
                 disabled={loading || displayName === account.displayName || !canManage}
-                className={
-                  `px-4 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ` +
-                  (canManage ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-500 border border-gray-200')
-                }
+                className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                  canManage ? 'border border-green-700 bg-green-700 text-white hover:bg-green-800' : 'bg-gray-100 text-gray-500 border border-gray-200'
+                }`}
               >
                 {loading && <Loader className="h-4 w-4 animate-spin" />}
                 Update
               </button>
             </div>
+            <p className="mt-1.5 text-xs text-gray-400">Optional. Full name of the account user</p>
           </div>
 
           {/* Role */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+            <label className="mb-1.5 block text-sm font-medium text-gray-800">
+              Role <span className="text-red-500">*</span>
+            </label>
             <div className="flex gap-2">
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select a role</option>
-                <option value={ROLES.SUPERADMIN}>Super Admin</option>
-                <option value={ROLES.ADMIN}>Admin</option>
-                <option value={ROLES.SECURITY}>Security</option>
-                <option value={ROLES.SUPPORT}>Support</option>
-                <option value={ROLES.ANALYST}>Analyst</option>
-              </select>
+              <div className="relative flex-1">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
+                  <Shield className="h-4 w-4 text-[#1a7a45]" />
+                </span>
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="w-full cursor-pointer appearance-none rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-10 text-sm text-gray-900 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
+                >
+                  <option value="">Select a role</option>
+                  <option value={ROLES.SUPERADMIN}>Super Admin</option>
+                  <option value={ROLES.ADMIN}>Admin</option>
+                  <option value={ROLES.SECURITY}>Security</option>
+                  <option value={ROLES.SUPPORT}>Support</option>
+                  <option value={ROLES.ANALYST}>Analyst</option>
+                </select>
+                <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2">
+                  <svg className="h-4 w-4 text-[#1a7a45]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </div>
               <button
                 onClick={handleUpdateRole}
                 disabled={loading || role === account.role || !canManage}
-                className={
-                  `px-4 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ` +
-                  (canManage ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-500 border border-gray-200')
-                }
+                className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 whitespace-nowrap transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                  canManage ? 'border border-green-700 bg-green-700 text-white hover:bg-green-800' : 'bg-gray-100 text-gray-500 border border-gray-200'
+                }`}
               >
                 {loading && <Loader className="h-4 w-4 animate-spin" />}
                 Update
               </button>
             </div>
+            <p className="mt-1.5 text-xs text-gray-400">Select the role for this account</p>
           </div>
 
           {/* Password Reset */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <div className="space-y-3">
+            <label className="mb-1.5 block text-sm font-medium text-gray-800">
+              Reset Password
+            </label>
+            <div className="relative mb-2">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
+                <KeyRound className="h-4 w-4 text-[#1a7a45]" />
+              </span>
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Enter new password"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
               />
-              <button
-                onClick={handleResetPassword}
-                disabled={loading || !canManage}
-                className={
-                  `w-full px-4 py-2 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ` +
-                  (canManage ? 'bg-orange-600 text-white hover:bg-orange-700' : 'bg-gray-100 text-gray-500 border border-gray-200')
-                }
-              >
-                {loading && <Loader className="h-4 w-4 animate-spin" />}
-                Set New Password
-              </button>
             </div>
+            <button
+              onClick={handleResetPassword}
+              disabled={loading || !canManage}
+              className={`w-full px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                canManage ? 'border border-green-700 bg-green-700 text-white hover:bg-green-800' : 'bg-gray-100 text-gray-500 border border-gray-200'
+              }`}
+            >
+              {loading && <Loader className="h-4 w-4 animate-spin" />}
+              Set New Password
+            </button>
+            <p className="mt-1.5 text-xs text-gray-400">This will immediately update the account password</p>
           </div>
 
-          {/* Error Alert */}
-          {error && (
-            <div className="p-3 rounded-lg border border-red-200 bg-red-50 flex gap-2">
-              <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-red-900">Error</p>
-                <p className="text-sm text-red-700 mt-1">{error}</p>
-              </div>
-            </div>
-          )}
 
-          {/* Success Alert */}
-          {success && (
-            <div className="p-3 rounded-lg border border-green-200 bg-green-50 flex gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-green-900">Success</p>
-                <p className="text-sm text-green-700 mt-1">{success}</p>
-              </div>
-            </div>
-          )}
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-100 shrink-0 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
           >
             Close
           </button>
         </div>
+
       </div>
     </div>
   );

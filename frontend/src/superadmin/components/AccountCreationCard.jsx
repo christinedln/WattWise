@@ -4,7 +4,7 @@ import { createAdminAccount } from '../services/adminAccountsService';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../config/permissions';
 
-export default function AccountCreationCard() {
+export default function AccountCreationCard({ onSuccess }) {
   const { role } = useAuth();
   const canCreate = hasPermission(role, 'manage_users');
   const [formData, setFormData] = useState({
@@ -42,7 +42,10 @@ export default function AccountCreationCard() {
 
       setSuccess(result);
       setFormData({ email: '', role: 'admin', displayName: '' });
-      setTimeout(() => setSuccess(null), 5000);
+      setTimeout(() => {
+        setSuccess(null);
+        if (onSuccess) onSuccess();
+      }, 5000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -57,7 +60,7 @@ export default function AccountCreationCard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {error && (
         <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
@@ -85,117 +88,121 @@ export default function AccountCreationCard() {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-5 px-6 pb-6 pt-5">
-            <div>
-              <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-800">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
-                  <svg className="h-4 w-4 text-[#1a7a45]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" />
-                    <path d="M1.5 5.5l6.5 4 6.5-4" />
-                  </svg>
-                </span>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="admin@company.com"
-                  required
-                  className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
-                />
-              </div>
-              <p className="mt-1.5 text-xs text-gray-400">The user will receive a setup email with instructions</p>
-            </div>
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-2 gap-4">
 
-            <div>
-              <label htmlFor="role" className="mb-1.5 block text-sm font-medium text-gray-800">
-                Role <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
-                  <Shield className="h-4 w-4 text-[#1a7a45]" />
-                </span>
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  className="w-full cursor-pointer appearance-none rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-10 text-sm text-gray-900 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
-                >
-                  <option value="admin">Admin</option>
-                  <option value="security">Security</option>
-                  <option value="support">Support</option>
-                  <option value="analyst">Analyst</option>
-                  <option value="superadmin">Super Admin</option>
-                </select>
-                <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2">
-                  <svg className="h-4 w-4 text-[#1a7a45]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-              </div>
-              <p className="mt-1.5 text-xs text-gray-400">Select the role for this account</p>
+          {/* Email */}
+          <div>
+            <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-800">
+              Email Address <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
+                <svg className="h-4 w-4 text-[#1a7a45]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" />
+                  <path d="M1.5 5.5l6.5 4 6.5-4" />
+                </svg>
+              </span>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="admin@company.com"
+                required
+                className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
+              />
             </div>
-
-            <div>
-              <label htmlFor="displayName" className="mb-1.5 block text-sm font-medium text-gray-800">
-                Display Name
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
-                  <UserRoundPlus className="h-4 w-4 text-[#1a7a45]" />
-                </span>
-                <input
-                  id="displayName"
-                  name="displayName"
-                  type="text"
-                  value={formData.displayName}
-                  onChange={handleInputChange}
-                  placeholder="John Doe"
-                  className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
-                />
-              </div>
-              <p className="mt-1.5 text-xs text-gray-400">Optional. Full name of the admin user</p>
-            </div>
-
-            <div className="flex items-center gap-3 pt-1">
-              <button
-                type="submit"
-                disabled={loading || !canCreate}
-                className={
-                  `inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ` +
-                  (canCreate
-                    ? 'border border-[#b2d8c0] bg-[#e8f5ee] text-gray-900 hover:bg-[#d4eddf]'
-                    : 'border border-gray-200 bg-gray-100 text-gray-500')
-                }
-              >
-                {loading ? (
-                  <Loader className="h-4 w-4 animate-spin text-[#1a7a45]" />
-                ) : (
-                  <UserRoundPlus className={canCreate ? 'h-4 w-4 text-[#1a7a45]' : 'h-4 w-4 text-gray-400'} />
-                )}
-                {loading ? 'Creating...' : 'Create Account'}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleClear}
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-              >
-                <RotateCcw className="h-4 w-4 text-gray-500" />
-                Clear
-              </button>
-            </div>
+            <p className="mt-1.5 text-xs text-gray-400">The user will receive a setup email with instructions</p>
           </div>
-        </form>
-      </div>
 
+          {/* Role */}
+          <div>
+            <label htmlFor="role" className="mb-1.5 block text-sm font-medium text-gray-800">
+              Role <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
+                <Shield className="h-4 w-4 text-[#1a7a45]" />
+              </span>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleInputChange}
+                className="w-full cursor-pointer appearance-none rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-10 text-sm text-gray-900 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
+              >
+                <option value="admin">Admin</option>
+                <option value="security">Security</option>
+                <option value="support">Support</option>
+                <option value="analyst">Analyst</option>
+                <option value="superadmin">Super Admin</option>
+              </select>
+              <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2">
+                <svg className="h-4 w-4 text-[#1a7a45]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            </div>
+            <p className="mt-1.5 text-xs text-gray-400">Select the role for this account</p>
+          </div>
+
+          {/* Display Name - full width */}
+          <div className="col-span-2">
+            <label htmlFor="displayName" className="mb-1.5 block text-sm font-medium text-gray-800">
+              Display Name
+            </label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
+                <UserRoundPlus className="h-4 w-4 text-[#1a7a45]" />
+              </span>
+              <input
+                id="displayName"
+                name="displayName"
+                type="text"
+                value={formData.displayName}
+                onChange={handleInputChange}
+                placeholder="John Doe"
+                className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all duration-150 focus:border-[#1a7a45] focus:outline-none focus:ring-2 focus:ring-[#1a7a45]/20"
+              />
+            </div>
+            <p className="mt-1.5 text-xs text-gray-400">Optional. Full name of the admin user</p>
+          </div>
+
+          {/* Buttons - full width */}
+          <div className="col-span-2 flex items-center gap-3 pt-1">
+            <button
+              type="submit"
+              disabled={loading || !canCreate}
+              className={
+                `inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 whitespace-nowrap ` +
+                (canCreate
+                  ? 'border border-green-700 bg-green-700 text-white hover:bg-green-800'
+                  : 'border border-gray-200 bg-gray-100 text-gray-500')
+              }
+            >
+              {loading ? (
+                <Loader className="h-4 w-4 animate-spin text-white" />
+              ) : (
+                <UserRoundPlus className={canCreate ? 'h-4 w-4 text-white' : 'h-4 w-4 text-gray-400'} />
+              )}
+              {loading ? 'Creating...' : 'Create Account'}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleClear}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+            >
+              <RotateCcw className="h-4 w-4 text-gray-500" />
+              Clear
+            </button>
+          </div>
+        </div>
+      </form>
+
+      {/* Important Information */}
       <div className="rounded-2xl border border-green-200 bg-green-50 px-6 py-5">
         <div className="mb-3 flex items-center gap-2.5">
           <svg className="h-5 w-5 text-[#1a7a45]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
