@@ -1,8 +1,6 @@
 export default function DeviceHealthSummary({ readings = [] }) {
 
-  const allAlerts = readings
-  .flatMap(d => d.alerts || [])
-  .filter(a => !a.resolved);
+  const allAlerts = readings.flatMap(d => d.alerts || []);
 
   // DEVICE STATUS 
   const healthCounts = {
@@ -27,7 +25,7 @@ export default function DeviceHealthSummary({ readings = [] }) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
 
-      <h3 className="font-bold text-lg mb-6 text-gray-900">Device Overview</h3>
+      <h3 className="font-bold text-lg mb-6">Device Overview</h3>
 
       {/* STATUS */}
       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -47,7 +45,7 @@ export default function DeviceHealthSummary({ readings = [] }) {
       </div>
 
       {/* CURRENT  */}
-      <p className="font-semibold mb-2 text-gray-900">Current</p>
+      <p className="font-semibold mb-2">Current</p>
       <div className="grid grid-cols-4 gap-3 mb-5">
 
         <Box
@@ -77,7 +75,7 @@ export default function DeviceHealthSummary({ readings = [] }) {
       </div>
 
       {/* VOLTAGE*/}
-     <p className="font-semibold mb-2 text-gray-900">Voltage</p>
+      <p className="font-semibold mb-2">Voltage</p>
       <div className="grid grid-cols-4 gap-3 mb-5">
 
         <Box
@@ -107,7 +105,7 @@ export default function DeviceHealthSummary({ readings = [] }) {
       </div>
 
       {/* POWER*/}
-      <p className="font-semibold mb-2 text-gray-900">Power</p>
+      <p className="font-semibold mb-2">Power</p>
       <div className="grid grid-cols-4 gap-3">
 
         <Box

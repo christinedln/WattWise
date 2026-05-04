@@ -1,10 +1,11 @@
 import { Bell, Menu } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { useNotifications } from "../context/NotificationContext";
 
 export default function DashboardHeader({
+  criticalAlerts = 0,
   onMenuClick,
   onEmailClick,
+  onSoundClick,
 }) {
   const location = useLocation();
   const path = location.pathname;
@@ -15,7 +16,6 @@ export default function DashboardHeader({
   const isRealtimeMonitoringPage = path === "/realtime";
   const isPredictionsPage = path === "/predictions";
   const isSettingsPage = path === "/settings";
-  const { notifCount } = useNotifications();
 
   const title = isAlertsPage
     ? "Alerts & Notifications"
@@ -52,7 +52,7 @@ export default function DashboardHeader({
         {/* LEFT SIDE */}
         <div className="flex items-center gap-4">
 
-          {/* Burger */}
+          {/* Burger (mobile only) */}
           <div className="md:hidden flex items-center mr-8">
             <Menu
               className="w-6 h-6 text-gray-800 cursor-pointer"
@@ -60,7 +60,7 @@ export default function DashboardHeader({
             />
           </div>
 
-          {/* TITLE */}
+          {/* TITLE + SUBTITLE */}
           <div>
             <h2 className="text-2xl font-semibold text-gray-900 tracking-tight leading-tight">
               {title}
@@ -72,11 +72,14 @@ export default function DashboardHeader({
               </p>
             )}
           </div>
+
         </div>
 
         {/* RIGHT SIDE */}
+
         <div className="flex items-center gap-3">
 
+          {/* Email + Sound — alerts page only */}
           {isAlertsPage && (
             <>
               {/* Email */}
@@ -96,7 +99,22 @@ export default function DashboardHeader({
                 </svg>
               </div>
 
-              
+              {/* Sound */}
+              <div
+                onClick={onSoundClick}
+                className="cursor-pointer flex items-center justify-center group"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-700 group-hover:text-green-700 transition-colors duration-200"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+              </div>
             </>
           )}
 
@@ -104,15 +122,17 @@ export default function DashboardHeader({
           <div className="relative flex items-center justify-center">
             <Bell className="w-6 h-6 text-gray-700" />
 
-            {notifCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center">
-                {notifCount}
+            {criticalAlerts > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                {criticalAlerts}
               </span>
             )}
           </div>
 
         </div>
       </div>
+
     </div>
+
   );
 }

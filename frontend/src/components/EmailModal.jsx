@@ -35,6 +35,11 @@ const Badge = ({ type }) => (
   </span>
 );
 
+const iosFont = {
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', sans-serif",
+  WebkitFontSmoothing: "antialiased",
+  MozOsxFontSmoothing: "grayscale",
+};
 // ─── Frequency normalizer ───────────────────────────
 const normalizeFrequency = (freq) => {
   switch (freq) {
@@ -175,34 +180,52 @@ export default function EmailModal({ onClose, onSave, isOpen }) {
   // ─── UI (UNCHANGED) ──────────────────────────────
   return (
     <div
-      className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50"
+     
+      className="fixed inset-0 flex items-center justify-center z-50"
+     
+      style={{ background: "rgba(15,30,20,0.45)", backdropFilter: "blur(4px)", ...iosFont }}
       onClick={onClose}
+    
     >
       <div
-        className="bg-white rounded-2xl p-7 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
+       
+        className="bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
+       
+        style={{ border: "0.5px solid #e5e7eb", padding: "24px 24px 20px" }}
         onClick={(e) => e.stopPropagation()}
+      
       >
+        {/* Header */}
         <div className="flex justify-between items-center mb-1">
-          <h2 className="text-lg font-bold text-gray-900">
-            📧 Email Notification Settings
-          </h2>
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center justify-center rounded-lg" style={{ width: 30, height: 30, background: "#16a34a" }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+            </div>
+            <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: "#111827", letterSpacing: "-0.02em" }}>
+              Email Notification Settings
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl"
-          >
-            ✕
-          </button>
+            style={{ background: "none", border: "none", fontSize: 18, color: "#9ca3af", cursor: "pointer", padding: "0 2px", lineHeight: 1 }}
+          >✕</button>
         </div>
 
-        <p className="text-sm text-gray-500 mb-6">
-          Get notified by emails when device anomalies occur.
+        <p style={{ fontSize: 13, color: "#6b7280", margin: "6px 0 20px", letterSpacing: "-0.003em" }}>
+          Get notified by email when alerts are triggered.
         </p>
 
-        <div className="mb-5">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+        {/* Divider */}
+        <div style={{ height: "0.5px", background: "#f3f4f6", margin: "0 -24px 20px" }} />
+
+        {/* Email Address */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: "block", fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 8, letterSpacing: "-0.01em" }}>
             Email Address
           </label>
-
           <input
             type="email"
             placeholder="you@example.com"
@@ -210,7 +233,17 @@ export default function EmailModal({ onClose, onSave, isOpen }) {
             onChange={(e) =>
               setEmail({ ...email, address: e.target.value })
             }
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-900 outline-none focus:border-green-400"
+            style={{
+              ...iosFont,
+              width: "100%", boxSizing: "border-box",
+              padding: "10px 14px", borderRadius: 10,
+              border: "1px solid #e5e7eb", background: "#f9fafb",
+              fontSize: 15, color: "#111827", outline: "none",
+              letterSpacing: "-0.005em",
+              transition: "border-color 0.15s, box-shadow 0.15s",
+            }}
+            onFocus={e => { e.target.style.borderColor = "#16a34a"; e.target.style.boxShadow = "0 0 0 3px rgba(22,163,74,0.1)"; }}
+            onBlur={e => { e.target.style.borderColor = "#e5e7eb"; e.target.style.boxShadow = "none"; }}
           />
         </div>
 
@@ -261,17 +294,20 @@ export default function EmailModal({ onClose, onSave, isOpen }) {
           </div>
         </div>
 
-        <button
-          onClick={handleSave}
-          style={{
-            backgroundColor: saved ? "#bbf7d0" : "#dcfce7",
-            color: "#15803d",
-            border: "none",
-          }}
-          className="w-full py-2.5 rounded-xl font-bold text-sm"
-        >
-          {saved ? "✓ Saved!" : "Save Preferences"}
-        </button>
+        {/* Save Button */}
+        <div className="flex justify-center">
+          <button
+            onClick={handleSave}
+            style={{ backgroundColor: "#16a34a", color: "white" }}
+            className="w-[320px] px-5 py-3 rounded-[14px] text-sm font-semibold
+               shadow-sm transition-all duration-200 ease-in-out
+               hover:shadow-lg hover:-translate-y-0.5
+               active:translate-y-0 active:shadow-md
+               focus:outline-none"
+          >
+            {saved ? "✓ Saved!" : "Save Preferences"}
+          </button>
+        </div>
       </div>
     </div>
   );
