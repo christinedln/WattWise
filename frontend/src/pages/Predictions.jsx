@@ -5,7 +5,7 @@ import { apiFetch } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import DashboardHeader from "../components/DashboardHeader";
 import Layout from "../components/layout";
-import { TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -141,8 +141,6 @@ export default function PredictionsPage() {
       period: "This Week",
       cost: `₱${weeklyCost.toFixed(2)}`,
       estimatedUsage: `${weeklyKwh.toFixed(2)} kWh`,
-      trend: trend.direction,
-      trendPercent: `${trend.percent.toFixed(1)}%`,
       trendLabel: activeDevice
         ? `Device: ${activeDevice.name}`
         : "All devices combined",
@@ -167,122 +165,171 @@ export default function PredictionsPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
           <DashboardHeader />
 
-          <div className="flex-1 overflow-auto p-6">
+<div className="flex-1 overflow-auto overscroll-contain p-6 space-y-6 bg-gray-50">
 
-            {/* HEADER */}
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Energy Predictions
-              </h1>
-              <p className="text-gray-500">
-                Device-based forecasting from energy logs
-              </p>
+  {/* DEVICE BUTTONS */}
+  {deviceIds.length > 0 && (
+    <div className="flex items-center mb-4 bg-gray-100 p-1 rounded-full w-fit flex-wrap gap-1">
+      
+      {/* ALL DEVICES */}
+      <button
+        onClick={() => setSelectedDeviceId(null)}
+        className={`
+          px-5 py-2 text-sm font-medium transition-all duration-200 z-10
+          ${!selectedDeviceId
+            ? "!bg-green-600 !text-white shadow-md shadow-green-300"
+            : "!bg-transparent !text-gray-600 hover:!bg-gray-200"
+          }
+        `}
+        style={{ borderRadius: "9999px" }}
+      >
+        All Devices
+      </button>
+
+      {/* DEVICE LIST */}
+      {deviceIds.map((id) => {
+        const isActive = selectedDeviceId === id;
+
+        return (
+          <button
+            key={id}
+            onClick={() => setSelectedDeviceId(id)}
+            className={`
+              px-5 py-2 text-sm font-medium transition-all duration-200 z-10
+              ${isActive
+                ? "!bg-green-600 !text-white shadow-md shadow-green-300"
+                : "!bg-transparent !text-gray-600 hover:!bg-gray-200"
+              }
+            `}
+            style={{ borderRadius: "9999px" }}
+          >
+            {perDevice[id]?.name || id}
+          </button>
+        );
+      })}
+    </div>
+  )}
+
+
+
+{/* PREDICTION CARDS */}
+<div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
+  <h2 className="text-xl font-bold text-gray-900 mb-4">
+    Energy Cost Predictions
+    {activeDevice && (
+      <span className="ml-2 text-sm text-green-600 font-medium">
+        ({activeDevice.name})
+      </span>
+    )}
+  </h2>
+
+  <div className="grid md:grid-cols-2 gap-6 mt-2">
+    {weeklyPredictions.map((pred, i) => {
+      const isWeek = pred.period.toLowerCase().includes("week");
+
+      return (
+        <div
+          key={i}
+          className={`rounded-xl p-5 border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
+            isWeek
+              ? "bg-yellow-50/60 border-yellow-200"
+              : "bg-blue-50/60 border-blue-200"
+          }`}
+        >
+          {/* HEADER */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div
+                className={`p-2 rounded-lg ${
+                  isWeek
+                    ? "bg-yellow-100 text-yellow-600"
+                    : "bg-blue-100 text-blue-600"
+                }`}
+              >
+                <Calendar size={16} />
+              </div>
+
+              <span className="font-semibold text-gray-800">
+                {pred.period}
+              </span>
             </div>
 
-            {/* DEVICE BUTTONS */}
-            {deviceIds.length > 0 && (
-              <div className="flex gap-2 mb-6 flex-wrap">
-                <button
-                  onClick={() => setSelectedDeviceId(null)}
-                  className={`px-4 py-2 rounded-full text-sm border ${
-                    !selectedDeviceId
-                      ? "bg-green-600 text-white"
-                      : "bg-white"
-                  }`}
-                >
-                  All Devices
-                </button>
+          </div>
 
-                {deviceIds.map((id) => (
-                  <button
-                    key={id}
-                    onClick={() => setSelectedDeviceId(id)}
-                    className={`px-4 py-2 rounded-full text-sm border ${
-                      selectedDeviceId === id
-                        ? "bg-green-600 text-white"
-                        : "bg-white"
-                    }`}
-                  >
-                    {perDevice[id]?.name || id}
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* COST */}
+          <h3
+            className={`text-3xl font-bold mt-2 ${
+              isWeek ? "text-yellow-700" : "text-blue-700"
+            }`}
+          >
+            {pred.cost}
+          </h3>
 
-            {/* PREDICTION CARDS */}
-            <div className="bg-white border rounded-xl p-6 mb-6">
-              <h2 className="text-xl font-bold text-gray-900">
-                Energy Cost Predictions
-                {activeDevice && (
-                  <span className="ml-2 text-sm text-green-600">
-                    ({activeDevice.name})
-                  </span>
-                )}
-              </h2>
+          {/* USAGE */}
+          <p className="text-sm text-gray-600 mt-1">
+            {pred.estimatedUsage}
+          </p>
 
-              <div className="grid md:grid-cols-2 gap-6 mt-4">
-                {weeklyPredictions.map((pred, i) => (
-                  <div key={i} className="p-5 border rounded-xl bg-green-50/40">
-                    <div className="flex justify-between">
-                      <span className="font-semibold">{pred.period}</span>
-
-                      <span
-                        className={
-                          pred.trend === "up"
-                            ? "text-red-500"
-                            : "text-green-500"
-                        }
-                      >
-                        {pred.trendPercent}
-                      </span>
-                    </div>
-
-                    <h3 className="text-3xl font-bold text-green-600 mt-2">
-                      {pred.cost}
-                    </h3>
-
-                    <p className="text-sm text-gray-600">
-                      {pred.estimatedUsage}
-                    </p>
-
-                    <p className="text-xs text-gray-500 mt-2">
-                      {pred.trendLabel}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {/* LABEL */}
+          <p className="text-xs text-gray-500 mt-3">
+            {pred.trendLabel}
+          </p>
+        </div>
+      );
+    })}
+  </div>
+</div>
 
             {/* FORECAST */}
             <div className="bg-white p-6 border rounded-xl mb-6">
-              <h2 className="font-bold mb-4">Next 7 Days Forecast</h2>
+              <h2 className="font-bold mb-4 text-gray-900">Next 7 Days Forecast</h2>
 
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={forecastData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Tooltip />
+                   <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#fff",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                    }}
+                    labelStyle={{
+                      color: "#000", // ONLY time label
+                      fontWeight: 600,
+                    }}
+                  />
                   <Legend />
-                  <Bar dataKey="consumption" fill="#10b981" />
-                  <Bar dataKey="cost" fill="#3b82f6" />
+                  <Bar dataKey="consumption" fill="#f59e0b" />
+                  <Bar dataKey="cost" fill="#16a34a" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
             {/* ACTUAL VS PREDICTED */}
             <div className="bg-white p-6 border rounded-xl">
-              <h2 className="font-bold mb-4">Predicted vs Actual</h2>
+              <h2 className="font-bold mb-4 text-gray-900">Predicted vs Actual</h2>
 
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={actualVsPredicted}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#fff",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                    }}
+                    labelStyle={{
+                      color: "#000", // ONLY time label
+                      fontWeight: 600,
+                    }}
+                  />
                   <Legend />
-                  <Line dataKey="predicted" stroke="#3b82f6" />
-                  <Line dataKey="actual" stroke="#10b981" />
+                  <Line dataKey="predicted" stroke="#f59e0b" />
+                  <Line dataKey="actual" stroke="#16a34a" />
                 </LineChart>
               </ResponsiveContainer>
             </div>

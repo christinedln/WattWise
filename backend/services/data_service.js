@@ -138,6 +138,37 @@ async function getAlerts(userId, deviceId) {
   }
 }
 
+async function getCurrentAlerts(userId, deviceId) {
+  try {
+    if (!userId || !deviceId) return [];
+
+    const snapshot = await db
+      .collection("user")
+      .doc(userId)
+      .collection("devices")
+      .doc(deviceId)
+      .collection("anomaly_state")
+      .get();
+
+    if (snapshot.empty) return [];
+
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      return {
+        id: doc.id,
+        signal: doc.id, 
+        severity: data.severity || "normal",
+        timestamp: data.timestamp || null,
+      };
+    });
+
+  } catch (error) {
+    console.error("Current alerts fetch error:", error);
+    return [];
+  }
+}
+
 // Get electricity rate per device 
 async function getRate(userId, deviceId) {
   try {
@@ -160,5 +191,6 @@ module.exports = {
   getDevices,
   getRate,
   getAlerts,
+  getCurrentAlerts,
   getRealtimeLogs
 };

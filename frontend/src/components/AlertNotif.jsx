@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import EmailModal from "./EmailModal";
 import { apiFetch } from "../api/api";
+import { CheckCircle, Undo2 } from "lucide-react";
 
 // ─── Inline SVG Icons ─────────────────────────────────
+
 const MailIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <rect x="2" y="4" width="20" height="16" rx="2" />
@@ -10,12 +12,6 @@ const MailIcon = () => (
   </svg>
 );
 
-const ClockIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
 
 const VolumeIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -37,15 +33,6 @@ const EyeOffIcon = () => (
   </svg>
 );
 
-const TrashIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6l-1 14H6L5 6" />
-    <path d="M10 11v6" />
-    <path d="M14 11v6" />
-    <path d="M9 6V4h6v2" />
-  </svg>
-);
 
 // ─── Filter meta ──────────────────────────────────────
 const filterMeta = {
@@ -133,11 +120,9 @@ function SummaryCard({ label, value, sub, colorClass, textClass }) {
   );
 }
 
-const capitalize = (str) =>
-  str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : str;
-
 export default function AlertNotif() {
   const [alerts, setAlerts] = useState([]);
+  const [logModal, setLogModal] = useState(null);
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -150,17 +135,19 @@ export default function AlertNotif() {
           severity: normalizeSeverity(alert.severity),
 
           title: alert.device_name,
+          
 
           description: `
             ${alert.signal?.toUpperCase()} anomaly
-            | ${alert.power ?? "-"} W
-            | ${alert.voltage ?? "-"} V
-            | ${alert.current ?? "-"} A
+            | ${alert.power != null ? Number(alert.power).toFixed(2) : "-"} W
+            | ${alert.voltage != null ? Number(alert.voltage).toFixed(2) : "-"} V
+            | ${alert.current != null ? Number(alert.current).toFixed(2) : "-"} A
           `,
 
           time: formatTime(alert.timestamp),
 
           resolved: alert.resolved,
+          context_logs: alert.context_logs || [],
         }));
 
         setAlerts(transformed);
@@ -201,6 +188,9 @@ const stats = {
   suspicious: activeAlerts.filter(a => a.severity === "Suspicious").length,
   total: activeAlerts.length,
 };
+  const toggleSelect = (id) =>
+    setSelected((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+
 
   const selectAll = () =>
     setSelected(selected.length === filtered.length ? [] : filtered.map((a) => a.id));
@@ -225,27 +215,30 @@ const toggleResolveAlert = async (id, currentResolved) => {
   }
 };
 
-  const resolveSelected = async () => {
-    try {
-      await Promise.all(
-        selected.map((id) =>
-          apiFetch(`/alerts/${id}/resolve`, { method: "PATCH" })
-        )
-      );
+const resolveSelected = async () => {
+  try {
+    await Promise.all(
+      selected.map((id) =>
+        apiFetch(`/alerts/${id}/resolve`, {
+          method: "PATCH",
+          body: JSON.stringify({ resolved: true }), 
+        })
+      )
+    );
 
-      setAlerts((p) =>
-        p.map((a) =>
-          selected.includes(a.id) ? { ...a, resolved: true } : a
-        )
-      );
+    setAlerts((p) =>
+      p.map((a) =>
+        selected.includes(a.id) ? { ...a, resolved: true } : a
+      )
+    );
 
-      setSelected([]);
-      showToast("Marked as resolved");
+    setSelected([]);
+    showToast("Marked as resolved");
 
-    } catch (err) {
-      console.error("Resolve failed:", err);
-    }
-  };
+  } catch (err) {
+    console.error("Resolve failed:", err);
+  }
+};
 
   return (
     <div className="relative">
@@ -256,24 +249,6 @@ const toggleResolveAlert = async (id, currentResolved) => {
         </div>
       )}
 
-      {/* HEADER */}
-      <div className="flex justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Alerts & Notifications</h1>
-            <p className="text-sm text-gray-400">Device issues and anomalies</p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowEmail(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150"
-             style={{ backgroundColor: "#F0F8F5 ", color: "black", border: "1px solid #86efac" }}
-            >
-          <MailIcon /> Email Alerts
-            </button>
-            
-          </div>
-        </div>
 
       {/* STATS */}
       <div className="bg-white rounded-lg border border-gray-200 px-6 py-4 mb-6">
@@ -287,6 +262,8 @@ const toggleResolveAlert = async (id, currentResolved) => {
 
       {/* Controls */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
+
+        
 
         {/* Show / Hide Resolved */}
         <button
@@ -346,12 +323,13 @@ const toggleResolveAlert = async (id, currentResolved) => {
         </div>
 
         {selected.length > 0 && (
-          <button
-            onClick={resolveSelected}
-            className="ml-auto px-3 py-2 rounded-lg bg-green-50 border border-green-300 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
-          >
-            ✓ Resolve {selected.length} selected
-          </button>
+         <button
+  onClick={resolveSelected}
+  className="ml-auto inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 border border-green-300 text-green-700 text-sm font-semibold hover:bg-green-100 transition-colors"
+>
+  <CheckCircle className="w-4 h-4" />
+  Resolve {selected.length} selected
+</button>
         )}
       </div>
 
@@ -373,25 +351,143 @@ const toggleResolveAlert = async (id, currentResolved) => {
 
             <div className="flex-1">
               <Badge type={alert.severity} />
-              <p className="font-bold">{alert.title}</p>
+              <p className="font-bold text-gray-900">{alert.title}</p>
               <p className="text-sm text-gray-500">{alert.description}</p>
               <p className="text-xs text-gray-400 mt-1">{alert.time}</p>
             </div>
 
+            {/* INFO BUTTON */}
             <button
-              onClick={() => toggleResolveAlert(alert.id, alert.resolved)}
-              className={`text-xs px-1.5 py-0.5 font-medium transition ${
-                alert.resolved
-                  ? "text-gray-500 hover:text-gray-700"
-                  : "text-green-600 hover:text-green-800"
-              }`}
+              onClick={() => setLogModal(alert)}
+              className="text-xs px-1.5 py-0.5 text-blue-600 hover:text-blue-800"
+              title="View context logs"
             >
-              {alert.resolved ? "↩" : "✓"}
+              ℹ
             </button>
+
+            <button
+  onClick={() => toggleResolveAlert(alert.id, alert.resolved)}
+  className="inline-flex items-center justify-center p-2 rounded-md !bg-transparent !bg-none !shadow-none !border-0 transition"
+>
+  {alert.resolved ? (
+    <Undo2 className="w-5 h-5 !text-blue-600 hover:!text-blue-800" />
+  ) : (
+    <CheckCircle className="w-5 h-5 !text-green-600 hover:!text-green-800" />
+  )}
+</button>
           </div>
         ))}
       </div>
+{logModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
 
+    {/* modal */}
+    <div className="bg-white w-[560px] max-h-[80vh] overflow-hidden rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-gray-200 flex flex-col">
+
+      {/* header */}
+      <div className="flex justify-between items-center px-6 py-4 border-b border-green-100 bg-green-50">
+        <div>
+          <h2 className="font-semibold text-[17px] text-gray-900 tracking-tight">
+            Anomaly Timeline
+          </h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Context logs leading to detection
+          </p>
+        </div>
+
+        <button
+          onClick={() => setLogModal(null)}
+          className="w-8 h-8 flex items-center justify-center rounded-full text-gray-600 hover:bg-green-100 hover:text-gray-900 transition-all duration-150"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* body */}
+      <div className="p-5 overflow-auto">
+
+        {logModal.context_logs?.length > 0 ? (() => {
+          const logs = [...logModal.context_logs].sort(
+            (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+          );
+
+          const anomalyIndex = logs.length - 1;
+
+          return (
+            <div className="relative">
+
+              {/* vertical timeline line */}
+              <div className="absolute left-1 top-2 bottom-2 w-[2px] bg-gray-400" />
+
+              <div className="space-y-3">
+
+                {logs.map((log, idx) => {
+                  const isAnomaly = idx === anomalyIndex;
+
+                  return (
+                    <div key={idx} className="flex gap-3 relative">
+
+                      {/* dot */}
+                      <div className={`mt-2 w-3 h-3 rounded-full z-10 border-2 shadow-sm
+                        ${isAnomaly
+                          ? "bg-red-500 border-red-200"
+                          : "bg-green-600 border-white"
+                        }
+                      `} />
+
+                      {/* card */}
+                      <div
+                        className={`flex-1 rounded-xl border p-3 transition-all
+                          ${isAnomaly
+                            ? "bg-red-50 border-red-300 shadow-md"
+                            : "bg-white border-gray-200"
+                          }
+                        `}
+                      >
+
+                        {/* top row */}
+                        <div className="flex justify-between items-center mb-1">
+                          <span className={`text-xs font-semibold ${
+                            isAnomaly ? "text-red-600" : "text-gray-500"
+                          }`}>
+                            {isAnomaly ? "Anomaly Trigger" : "Normal Reading"}
+                          </span>
+
+                          <span className="text-[11px] text-gray-400">
+                            {formatTime(log.timestamp)}
+                          </span>
+                        </div>
+
+                        {/* values */}
+                        <div className="grid grid-cols-3 text-xs text-gray-600">
+                          <div>V: {log.voltage != null ? Number(log.voltage).toFixed(2) : "-"}</div>
+                          <div>I: {log.current != null ? Number(log.current).toFixed(2) : "-"}</div>
+                          <div>P: {log.power != null ? Number(log.power).toFixed(2) : "-"}</div>
+                        </div>
+
+                        {/* explanation */}
+                        {isAnomaly && (
+                          <div className="mt-2 text-xs text-red-600 font-medium">
+                            This spike caused the alert detection.
+                          </div>
+                        )}
+
+                      </div>
+                    </div>
+                  );
+                })}
+
+              </div>
+            </div>
+          );
+        })() : (
+          <p className="text-sm text-gray-500">No logs available</p>
+        )}
+
+      </div>
+    </div>
+  </div>
+)}
       {/* MODALS */}
         {showEmail && (
           <EmailModal
@@ -404,5 +500,7 @@ const toggleResolveAlert = async (id, currentResolved) => {
           />
         )}
             </div>
+
+
   );
 }

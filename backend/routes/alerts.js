@@ -36,8 +36,11 @@ router.get("/", authRequired, async (req, res) => {
         const data = doc.data();
 
         //get latest context log safely
-        const logs = data.context_logs || [];
-        const latest = logs.length > 0 ? logs[logs.length - 1] : {};
+        const logs = (data.context_logs || []).sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+
+        const latest = logs.length > 0 ? logs[0] : {};
 
         alerts.push({
           id: doc.id,
@@ -52,6 +55,8 @@ router.get("/", authRequired, async (req, res) => {
           voltage: latest.voltage ?? null,
           current: latest.current ?? null,
           power: latest.power ?? null,
+
+          context_logs: logs
         });
       });
     }
@@ -96,9 +101,27 @@ router.patch("/:id/resolve", authRequired, async (req, res) => {
       const doc = await ref.get();
 
       if (doc.exists) {
+        const newResolved = resolved ?? true;
+
+        // update anomalies
         await ref.update({
-          resolved: resolved ?? true,
+          resolved: newResolved,
         });
+
+        // update notif_anomalies
+        const notifRef = db
+          .collection("user")
+          .doc(userId)
+          .collection("notif_anomalies")
+          .doc(alertId);
+
+        const notifDoc = await notifRef.get();
+
+        if (notifDoc.exists) {
+          await notifRef.update({
+            resolved: newResolved,
+          });
+        }
 
         found = true;
         break;

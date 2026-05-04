@@ -68,6 +68,7 @@ export default function RealtimeMonitoringPage() {
       }
     };
 
+
     fetchAllTrends();
     // const interval = setInterval(fetchAllTrends, 5000);
 
@@ -76,9 +77,19 @@ export default function RealtimeMonitoringPage() {
 
   const device = devices.find((d) => d.device_id === selectedDevice);
 
-  const alerts = device?.alerts || [];
+  const alerts = device?.currentAlerts || [];
 
-  const activeAlerts = alerts.filter(a => a.severity !== "Normal");
+  const FIVE_MINUTES = 5 * 60 * 1000;
+
+  const activeAlerts = alerts.filter((a) => {
+    const severity = (a.severity || "").toLowerCase();
+    if (severity === "normal") return false;
+
+    if (!a.timestamp) return true;
+
+    return Date.now() - new Date(a.timestamp).getTime() <= FIVE_MINUTES;
+  });
+
   const hasActiveAlerts = activeAlerts.length > 0;
 
   return (
@@ -125,10 +136,6 @@ export default function RealtimeMonitoringPage() {
                   <div>
                     <div className="flex items-center gap-2">
 
-                      {/* DEVICE NAME (slightly bigger, balanced) */}
-                      <h1 className="text-2xl font-bold">
-                        {device.name}
-                      </h1>
 
                       {/* STATUS */}
                       <div className="flex items-center gap-2">
@@ -152,11 +159,18 @@ export default function RealtimeMonitoringPage() {
                       <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex flex-col">
                         <div className="flex items-center gap-2 text-red-600 font-semibold">
                           <AlertCircle className="w-4 h-4" />
-                          Critical Anomalies Detected
+                          Anomaly Detected
                         </div>
 
                         <p className="text-red-700 text-sm mt-1 leading-snug whitespace-normal break-words">
-                          {activeAlerts.map((a) => `${a.signal}: ${a.message}`).join(" | ")}
+                          {activeAlerts
+                            .map((a) => {
+                              const signal = a.signal || "unknown";
+                              const severity = (a.severity || "normal").toLowerCase();
+
+                              return `${signal.toUpperCase()}: ${severity.toUpperCase()}`;
+                            })
+                            .join(" | ")}
                         </p>
                       </div>
                     ) : (
@@ -177,14 +191,14 @@ export default function RealtimeMonitoringPage() {
                       device.message !== "No issues detected" && (
                         <div
                           className={`mt-3 rounded-xl p-3 border flex flex-col ${device.message.toLowerCase().includes("stable")
-                              ? "bg-blue-50 border-blue-200"
-                              : "bg-red-50 border-red-200"
+                            ? "bg-blue-50 border-blue-200"
+                            : "bg-red-50 border-red-200"
                             }`}
                         >
                           <div
                             className={`flex items-center gap-2 font-semibold ${device.message.toLowerCase().includes("stable")
-                                ? "text-blue-700"
-                                : "text-red-600"
+                              ? "text-blue-700"
+                              : "text-red-600"
                               }`}
                           >
                             {device.message.toLowerCase().includes("stable") ? (
@@ -197,8 +211,8 @@ export default function RealtimeMonitoringPage() {
 
                           <p
                             className={`text-sm mt-1 leading-snug whitespace-normal break-words ${device.message.toLowerCase().includes("stable")
-                                ? "text-blue-600"
-                                : "text-red-700"
+                              ? "text-blue-600"
+                              : "text-red-700"
                               }`}
                           >
                             {device.message}
@@ -272,17 +286,27 @@ export default function RealtimeMonitoringPage() {
 
                 {/* CHART */}
                 <div className="bg-white p-6 rounded-lg border">
-                  <h2 className="text-xl font-bold mb-4">Power Trend (Live)</h2>
+                  <h2 className="text-xl font-bold mb-4 text-gray-900">Power Trend (Live)</h2>
 
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="time" />
                       <YAxis />
-                      <Tooltip />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{
+                          color: "#000", // ONLY time label
+                          fontWeight: 600,
+                        }}
+                      />
                       <Line
                         type="monotone"
-                        dataKey="power"
+                        dataKey="value"
                         stroke="#16a34a"
                         strokeWidth={2}
                         dot={{ r: 3 }}
@@ -293,39 +317,69 @@ export default function RealtimeMonitoringPage() {
                 </div>
 
                 <div className="bg-white p-6 rounded-lg border mt-6">
-                  <h2 className="text-xl font-bold mb-4">Current Trend (Live)</h2>
+                  <h2 className="text-xl font-bold mb-4 text-gray-900">Current Trend (Live)</h2>
 
                   <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={currentData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="time" />
                       <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={2}
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{
+                          color: "#000",
+                          fontWeight: 600,
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#2563eb"
+                        strokeWidth={2}
                         dot={{ r: 3 }}
-                        activeDot={{ r: 6 }} />
+                        activeDot={{ r: 6 }}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
 
                 <div className="bg-white p-6 rounded-lg border mt-6">
-                  <h2 className="text-xl font-bold mb-4">Voltage Trend (Live)</h2>
+                  <h2 className="text-xl font-bold mb-4 text-gray-900">Voltage Trend (Live)</h2>
 
                   <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={voltageData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="time" />
                       <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="value" stroke="#f59e0b" strokeWidth={2}
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "8px",
+                        }}
+                        labelStyle={{
+                          color: "#000",
+                          fontWeight: 600,
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#f59e0b"
+                        strokeWidth={2}
                         dot={{ r: 3 }}
-                        activeDot={{ r: 6 }} />
+                        activeDot={{ r: 6 }}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
 
                 {/* FOOTER */}
-                <div className="bg-white p-4 rounded border flex justify-between text-sm">
+                <div className="bg-white p-4 rounded border flex justify-between text-sm text-gray-900">
                   <span>
                     Consumption: <b>{device.consumption} kWh</b>
                   </span>
