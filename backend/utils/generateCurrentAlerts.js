@@ -34,8 +34,13 @@ function generateCurrentAlerts(devices) {
 
         if (values.length < TRAINING_SIZE) continue;
 
-        const training = values.slice(0, values.length - 1);
-        const x = values[values.length - 1];
+        const recent = values.slice(-TRAINING_SIZE);
+
+        // last value = point to evaluate
+        const x = recent[recent.length - 1];
+
+        // everything before it = training
+        const training = recent.slice(0, recent.length - 1);
 
         const mean =
             training.reduce((a, b) => a + b, 0) / training.length;

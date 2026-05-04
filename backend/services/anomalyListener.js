@@ -22,7 +22,6 @@ function normalizeSeverity(sev) {
 }
 
 function startAnomalyListener() {
-  console.log("Starting anomaly listener...");
 
   loadDb().then(() => {
     if (!db) {
@@ -46,19 +45,15 @@ function startAnomalyListener() {
 
         // ─── HARD GUARD (IMPORTANT) ─────────────────────
         if (!data || Object.keys(data).length === 0) {
-          console.log("Skipped empty anomaly doc");
           continue;
         }
 
         if (!data.signal || !data.timestamp) {
-          console.log("Skipped invalid anomaly (missing fields)");
           continue;
         }
 
         if (data.emailSent === true) continue;
         if (data.resolved === true) continue;
-
-        console.log("🚨 New anomaly detected:", data);
 
         try {
           const pathParts = docRef.ref.path.split("/");
@@ -93,7 +88,6 @@ function startAnomalyListener() {
           const settings = settingsDoc.data();
 
           if (!settings?.email) {
-            console.log("No email settings for user:", userId);
             continue;
           }
 
@@ -109,7 +103,6 @@ function startAnomalyListener() {
           }
 
           if (settings.frequency !== "instant") {
-            console.log("Skipped (not instant)");
             continue;
           }
 
@@ -128,7 +121,6 @@ function startAnomalyListener() {
 
           // ─── FINAL SAFETY CHECK BEFORE EMAIL ─────────
           if (!data.signal || !data.timestamp) {
-            console.log("Blocked email due to missing core fields");
             continue;
           }
 
@@ -150,7 +142,6 @@ function startAnomalyListener() {
             `
           );
 
-          console.log("Email sent to:", settings.email);
 
           await docRef.ref.update({
             emailSent: true,

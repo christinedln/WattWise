@@ -3,25 +3,9 @@ function calcKwh(powerW, runtimeSeconds) {
         return 0;
     }
 
-    return Number(((powerW * runtimeSeconds) / 3600 / 1000).toFixed(4));
-}
-
-function computePowerTrend(realtime_logs) {
-    const logs = realtime_logs?.power || [];
-
-    const trend = logs.map((log, index) => {
-        const point = {
-            time: log?.timestamp || null,
-            power: typeof log?.value === "number" ? log.value : 0
-        };
-
-        return point;
-    });
-
-    return trend;
+    return Number(((powerW * runtimeSeconds) / 3600 / 1000).toFixed(4));  ///kwh = (power times runtime)/ (3600 watts times 1000seconds)
 }
 
 module.exports = {
-    calcKwh,
-    computePowerTrend
+    calcKwh
 };

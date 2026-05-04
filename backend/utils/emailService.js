@@ -7,7 +7,7 @@ function createTransporter() {
   const pass = process.env.EMAIL_PASS;
 
   if (!user || !pass) {
-    console.error("❌ EMAIL_USER or EMAIL_PASS is missing in .env");
+    console.error("EMAIL_USER or EMAIL_PASS is missing in .env");
     return null;
   }
 
@@ -30,9 +30,8 @@ async function verifyTransporter() {
 
     await transporter.verify();
 
-    console.log("✅ Email transporter verified and ready");
   } catch (err) {
-    console.error("❌ Email transporter verification failed:");
+    console.error("Email transporter verification failed:");
     console.error(err);
   }
 }
@@ -41,18 +40,14 @@ async function verifyTransporter() {
 async function sendAlertEmail(to, subject, html) {
   try {
     if (!transporter) {
-      console.log("⚠️ Transporter not initialized. Recreating...");
+      console.log("Transporter not initialized. Recreating...");
       transporter = createTransporter();
     }
 
     if (!transporter) {
-      console.error("❌ Cannot send email: transporter not available");
+      console.error("Cannot send email: transporter not available");
       return;
     }
-
-    console.log("📤 Sending email...");
-    console.log("FROM:", process.env.EMAIL_USER);
-    console.log("TO:", to);
 
     const info = await transporter.sendMail({
       from: `"WattWise Alerts" <${process.env.EMAIL_USER}>`,
@@ -61,10 +56,8 @@ async function sendAlertEmail(to, subject, html) {
       html,
     });
 
-    console.log("✅ Email sent successfully:", info.messageId);
-
   } catch (err) {
-    console.error("❌ Email sending failed:");
+    console.error("Email sending failed:");
     console.error(err);
   }
 }

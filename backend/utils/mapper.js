@@ -1,5 +1,5 @@
 // utils/mapper
-const { getDevices, getRealtimeLogs, getAlerts } = require("../services/data_service");
+const { getDevices, getRealtimeLogs, getAlerts, getCurrentAlerts } = require("../services/data_service");
 const { nowTime } = require("../utils/time_helper");
 const { calcKwh } = require("../utils/calculations");
 
@@ -23,38 +23,6 @@ async function mergeDeviceData(userId) {
 
         const settings = d.settings || {};
 
-        const logWindow = settings.log_window;
-
-        const logsRaw = await getRealtimeLogs(
-            userId,
-            deviceId,
-            logWindow
-        );
-
-        const realtimeLogs = Array.isArray(logsRaw) ? logsRaw : [];
-
-        const structuredLogs = {
-            current: realtimeLogs.map(log => ({
-                value: log.current ?? 0,
-                timestamp: log.timestamp,
-                signal: "current"
-            })),
-
-            voltage: realtimeLogs.map(log => ({
-                value: log.voltage ?? 0,
-                timestamp: log.timestamp,
-                signal: "voltage"
-            })),
-
-            power: realtimeLogs.map(log => ({
-                value: log.power ?? 0,
-                timestamp: log.timestamp,
-                signal: "power"
-            }))
-        };
-
-        d.realtime_logs = structuredLogs;
-
         const rawAlerts = await getAlerts(userId, deviceId);
         const alertsArray = Array.isArray(rawAlerts) ? rawAlerts : [];
 
@@ -63,8 +31,21 @@ async function mergeDeviceData(userId) {
             severity: a.severity || "normal",
             message: a.message || `${a.severity || "normal"} anomaly detected`,
             timestamp: a.timestamp,
-            resolved: a.resolved ?? false
+            resolved: a.resolved ?? false,
         }));
+
+        const rawCurrentAlerts = await getCurrentAlerts(userId, deviceId);
+
+        const currentalert = Array.isArray(rawCurrentAlerts)
+            ? rawCurrentAlerts.map(a => ({
+                id: a.id,
+                signal: a.signal,
+                severity: (a.severity || "normal").toLowerCase(),
+                timestamp: a.timestamp || null,
+            }))
+            : [];
+            
+        const computedKwh = calcKwh(d.power || 0, d.runtime || 0);
 
         merged.push({
             id: `device-${deviceId}`,
@@ -85,13 +66,13 @@ async function mergeDeviceData(userId) {
             enabled: d.enabled ?? true,
 
             alerts,
+            
+            currentalert,
 
-            consumption: Number(d.consumption) || 0,
+            consumption: computedKwh,
 
             lastUpdated: nowTime(),
-
-            realtime_logs: structuredLogs,
-
+            
             settings
         });
     }

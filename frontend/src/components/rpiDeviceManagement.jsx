@@ -137,6 +137,10 @@ function DeviceRow({ device, pct, openEdit }) {
 
                 console.log("Relay toggled from device UI");
 
+                setTimeout(() => {
+                  fetchDevices(); 
+                }, 5000);
+
               } catch (err) {
                 console.error("Toggle failed", err);
               }

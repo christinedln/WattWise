@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 export default function CostPredictions({
   weeklyCost = 0,
@@ -7,10 +7,9 @@ export default function CostPredictions({
   monthlyKwh = 0,
   actualVsPredicted = [],
   dailyForecast = [],
-  perDevice = {}, // ✅ NEW (optional)
-  selectedDeviceId = null, // ✅ NEW
+  perDevice = {},
+  selectedDeviceId = null,
 }) {
-
   // ===============================
   // DEVICE OR GLOBAL DATA PICK
   // ===============================
@@ -18,17 +17,10 @@ export default function CostPredictions({
     ? perDevice?.[selectedDeviceId]
     : null;
 
-  const finalWeeklyKwh =
-    activeDevice?.weekly_kwh ?? weeklyKwh;
-
-  const finalMonthlyKwh =
-    activeDevice?.monthly_kwh ?? monthlyKwh;
-
-  const finalWeeklyCost =
-    activeDevice?.weekly_cost ?? weeklyCost;
-
-  const finalMonthlyCost =
-    activeDevice?.monthly_cost ?? monthlyCost;
+  const finalWeeklyKwh = activeDevice?.weekly_kwh ?? weeklyKwh;
+  const finalMonthlyKwh = activeDevice?.monthly_kwh ?? monthlyKwh;
+  const finalWeeklyCost = activeDevice?.weekly_cost ?? weeklyCost;
+  const finalMonthlyCost = activeDevice?.monthly_cost ?? monthlyCost;
 
   // ===============================
   // TREND CALCULATION
@@ -55,12 +47,11 @@ export default function CostPredictions({
       period: "This Week",
       cost: `₱${Number(finalWeeklyCost).toFixed(2)}`,
       estimatedUsage: `${Number(finalWeeklyKwh).toFixed(2)} kWh`,
-      trend: weeklyTrend >= 0 ? "up" : "down",
-      trendPercent: `${Math.abs(weeklyTrend).toFixed(2)}%`,
       trendLabel: activeDevice
         ? `Device: ${activeDevice.name}`
         : "All devices combined",
       bgColor: "bg-yellow-50",
+      iconBg: "bg-yellow-100 text-yellow-600",
     },
     {
       period: "This Month",
@@ -70,6 +61,7 @@ export default function CostPredictions({
       trendPercent: `${Math.abs(monthlyTrend).toFixed(2)}%`,
       trendLabel: "30-day projection",
       bgColor: "bg-blue-50",
+      iconBg: "bg-blue-100 text-blue-600",
     },
   ];
 
@@ -91,9 +83,7 @@ export default function CostPredictions({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="font-bold text-lg mb-1">
-        Energy Cost Predictions
-      </h3>
+      <h3 className="font-bold text-lg mb-1 text-gray-900">Energy Cost Predictions</h3>
 
       <p className="text-gray-500 text-sm mb-6">
         {activeDevice
@@ -103,9 +93,31 @@ export default function CostPredictions({
 
       <div className="grid grid-cols-2 gap-6">
         {predictions.map((pred, index) => (
-          <div key={index} className={`${pred.bgColor} rounded-lg p-6`}>
-            <p className="text-sm text-gray-600 mb-3">{pred.period}</p>
+          <div
+            key={index}
+            className={`rounded-xl p-6 shadow-sm border cursor-pointer transition-all duration-200 hover:shadow-md
+  ${
+    pred.period.toLowerCase().includes("week")
+      ? "bg-yellow-50/60 border-yellow-200 hover:border-yellow-300"
+      : "bg-blue-50/60 border-blue-200 hover:border-blue-300"
+  }
+`}
+          >
+            {/* HEADER */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`p-2 rounded-lg ${pred.iconBg}`}
+                >
+                  <Calendar size={16} />
+                </div>
+                <p className="text-sm text-gray-600 font-medium">
+                  {pred.period}
+                </p>
+              </div>
+            </div>
 
+            {/* COST */}
             <div className="flex items-baseline gap-2 mb-4">
               <span className="text-4xl font-bold text-gray-900">
                 {pred.cost}
@@ -113,36 +125,20 @@ export default function CostPredictions({
               <span className="text-sm text-gray-500">estimated</span>
             </div>
 
+            {/* USAGE + TREND */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">
                 {pred.estimatedUsage}
               </span>
 
-              <div className="flex items-center gap-1">
-                {pred.trend === "up" ? (
-                  <TrendingUp className="w-4 h-4 text-red-500" />
-                ) : (
-                  <TrendingDown className="w-4 h-4 text-green-500" />
-                )}
-
-                <span
-                  className={
-                    pred.trend === "up"
-                      ? "text-red-600"
-                      : "text-green-600"
-                  }
-                >
-                  {pred.trendPercent}
-                </span>
-              </div>
             </div>
 
             {/* MINI CHART */}
-            <div className="w-full h-12 bg-white bg-opacity-50 rounded flex items-end gap-1 p-1 mt-3">
+            <div className="w-full h-12 bg-white/50 rounded flex items-end gap-1 p-1 mt-3">
               {chartData.slice(-7).map((d, i) => (
                 <div
                   key={i}
-                  className="flex-1 bg-blue-400 rounded-t opacity-80"
+                  className="flex-1 bg-green-600 rounded-t opacity-80"
                   style={{
                     height: `${((d.consumption || 0) / maxValue) * 100}%`,
                   }}

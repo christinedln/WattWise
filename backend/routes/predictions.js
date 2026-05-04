@@ -67,7 +67,7 @@ function groupByDate(logs, daysBack = 7) {
 
         if (!daily[key]) daily[key] = 0;
 
-        daily[key] += log.consumption;
+        daily[key] += log.consumption; //daily energy group by date;total electricity used in 1 day (daily kwh = summation of of consumption logs per day) 
     }
 
     return daily;
@@ -85,7 +85,7 @@ function computeForecast(daily) {
     const days = Object.keys(daily).length || 1;
 
     return {
-        avg: total / days
+        avg: total / days ///AVG DAILY kwH;; normal electricity use per day (total daily usage divided by number of days)
     };
 }
 
@@ -123,10 +123,11 @@ router.get("/summary", authRequired, async (req, res) => {
             const daily = groupByDate(logs, 7);
             const forecast = computeForecast(daily);
 
-            const weekly_kwh = forecast.avg * 7;
-            const monthly_kwh = forecast.avg * 30;
-
-            const weekly_cost = weekly_kwh * rate;
+            const weekly_kwh = forecast.avg * 7; ////weekly prediction; AVG DAILY kWh times 7
+            const monthly_kwh = forecast.avg * 30; ////monthly prediction; AVG DAILY kWh times 30
+            
+            ///cost calculation (kWh x electricty rate)
+            const weekly_cost = weekly_kwh * rate; 
             const monthly_cost = monthly_kwh * rate;
 
             per_device[deviceId] = {
@@ -138,8 +139,8 @@ router.get("/summary", authRequired, async (req, res) => {
                 monthly_cost: safe(monthly_cost)
             };
 
-            totalWeekly += weekly_kwh;
-            totalMonthly += monthly_kwh;
+            totalWeekly += weekly_kwh; //total weekly usage of all devices
+            totalMonthly += monthly_kwh; //total month;y usage of all devices
 
             // ===============================
             // MERGE FOR GLOBAL CHARTS
@@ -158,7 +159,7 @@ router.get("/summary", authRequired, async (req, res) => {
         // ===============================
         // DAILY FORECAST (FIXED)
         // ===============================
-        const avg = totalWeekly / 7 || 0;
+        const avg = totalWeekly / 7 || 0; ////global avg daily; this means typical daily usage; Convert weekly total back into per day average
 
         const today = new Date();
 
@@ -171,7 +172,7 @@ router.get("/summary", authRequired, async (req, res) => {
                     month: "short",
                     day: "2-digit"
                 }),
-                consumption: avg,
+                consumption: avg,   //Forecast per day=Avg Daily; Repeat same value for next 7 days; Prediction assumes nothing changes
                 cost: avg * rateFallback
             };
         });
@@ -204,7 +205,6 @@ router.get("/summary", authRequired, async (req, res) => {
 
             per_device,
 
-            // 🔥 THESE WERE MISSING (MAIN BUG)
             daily_forecast,
             actual_vs_predicted
         });
