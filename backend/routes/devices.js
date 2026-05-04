@@ -1,12 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-// Services / utils
 const { mergeDeviceData } = require("../utils/mapper");
 const { db } = require("../firebase_config");
 const admin = require("firebase-admin");
 
-// Auth middleware
 const authRequired = require("../utils/auth");
 
 router.get("/", authRequired, async (req, res) => {
@@ -40,7 +38,7 @@ router.patch("/:device_id", authRequired, async (req, res) => {
                 message: "Invalid device ID"
             });
         }
-        
+       
         const { enabled, name, location } = req.body;
 
         if (enabled !== undefined && typeof enabled !== "boolean") {
@@ -127,7 +125,6 @@ router.delete("/:device_id", authRequired, async (req, res) => {
             });
         }
 
-        // USER DEVICE REF
         const userDeviceRef = db
             .collection("user")
             .doc(userId)
@@ -143,14 +140,38 @@ router.delete("/:device_id", authRequired, async (req, res) => {
             });
         }
 
-        // GLOBAL DEVICE REF
+        const anomaliesSnap = await db
+            .collection("user")
+            .doc(userId)
+            .collection("devices")
+            .doc(deviceId)
+            .collection("anomalies")
+            .get();
+
+        if (!anomaliesSnap.empty) {
+            const batch = db.batch();
+
+            anomaliesSnap.forEach(doc => {
+                const anomalyId = doc.id;
+
+                const notifRef = db
+                    .collection("user")
+                    .doc(userId)
+                    .collection("notif_anomalies")
+                    .doc(anomalyId);
+
+                batch.delete(notifRef);
+            });
+
+            await batch.commit();
+        }
+
         const globalDeviceRef = db
             .collection("devices")
             .doc(deviceId);
 
         const globalDeviceDoc = await globalDeviceRef.get();
 
-        // REMOVE USER FROM OWNERS
         if (globalDeviceDoc.exists) {
             const data = globalDeviceDoc.data();
             const owners = data.owners || [];
@@ -168,12 +189,11 @@ router.delete("/:device_id", authRequired, async (req, res) => {
             }
         }
 
-        // DELETE USER SUBCOLLECTION 
         await admin.firestore().recursiveDelete(userDeviceRef);
 
         return res.json({
             status: "success",
-            message: "Device removed from user and cleaned globally if needed",
+            message: "Device removed",
             device_id: deviceId
         });
 

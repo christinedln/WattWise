@@ -1,13 +1,6 @@
 function generateVoltageAlerts(devices) {
     if (!Array.isArray(devices)) return [];
 
-    const severityRank = {
-        Normal: 0,
-        Warning: 1,
-        Suspicious: 2,
-        Critical: 3
-    };
-
     const grouped = {};
 
     for (const d of devices) {
@@ -18,9 +11,9 @@ function generateVoltageAlerts(devices) {
 
         const TRAINING_SIZE = settings.log_window ?? 10;
 
-        const warning = settings.voltage_warning_threshold ?? 1.5;
-        const suspicious = settings.voltage_suspicious_threshold ?? 2.0;
-        const critical = settings.voltage_critical_threshold ?? 2.6;
+        const warning = settings.voltage_warning_threshold ?? 2.0;
+        const suspicious = settings.voltage_suspicious_threshold ?? 2.5;
+        const critical = settings.voltage_critical_threshold ?? 3.2;
 
         grouped[deviceId] = {
             device_id: deviceId,
@@ -36,10 +29,7 @@ function generateVoltageAlerts(devices) {
 
         const recent = values.slice(-TRAINING_SIZE);
 
-        // last value = point to evaluate
         const x = recent[recent.length - 1];
-
-        // everything before it = training
         const training = recent.slice(0, recent.length - 1);
 
         const mean =
@@ -82,9 +72,7 @@ function generateVoltageAlerts(devices) {
             };
         }
 
-        const final = d.alerts.reduce((best, cur) =>
-            severityRank[cur.severity] > severityRank[best.severity] ? cur : best
-        );
+        const final = d.alerts[0];
 
         return {
             device_id: d.device_id,
