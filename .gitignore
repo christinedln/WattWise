@@ -137,6 +137,8 @@ __marimo__/
 keys/
 firebase_key.json
 backend/firebase_key.json
+SDLC_SECURITY_ASSESSMENT.md
+SECURITY_*.md
 *.key
 *.pem
 *-service-account.json
