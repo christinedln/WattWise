@@ -1,13 +1,6 @@
 function generateCurrentAlerts(devices) {
     if (!Array.isArray(devices)) return [];
 
-    const severityRank = {
-        Normal: 0,
-        Warning: 1,
-        Suspicious: 2,
-        Critical: 3
-    };
-
     const grouped = {};
 
     for (const d of devices) {
@@ -36,10 +29,7 @@ function generateCurrentAlerts(devices) {
 
         const recent = values.slice(-TRAINING_SIZE);
 
-        // last value = point to evaluate
         const x = recent[recent.length - 1];
-
-        // everything before it = training
         const training = recent.slice(0, recent.length - 1);
 
         const mean =
@@ -82,9 +72,7 @@ function generateCurrentAlerts(devices) {
             };
         }
 
-        const final = d.alerts.reduce((best, cur) =>
-            severityRank[cur.severity] > severityRank[best.severity] ? cur : best
-        );
+        const final = d.alerts[0];
 
         return {
             device_id: d.device_id,
